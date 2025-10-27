@@ -33,6 +33,9 @@ export default function Home() {
           <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
             <Link href="/explore">Learn More</Link>
           </Button>
+          <Button asChild variant="secondary" size="lg" className="text-lg px-8 py-6">
+            <Link href="/login">Login</Link>
+          </Button>
         </div>
         
       </section>
