@@ -31,7 +31,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar /> {/* <-- ADD THE NAVBAR HERE */}
+          <Navbar /> 
           <main className="flex-1 flex flex-col"> {/* Wrap children in main */}
             {children}
           </main>
