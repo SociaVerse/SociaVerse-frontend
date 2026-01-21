@@ -3,319 +3,244 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { motion } from "framer-motion"
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
-import { MdEmail } from "react-icons/md"
-import {
-  FaLock,
-  FaFacebook,
-  FaTwitter,
-  FaApple,
-  FaUserFriends,
-  FaImage,
-  FaGlobeAmericas,
-  FaEye,
-  FaEyeSlash,
-} from "react-icons/fa"
+import { FaGithub, FaTwitter } from "react-icons/fa"
+import Link from "next/link"
 import { z } from "zod"
-import Image from "next/image"
-import Link from "next/link" // Import Link
 
 export function Login() {
   const [showEmailLogin, setShowEmailLogin] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false) // Added state for password toggle
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({ email: "", password: "" })
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  useEffect(() => {
-    setIsLoaded(true)
-  }, [])
 
   const validateEmail = (email: string) => {
-    const emailSchema = z.string().email("Please enter a valid email address")
     try {
-      emailSchema.parse(email)
+      z.string().email().parse(email)
       return true
-    } catch (error) {
+    } catch (e) {
       return false
     }
   }
 
-  const handleEmailLogin = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Reset errors
     setErrors({ email: "", password: "" })
 
-    // Validate email
     if (!validateEmail(email)) {
-      setErrors((prev) => ({
-        ...prev,
-        email: "Please enter a valid email address",
-      }))
+      setErrors(prev => ({ ...prev, email: "Please enter a valid email address" }))
       return
     }
 
-    // Validate password
     if (password.length < 6) {
-      setErrors((prev) => ({
-        ...prev,
-        password: "Password must be at least 6 characters",
-      }))
+      setErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }))
       return
     }
 
-    // Handle login logic here
-    console.log("Logging in with email:", email)
-  }
-
-  const handleGoogleLogin = () => {
-    // Handle Google login logic here
-    console.log("Logging in with Google")
+    setIsLoading(true)
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    console.log("Logging in with:", { email })
+    setIsLoading(false)
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden px-4 sm:px-6 py-6">
-      <div
-        className={`grid w-full max-w-[1000px] grid-cols-1 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/90 shadow-2xl lg:grid-cols-2 animate-blurIn mx-auto`}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+
+      {/* Dynamic Background */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
       >
-        {/* Left Column - Login Form */}
-        <div className="flex flex-col justify-center p-5 sm:p-8 md:p-12 animate-slideInLeft animation-delay-150">
-          <div className="mb-6 sm:mb-8 animate-slideInUp animation-delay-300">
-            <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl font-bold text-white">
-              Welcome to SociaVerse
-            </h1>
-            <p className="text-slate-400 text-sm sm:text-base">
-              Sign in to continue to your account
-            </p>
-          </div>
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+          <div className="p-8 sm:p-12">
 
-          {!showEmailLogin ? (
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <Button
-                onClick={handleGoogleLogin}
-                className="flex w-full items-center justify-center gap-2 bg-white text-slate-800 hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02] animate-scaleIn animation-delay-450 text-sm sm:text-base py-5 sm:py-6"
+            {/* Header */}
+            <div className="text-center mb-10">
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2"
               >
-                <FcGoogle className="h-4 w-4 sm:h-5 sm:w-5" />
-                Continue with Google
-              </Button>
-
-              <Button
-                onClick={() => setShowEmailLogin(true)}
-                variant="outline"
-                className="flex w-full items-center justify-center gap-2 border-slate-600 bg-transparent text-white hover:bg-slate-700 transition-all duration-200 hover:scale-[1.02] animate-scaleIn animation-delay-600 text-sm sm:text-base py-5 sm:py-6"
+                Welcome Back
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-slate-400 text-sm"
               >
-                <MdEmail className="h-4 w-4 sm:h-5 sm:w-5 text-slate-300" />
-                Continue with Email
-              </Button>
+                Enter your details to access your account
+              </motion.p>
+            </div>
 
-              <div className="grid grid-cols-3 gap-2 mt-3 sm:mt-4 animate-fadeIn animation-delay-750">
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center border-slate-600 bg-transparent text-white hover:bg-slate-700 transition-all duration-200 hover:scale-[1.05] p-2 sm:p-3"
+            {/* Auth Options */}
+            {!showEmailLogin ? (
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
                 >
-                  <FaFacebook className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center border-slate-600 bg-transparent text-white hover:bg-slate-700 transition-all duration-200 hover:scale-[1.05] p-2 sm:p-3"
+                  <Button
+                    // Explicitly styling for visibility
+                    className="w-full h-12 bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 font-bold text-base relative group overflow-hidden shadow-sm hover:shadow-md transition-all"
+                    onClick={() => console.log("Google Login")}
+                  >
+                    <FcGoogle className="w-5 h-5 mr-2" />
+                    Continue with Google
+                  </Button>
+                </motion.div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Button variant="outline" className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
+                      <FaGithub className="w-5 h-5" />
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Button variant="outline" className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
+                      <FaTwitter className="w-5 h-5 text-sky-500" />
+                    </Button>
+                  </motion.div>
+                </div>
+
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-slate-800" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-transparent px-2 text-slate-500 font-medium">Or continue with</span>
+                  </div>
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
                 >
-                  <FaTwitter className="h-4 w-4 sm:h-5 sm:w-5 text-sky-500" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center border-slate-600 bg-transparent text-white hover:bg-slate-700 transition-all duration-200 hover:scale-[1.05] p-2 sm:p-3"
-                >
-                  <FaApple className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                </Button>
+                  <Button
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25 transition-all"
+                    onClick={() => setShowEmailLogin(true)}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Sign in with Email
+                  </Button>
+                </motion.div>
               </div>
+            ) : (
+              <motion.form
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+                onSubmit={handleEmailLogin}
+              >
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-300 ml-1">Email</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                      </div>
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={`h-12 pl-12 bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:ring-blue-500/50 focus:border-blue-500 ${errors.email ? 'border-red-500/50' : ''}`}
+                      />
+                    </div>
+                    {errors.email && <p className="text-xs text-red-400 ml-1">{errors.email}</p>}
+                  </div>
 
-              <div className="my-4 sm:my-6 flex items-center animate-fadeIn animation-delay-900">
-                <div className="flex-grow border-t border-slate-700"></div>
-                <span className="mx-3 sm:mx-4 text-xs sm:text-sm text-slate-500">
-                  OR
-                </span>
-                <div className="flex-grow border-t border-slate-700"></div>
-              </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-sm font-medium text-slate-300">Password</label>
+                      <a href="#" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</a>
+                    </div>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                      </div>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`h-12 pl-12 pr-12 bg-slate-950/50 border-slate-800 text-slate-200 placeholder:text-slate-600 focus:ring-blue-500/50 focus:border-blue-500 ${errors.password ? 'border-red-500/50' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      </button>
+                    </div>
+                    {errors.password && <p className="text-xs text-red-400 ml-1">{errors.password}</p>}
+                  </div>
+                </div>
 
-              <p className="text-center text-xs sm:text-sm text-slate-400 animate-fadeIn animation-delay-900">
-                New to SociaVerse?{" "}
-                <Link
-                  href="/signup"
-                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 transition-all"
                 >
-                  Create an account
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      Sign In <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    type="button"
+                    onClick={() => setShowEmailLogin(false)}
+                    className="text-slate-400 hover:text-slate-200 text-sm"
+                  >
+                    Back to all options
+                  </Button>
+                </div>
+              </motion.form>
+            )}
+
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-slate-800 text-center">
+              <p className="text-sm text-slate-500">
+                Don't have an account?{' '}
+                <Link href="/signup" className="font-medium text-blue-400 hover:text-blue-300 transition-colors">
+                  Create one now
                 </Link>
               </p>
             </div>
-          ) : (
-            <form
-              onSubmit={handleEmailLogin}
-              className="flex flex-col gap-4 sm:gap-5 animate-fadeIn"
-            >
-              <div className="animate-slideInUp animation-delay-150">
-                <label
-                  htmlFor="email"
-                  className="mb-1.5 sm:mb-2 block text-xs sm:text-sm font-medium text-slate-300"
-                >
-                  Email address
-                </label>
-                <div className="relative group">
-                  <MdEmail className="absolute left-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-slate-500 transition-colors duration-200 group-focus-within:text-blue-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`pl-10 bg-slate-900/50 border-slate-700 text-white text-sm sm:text-base py-5 sm:py-6 placeholder:text-slate-500 transition-all duration-200 focus:ring-2 focus:ring-blue-500/50 hover:border-slate-500 ${
-                      errors.email
-                        ? "border-red-500 focus:ring-red-500/50"
-                        : "focus:border-blue-500"
-                    }`}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="mt-1 text-xs sm:text-sm text-red-500">
-                    {errors.email}
-                  </p>
-                )}
-              </div>
 
-              <div className="animate-slideInUp animation-delay-300">
-                <label
-                  htmlFor="password"
-                  className="mb-1.5 sm:mb-2 block text-xs sm:text-sm font-medium text-slate-300"
-                >
-                  Password
-                </label>
-                <div className="relative group">
-                  <FaLock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition-colors duration-200 group-focus-within:text-blue-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`pl-10 pr-10 bg-slate-900/50 border-slate-700 text-white text-sm sm:text-base py-5 sm:py-6 placeholder:text-slate-500 transition-all duration-200 focus:ring-2 focus:ring-blue-500/50 hover:border-slate-500 ${
-                      errors.password
-                        ? "border-red-500 focus:ring-red-500/50"
-                        : "focus:border-blue-500"
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-400 transition-colors duration-200"
-                  >
-                    {showPassword ? (
-                      <FaEyeSlash className="h-4 w-4 sm:h-5 sm:w-5" />
-                    ) : (
-                      <FaEye className="h-4 w-4 sm:h-5 sm:w-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="mt-1 text-xs sm:text-sm text-red-500">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between animate-slideInUp animation-delay-450">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    className="h-3 w-3 sm:h-4 sm:w-4 rounded border-slate-600 bg-slate-800 text-blue-500 focus:ring-blue-500 transition-colors duration-200"
-                  />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 text-xs sm:text-sm text-slate-400"
-                  >
-                    Remember me
-                  </label>
-                </div>
-                <a
-                  href="#"
-                  className="text-xs sm:text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                >
-                  Forgot password?
-                </a>
-              </div>
-
-              <Button
-                type="submit"
-                className="mt-2 bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-[1.02] focus:ring-2 focus:ring-blue-500/50 animate-scaleIn animation-delay-600 text-sm sm:text-base py-5 sm:py-6"
-              >
-                Sign In
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowEmailLogin(false)}
-                className="mt-1 sm:mt-2 text-xs sm:text-sm text-slate-400 hover:bg-slate-700/50 transition-colors duration-200 animate-fadeIn animation-delay-750"
-              >
-                Back to login options
-              </Button>
-            </form>
-          )}
-        </div>
-
-        {/* Right side - Branding */}
-        <div className="relative hidden lg:block">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 opacity-95"></div>
-          <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 md:p-12 text-center">
-            <div className="relative mb-6 md:mb-8 h-20 w-20 md:h-24 md:w-24 animate-float">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-slate-700 to-slate-600 opacity-30 blur-xl animate-pulse-slow"></div>
-              <div className="absolute inset-2 rounded-full bg-gradient-to-r from-blue-500/20 to-slate-600/20 opacity-30 blur-md animate-pulse-slow animation-delay-150"></div>
-              <Image
-                src="/socialverse_logo.png"
-                alt="SociaVerse Logo"
-                width={96}
-                height={96}
-                className="relative z-10 rounded-full drop-shadow-xl object-cover"
-              />
-            </div>
-            <h3 className="mb-3 md:mb-4 text-3xl md:text-4xl font-bold text-white animate-slideInUp animation-delay-300">
-              SociaVerse
-            </h3>
-            <p className="mb-6 md:mb-8 text-base md:text-lg text-slate-300 animate-slideInUp animation-delay-450">
-              Connect with friends, share moments, and discover new experiences
-              in our social universe.
-            </p>
-            <div className="flex flex-col gap-3 md:gap-4 animate-fadeIn animation-delay-600">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-slate-700/70">
-                  <FaUserFriends className="h-4 w-4 md:h-5 md:w-5 text-blue-400" />
-                </div>
-                <p className="text-left text-sm md:text-base text-slate-300">
-                  Connect with friends and family
-                </p>
-              </div>
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-slate-700/70">
-                  <FaImage className="h-4 w-4 md:h-5 md:w-5 text-blue-400" />
-                </div>
-                <p className="text-left text-sm md:text-base text-slate-300">
-                  Share your favorite moments
-                </p>
-              </div>
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-slate-700/70">
-                  <FaGlobeAmericas className="h-4 w-4 md:h-5 md:w-5 text-blue-400" />
-                </div>
-                <p className="text-left text-sm md:text-base text-slate-300">
-                  Discover content from around the world
-                </p>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

@@ -13,7 +13,7 @@ import { useState, useEffect } from "react"
 // Define links in an array for cleaner code
 const navLinks = [
   { href: "/features", label: "Features" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
   { href: "/community", label: "Community" },
 ]
