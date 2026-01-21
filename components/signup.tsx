@@ -155,7 +155,7 @@ export function Signup() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-b from-slate-900 to-slate-800 overflow-hidden px-4 sm:px-6 py-6">
+    <div className="flex min-h-screen w-full items-center justify-center bg-linear-to-b from-slate-900 to-slate-800 overflow-hidden px-4 sm:px-6 py-6">
       <div
         className={`grid w-full max-w-[1000px] grid-cols-1 overflow-hidden rounded-xl border border-slate-700 bg-slate-800/90 shadow-2xl lg:grid-cols-2 animate-blurIn mx-auto`}
       >
@@ -405,11 +405,11 @@ export function Signup() {
             </Button>
 
             <div className="my-4 sm:my-6 flex items-center animate-fadeIn animation-delay-750">
-              <div className="flex-grow border-t border-slate-700"></div>
+              <div className="grow border-t border-slate-700"></div>
               <span className="mx-3 sm:mx-4 text-xs sm:text-sm text-slate-500">
                 OR
               </span>
-              <div className="flex-grow border-t border-slate-700"></div>
+              <div className="grow border-t border-slate-700"></div>
             </div>
 
             <Button
@@ -484,7 +484,7 @@ export function Signup() {
             {/* Feature list with professional styling */}
             <div className="space-y-4 w-full max-w-md">
               <div className="flex items-center space-x-3 transition-all duration-300 hover:translate-x-1 animate-slideInLeft animation-delay-600 bg-slate-800/40 p-3 rounded-lg">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-800">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 text-blue-400"
@@ -506,7 +506,7 @@ export function Signup() {
               </div>
 
               <div className="flex items-center space-x-3 transition-all duration-300 hover:translate-x-1 animate-slideInLeft animation-delay-750 bg-slate-800/40 p-3 rounded-lg">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-800">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 text-blue-400"
@@ -528,7 +528,7 @@ export function Signup() {
               </div>
 
               <div className="flex items-center space-x-3 transition-all duration-300 hover:translate-x-1 animate-slideInLeft animation-delay-900 bg-slate-800/40 p-3 rounded-lg">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-800">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-800">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5 text-blue-400"
