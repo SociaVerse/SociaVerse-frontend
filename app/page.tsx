@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -27,12 +29,16 @@ export default function Home() {
         <div 
           className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-400"
         >
-          <Button asChild size="lg" className="text-lg px-8 py-6">
-            <Link href="/signup">Join the Beta</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
-            <Link href="/explore">Learn More</Link>
-          </Button>
+          <Link href="/signup">
+            <Button size="lg" className="text-lg px-8 py-6">
+              Join the Beta
+            </Button>
+          </Link>
+          <Link href="/login">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+              Sign In
+            </Button>
+          </Link>
         </div>
         
       </section>
