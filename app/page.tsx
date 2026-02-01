@@ -7,37 +7,17 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LandingCarousel } from "@/components/landing-carousel";
 import { MouseEvent, useEffect, useState } from "react";
 
-function MouseSpotlight() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
-
-  const background = useTransform(
-    [mouseX, mouseY],
-    ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(29, 78, 216, 0.15), transparent 40%)`
-  );
-
-  if (!mounted) return null;
-
-  return (
-    <motion.div
-      className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
-      style={{ background }}
-    />
-  );
-}
 
 function FloatingParticles() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(20)].map((_, i) => (
@@ -225,7 +205,7 @@ function PhoneMockup() {
 export default function Home() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center bg-slate-950 text-slate-100 overflow-hidden w-full relative">
-      <MouseSpotlight />
+
       <FloatingParticles />
 
       {/* Background Ambience - Simplified to avoid clutter with spotlight */}
@@ -297,10 +277,10 @@ export default function Home() {
       <section className="w-full py-8 bg-slate-950 border-y border-slate-900 overflow-hidden opacity-60">
         <div className="relative flex overflow-x-hidden group">
           <div className="animate-marquee whitespace-nowrap flex items-center gap-16 px-8">
-            {["Stanford", "MIT", "Berkeley", "Harvard", "Cambridge", "Oxford", "UCLA", "Yale"].map((college, i) => (
+            {["NFSU", "IIT", "NIT", "BITS", "IIM", "LPU", "MIT", "IISER"].map((college, i) => (
               <span key={i} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
             ))}
-            {["Stanford", "MIT", "Berkeley", "Harvard", "Cambridge", "Oxford", "UCLA", "Yale"].map((college, i) => (
+            {["NFSU", "IIT", "NIT", "BITS", "IIM", "LPU", "MIT", "IISER"].map((college, i) => (
               <span key={`dup-${i}`} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
             ))}
           </div>
@@ -481,7 +461,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-slate-500">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <span className="font-bold text-slate-300">SociaVerse</span>
-            <span>© 2024</span>
+            <span>© 2026</span>
           </div>
           <div className="flex gap-6">
             <Link href="/features" className="hover:text-slate-300 transition-colors">Features</Link>

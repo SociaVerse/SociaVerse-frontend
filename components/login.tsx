@@ -8,6 +8,8 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub, FaTwitter } from "react-icons/fa"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth-provider"
 import { z } from "zod"
 
 export function Login() {
@@ -17,6 +19,9 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({ email: "", password: "" })
+
+  const { login } = useAuth()
+  const router = useRouter()
 
   const validateEmail = (email: string) => {
     try {
@@ -42,10 +47,36 @@ export function Login() {
     }
 
     setIsLoading(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    console.log("Logging in with:", { email })
-    setIsLoading(false)
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/users/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        if (data.token) {
+          localStorage.setItem("sociaverse_token", data.token)
+        }
+        login()
+        router.push("/events")
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          password: data.error || "Login failed. Please check your credentials."
+        }))
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      setErrors(prev => ({ ...prev, password: "Network error. Please try again." }))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -97,7 +128,11 @@ export function Login() {
                   <Button
                     // Explicitly styling for visibility
                     className="w-full h-12 bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 font-bold text-base relative group overflow-hidden shadow-sm hover:shadow-md transition-all"
-                    onClick={() => console.log("Google Login")}
+                    onClick={() => {
+                      console.log("Google Login")
+                      login()
+                      router.push("/events")
+                    }}
                   >
                     <FcGoogle className="w-5 h-5 mr-2" />
                     Continue with Google
@@ -110,7 +145,14 @@ export function Login() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <Button variant="outline" className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300"
+                      onClick={() => {
+                        login()
+                        router.push("/events")
+                      }}
+                    >
                       <FaGithub className="w-5 h-5" />
                     </Button>
                   </motion.div>
@@ -119,7 +161,14 @@ export function Login() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <Button variant="outline" className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300"
+                      onClick={() => {
+                        login()
+                        router.push("/events")
+                      }}
+                    >
                       <FaTwitter className="w-5 h-5 text-sky-500" />
                     </Button>
                   </motion.div>

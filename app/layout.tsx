@@ -5,6 +5,9 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar"; // <-- IMPORT THE NAVBAR
+import { AuthProvider } from "@/components/auth-provider";
+
+import { MouseSpotlight } from "@/components/mouse-spotlight";
 
 export const metadata: Metadata = {
   title: "SociaVerse",
@@ -17,24 +20,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning> 
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased flex flex-col", // <-- ADDED 'flex flex-col'
+          "min-h-screen bg-background font-sans antialiased flex flex-col",
           GeistSans.variable,
           GeistMono.variable
         )}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar /> 
-          <main className="flex-1 flex flex-col"> {/* Wrap children in main */}
-            {children}
-          </main>
+          <AuthProvider>
+            <MouseSpotlight />
+            <Navbar />
+            <main className="flex-1 flex flex-col relative z-10"> {/* Wrap children in main */}
+              {children}
+            </main>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -4,13 +4,16 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { motion } from "framer-motion"
-import { Mail, Lock, Eye, EyeOff, User, Calendar, School, ArrowRight, Loader2 } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, User, Calendar, School, ArrowRight, Loader2, Sparkles } from "lucide-react"
 import { FcGoogle } from "react-icons/fc"
 import Link from "next/link"
 import Image from "next/image"
 import { z } from "zod"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth-provider"
 
 export function Signup() {
+  const router = useRouter()
   const [fullName, setFullName] = useState("")
   const [dob, setDob] = useState("")
   const [email, setEmail] = useState("")
@@ -19,6 +22,7 @@ export function Signup() {
   const [showPassword, setShowPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isEmailSent, setIsEmailSent] = useState(false)
 
   const [passwordStrength, setPasswordStrength] = useState("")
   const [errors, setErrors] = useState({
@@ -82,10 +86,195 @@ export function Signup() {
     if (!validateForm()) return
 
     setIsLoading(true)
-    // Simulate API
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log("Signing up...", { fullName, email, college })
-    setIsLoading(false)
+    setErrors({ ...errors, terms: "" })
+
+    try {
+      const username = email.split('@')[0] + Math.floor(Math.random() * 10000)
+
+      const response = await fetch("http://127.0.0.1:8000/api/users/signup/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          full_name: fullName,
+          college,
+          date_of_birth: dob,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsEmailSent(true)
+      } else {
+        console.error("Signup failed:", data)
+        let errorMessage = "Something went wrong. Please try again."
+        if (data.username) errorMessage = `Username: ${data.username[0]}`
+        else if (data.email) errorMessage = `Email: ${data.email[0]}`
+        else if (data.password) errorMessage = `Password: ${data.password[0]}`
+        else if (data.detail) errorMessage = data.detail
+
+        setErrors(prev => ({ ...prev, terms: errorMessage }))
+      }
+    } catch (error) {
+      console.error("Network error:", error)
+      setErrors(prev => ({ ...prev, terms: "Network error. Please check your connection." }))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const { login } = useAuth()
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [otp, setOtp] = useState("")
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setErrors({ ...errors, terms: "" })
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/users/verify-otp/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Success! Auto-login and show success message
+        // Save token to localStorage if needed, or just rely on the boolean logic
+        if (data.token) {
+          localStorage.setItem("sociaverse_token", data.token)
+        }
+
+        login() // Sets authenticated state
+        setIsSuccess(true)
+
+        // Redirect after delay
+        setTimeout(() => {
+          router.push("/events")
+        }, 3000)
+
+      } else {
+        setErrors(prev => ({ ...prev, terms: data.error || "Verification failed" }))
+      }
+    } catch (error) {
+      setErrors(prev => ({ ...prev, terms: "Network error. Please try again." }))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 px-4">
+        {/* Confetti or Celebration Effect Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[100px] animate-pulse" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 text-center max-w-lg w-full bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-12 shadow-2xl"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+            className="w-24 h-24 bg-gradient-to-tr from-green-400 to-emerald-600 rounded-full mx-auto flex items-center justify-center mb-6 shadow-lg shadow-green-500/20"
+          >
+            <Sparkles className="w-12 h-12 text-white" />
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-4xl font-bold text-white mb-4"
+          >
+            Welcome Aboard!
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-slate-300 text-lg mb-8 leading-relaxed"
+          >
+            You're now part of the <span className="text-blue-400 font-semibold">SociaVerse</span> community.
+            <br />Prepare for launch...
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto" />
+            <p className="text-slate-500 text-sm mt-3">Redirecting to your dashboard...</p>
+          </motion.div>
+
+        </motion.div>
+      </div>
+    )
+  }
+
+  if (isEmailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 text-center shadow-2xl relative z-10"
+        >
+          <div className="mx-auto w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
+            <Mail className="w-8 h-8 text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Verify Account</h2>
+          <p className="text-slate-400 mb-6">
+            We've sent a 6-digit code to <span className="text-white font-medium">{email}</span>.
+            Enter it below to confirm your account.
+          </p>
+
+          <form onSubmit={handleVerify} className="space-y-4">
+            <div className="relative group">
+              <Input
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                className="text-center text-2xl tracking-widest h-14 bg-slate-950/50 border-slate-800 text-slate-200 focus:ring-blue-500/50"
+                maxLength={6}
+              />
+            </div>
+
+            {errors.terms && <p className="text-sm text-red-400">{errors.terms}</p>}
+
+            <Button
+              type="submit"
+              disabled={isLoading || otp.length < 6}
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Code"}
+            </Button>
+          </form>
+
+          <Button
+            variant="link"
+            onClick={() => setIsEmailSent(false)}
+            className="mt-4 text-slate-500 hover:text-slate-300"
+          >
+            Wrong email? Go back
+          </Button>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -144,7 +333,7 @@ export function Signup() {
                       <User className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     </div>
                     <Input
-                      placeholder="John Doe"
+                      placeholder="Username"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className={`pl-10 h-11 bg-slate-950/50 border-slate-800 text-slate-200 focus:ring-blue-500/50 ${errors.fullName ? 'border-red-500/50' : ''}`}
@@ -160,7 +349,7 @@ export function Signup() {
                       <School className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                     </div>
                     <Input
-                      placeholder="Stanford University"
+                      placeholder="College Name"
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
                       className={`pl-10 h-11 bg-slate-950/50 border-slate-800 text-slate-200 focus:ring-blue-500/50 ${errors.college ? 'border-red-500/50' : ''}`}

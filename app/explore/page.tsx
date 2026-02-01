@@ -4,9 +4,23 @@ import { motion } from "framer-motion"
 import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth-provider"
+import { AuthModal } from "@/components/auth-modal"
 
 export default function ExplorePage() {
     const [activeTab, setActiveTab] = useState("All")
+    const router = useRouter()
+    const { isAuthenticated } = useAuth()
+    const [showAuthModal, setShowAuthModal] = useState(false)
+
+    const handleAuthAction = (action: () => void) => {
+        if (!isAuthenticated) {
+            setShowAuthModal(true)
+        } else {
+            action()
+        }
+    }
 
     const universities = [
         {
@@ -91,7 +105,7 @@ export default function ExplorePage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-4xl md:text-6xl font-bold mb-8 text-center"
                     >
-                        Explore the <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Universe</span> 🔭
+                        Explore the <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Universe</span> 
                     </motion.h1>
 
                     <motion.div
@@ -121,8 +135,8 @@ export default function ExplorePage() {
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
                                         className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab
-                                                ? "bg-slate-800 text-blue-400"
-                                                : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                                            ? "bg-slate-800 text-blue-400"
+                                            : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
                                             }`}
                                     >
                                         {tab}
@@ -152,7 +166,7 @@ export default function ExplorePage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 + (i * 0.1) }}
-                                whileHover={{ y: -5 }}
+                                onClick={() => handleAuthAction(() => console.log(`Clicked University: ${uni.name}`))}
                                 className="group relative h-64 rounded-3xl overflow-hidden cursor-pointer"
                             >
                                 <div className="absolute inset-0">
@@ -203,7 +217,11 @@ export default function ExplorePage() {
                                 <h3 className="text-lg font-bold mb-1">{person.name}</h3>
                                 <p className="text-blue-400 text-sm font-medium mb-2">{person.role}</p>
                                 <p className="text-slate-400 text-sm mb-6">{person.bio}</p>
-                                <Button variant="outline" className="w-full rounded-xl border-slate-700 hover:bg-slate-800 hover:text-white">
+                                <Button
+                                    variant="outline"
+                                    className="w-full rounded-xl border-slate-700 hover:bg-slate-800 hover:text-white"
+                                    onClick={() => handleAuthAction(() => console.log(`Connected with ${person.name}`))}
+                                >
                                     Connect
                                 </Button>
                             </motion.div>
@@ -233,6 +251,7 @@ export default function ExplorePage() {
                 </section>
 
             </div>
+            <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
     )
 }

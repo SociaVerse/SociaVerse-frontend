@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Globe, Menu, Search, Bell, User, Sparkles } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
+import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -22,6 +23,7 @@ export function Navbar() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const { isAuthenticated, logout } = useAuth()
 
   // Add scroll effect
   useEffect(() => {
@@ -137,12 +139,27 @@ export function Navbar() {
             className="bg-slate-800/50 backdrop-blur-sm rounded-full px-1 py-1 border border-slate-700/50 shadow-sm ml-2 flex items-center"
             whileHover={{ scale: 1.03 }}
           >
-            <Button asChild variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
-              <Link href="/signup">Sign Up</Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all font-medium" onClick={logout}>
+                  Logout
+                </Button>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 ml-1 flex items-center justify-center border-2 border-slate-800 cursor-pointer hover:scale-110 transition-transform">
+                  <Link href="/profile">
+                    <User className="h-4 w-4 text-white" />
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </motion.div>
         </motion.div>
 
@@ -209,15 +226,26 @@ export function Navbar() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.3 }}
                 >
-                  <Button asChild variant="ghost" className="w-full justify-start rounded-full hover:bg-slate-800/70 text-slate-200 group">
-                    <Link href="/login" className="flex items-center">
-                      <User className="mr-2 h-5 w-5 group-hover:text-blue-400 transition-colors" />
-                      <span className="group-hover:text-blue-400 transition-colors">Login</span>
-                    </Link>
-                  </Button>
-                  <Button asChild className="w-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all">
-                    <Link href="/signup">Sign Up</Link>
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button variant="ghost" className="w-full justify-start rounded-full hover:bg-slate-800/70 text-slate-200 group" onClick={logout}>
+                      <span className="flex items-center text-red-400 group-hover:text-red-300 transition-colors">
+                        <User className="mr-2 h-5 w-5" />
+                        Logout
+                      </span>
+                    </Button>
+                  ) : (
+                    <>
+                      <Button asChild variant="ghost" className="w-full justify-start rounded-full hover:bg-slate-800/70 text-slate-200 group">
+                        <Link href="/login" className="flex items-center">
+                          <User className="mr-2 h-5 w-5 group-hover:text-blue-400 transition-colors" />
+                          <span className="group-hover:text-blue-400 transition-colors">Login</span>
+                        </Link>
+                      </Button>
+                      <Button asChild className="w-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all">
+                        <Link href="/signup">Sign Up</Link>
+                      </Button>
+                    </>
+                  )}
                 </motion.div>
               </motion.div>
             </SheetContent>

@@ -3,6 +3,9 @@
 import { motion } from "framer-motion"
 import { Search, Users, Zap, Code, Palette, Gamepad2, Music, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { useAuth } from "@/components/auth-provider"
+import { Lock } from "lucide-react"
 
 export default function CommunityPage() {
     const communities = [
@@ -58,6 +61,63 @@ export default function CommunityPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pt-24 pb-20">
+            {/* Auth Check for Community Page */}
+            <AuthWrapper>
+                <CommunityContent communities={communities} />
+            </AuthWrapper>
+        </div>
+    )
+}
+
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated, isLoading } = useAuth()
+
+    if (isLoading) {
+        return <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+        </div>
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="flex flex-col items-center justify-center p-4 min-h-[60vh] relative">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md w-full text-center relative z-10 p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-xl shadow-2xl"
+                >
+                    <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/20">
+                        <Lock className="w-8 h-8 text-blue-400" />
+                    </div>
+
+                    <h2 className="text-3xl font-bold mb-3">Community Access</h2>
+                    <p className="text-slate-400 mb-8 leading-relaxed">
+                        Login to join tribes, connect with peers, and participate in discussions.
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                        <Button asChild className="w-full h-12 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20">
+                            <Link href="/login">
+                                Log In to Join
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full h-12 text-base border-slate-700 hover:bg-slate-800 text-slate-300">
+                            <Link href="/signup">
+                                Create an Account
+                            </Link>
+                        </Button>
+                    </div>
+                </motion.div>
+            </div>
+        )
+    }
+
+    return <>{children}</>
+}
+
+function CommunityContent({ communities }: { communities: any[] }) {
+    return (
+        <>
 
             {/* Background Blobs */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -123,8 +183,8 @@ export default function CommunityPage() {
                         <button
                             key={i}
                             className={`px-6 py-2 rounded-full border transition-all ${i === 0
-                                    ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25"
-                                    : "bg-slate-900/50 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200"
+                                ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25"
+                                : "bg-slate-900/50 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200"
                                 }`}
                         >
                             {cat}
@@ -186,6 +246,6 @@ export default function CommunityPage() {
                 </div>
 
             </div>
-        </div>
+        </>
     )
 }

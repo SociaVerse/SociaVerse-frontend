@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { Calendar, MapPin, Clock, Users, ArrowRight, Music, Code, Trophy, Star } from "lucide-react"
+import { Calendar, MapPin, Clock, Users, ArrowRight, Music, Code, Trophy, Star, Lock } from "lucide-react"
+import Link from "next/link"
+import { useAuth } from "@/components/auth-provider"
+
 
 const events = [
     {
@@ -52,6 +55,58 @@ const events = [
 ]
 
 export default function EventsPage() {
+    const { isAuthenticated, isLoading } = useAuth()
+
+    if (isLoading) {
+        return <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+        </div>
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                {/* Background Ambience */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md w-full text-center relative z-10 p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-xl shadow-2xl"
+                >
+                    <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/20">
+                        <Lock className="w-8 h-8 text-blue-400" />
+                    </div>
+
+                    <h2 className="text-3xl font-bold mb-3">Members Only</h2>
+                    <p className="text-slate-400 mb-8 leading-relaxed">
+                        Join the SociaVerse community to unlock exclusive events, hackathons, and meetups happening near you.
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                        <Button asChild className="w-full h-12 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20">
+                            <Link href="/login">
+                                Log In to Continue
+                            </Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full h-12 text-base border-slate-700 hover:bg-slate-800 text-slate-300">
+                            <Link href="/signup">
+                                Create an Account
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <p className="mt-6 text-xs text-slate-500">
+                        It only takes a minute to join 10k+ students.
+                    </p>
+                </motion.div>
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-500/30">
 
@@ -93,8 +148,8 @@ export default function EventsPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
                                 className={`px-6 py-2 rounded-full border text-sm font-medium transition-all ${i === 0
-                                        ? "bg-slate-100 text-slate-900 border-slate-100"
-                                        : "bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white"
+                                    ? "bg-slate-100 text-slate-900 border-slate-100"
+                                    : "bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-white"
                                     }`}
                             >
                                 {filter}
