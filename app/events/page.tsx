@@ -80,7 +80,7 @@ const EVENTS = [
         image: "https://images.unsplash.com/photo-1559136555-930d72f18615?auto=format&fit=crop&q=80&w=1000",
         prize: "Seed Funding",
         organizer: "E-Cell",
-        isPromoted: false,
+        isPromoted: true,
         type: "location"
     },
     {

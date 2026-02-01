@@ -274,13 +274,28 @@ export default function Home() {
       </section>
 
       {/* Marquee - Subtle */}
-      <section className="w-full py-8 bg-slate-950 border-y border-slate-900 overflow-hidden opacity-60">
-        <div className="relative flex overflow-x-hidden group">
-          <div className="animate-marquee whitespace-nowrap flex items-center gap-16 px-8">
-            {["NFSU", "IIT", "NIT", "BITS", "IIM", "LPU", "MIT", "IISER"].map((college, i) => (
+      <section className="w-full py-8 bg-slate-950 border-y border-slate-900 overflow-hidden opacity-80">
+        <div className="flex overflow-hidden select-none group">
+          {/* First Marquee Container */}
+          <div className="flex shrink-0 items-center justify-around gap-16 min-w-full animate-marquee whitespace-nowrap px-8">
+            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
+            {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
               <span key={i} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
             ))}
-            {["NFSU", "IIT", "NIT", "BITS", "IIM", "LPU", "MIT", "IISER"].map((college, i) => (
+            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
+            {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
+              <span key={`dup-${i}`} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
+            ))}
+          </div>
+
+          {/* Second Marquee Container (Duplicate for seamless loop) */}
+          <div className="flex shrink-0 items-center justify-around gap-16 min-w-full animate-marquee whitespace-nowrap px-8" aria-hidden="true">
+            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
+            {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
+              <span key={i} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
+            ))}
+            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
+            {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
               <span key={`dup-${i}`} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
             ))}
           </div>
