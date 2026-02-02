@@ -1,16 +1,16 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp } from "lucide-react"
+import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp, Filter, MoreHorizontal, Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { AuthModal } from "@/components/auth-modal"
+import Link from "next/link"
 
 export default function ExplorePage() {
-    const [activeTab, setActiveTab] = useState("All")
-    const router = useRouter()
+    const [activeTab, setActiveTab] = useState("For You")
     const { isAuthenticated } = useAuth()
     const [showAuthModal, setShowAuthModal] = useState(false)
 
@@ -22,236 +22,397 @@ export default function ExplorePage() {
         }
     }
 
-    const universities = [
-        {
-            name: "Stanford University",
-            location: "California, USA",
-            students: "16k+",
-            color: "from-red-600 to-red-800",
-            image: "https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&q=80&w=500"
-        },
-        {
-            name: "MIT",
-            location: "Massachusetts, USA",
-            students: "11k+",
-            color: "from-slate-600 to-slate-800",
-            image: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&q=80&w=500"
-        },
-        {
-            name: "Oxford University",
-            location: "Oxford, UK",
-            students: "24k+",
-            color: "from-blue-600 to-blue-800",
-            image: "https://images.unsplash.com/photo-1580843410763-48582e62a49f?auto=format&fit=crop&q=80&w=500"
-        },
-        {
-            name: "ETH Zurich",
-            location: "Zurich, Switzerland",
-            students: "22k+",
-            color: "from-orange-600 to-orange-800",
-            image: "https://images.unsplash.com/photo-1590642916589-59234a0a613c?auto=format&fit=crop&q=80&w=500"
-        }
-    ]
-
-    const people = [
-        {
-            name: "Alex Rivera",
-            role: "CS Student @ Stanford",
-            bio: "Building the future of AI. 🤖",
-            followers: "2.4k",
-            gradient: "from-blue-400 to-cyan-400"
-        },
-        {
-            name: "Sarah Chen",
-            role: "Design @ RISD",
-            bio: "Pixel pusher & coffee addict. ☕️",
-            followers: "5.1k",
-            gradient: "from-purple-400 to-pink-400"
-        },
-        {
-            name: "Marcus Johnson",
-            role: "MBA @ Harvard",
-            bio: "Startup founder. Let's connect! 🚀",
-            followers: "3.8k",
-            gradient: "from-emerald-400 to-green-400"
-        },
-        {
-            name: "Priya Patel",
-            role: "Med Student @ JHU",
-            bio: "Saving lives & taking notes. 🩺",
-            followers: "1.9k",
-            gradient: "from-orange-400 to-yellow-400"
-        }
-    ]
-
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pt-24 pb-20">
+        <div className="min-h-screen bg-slate-950 text-slate-100 pt-20 pb-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            {/* Background Elements */}
-            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-600/5 to-purple-600/5 blur-[100px]"
-                />
-            </div>
+                {/* Mobile Search - Visible only on small screens */}
+                <div className="md:hidden mb-6">
+                    <SearchBar />
+                </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                {/* Hero Search */}
-                <div className="flex flex-col items-center mb-20">
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-6xl font-bold mb-8 text-center"
-                    >
-                        Explore the <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Universe</span> 
-                    </motion.h1>
+                    {/* Main Feed Area */}
+                    <div className="lg:col-span-8 space-y-6">
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 }}
-                        className="w-full max-w-3xl relative group"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity" />
-                        <div className="relative bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-2 shadow-2xl">
-                            <div className="flex items-center px-4 py-3">
-                                <Search className="h-6 w-6 text-slate-400 mr-4" />
-                                <input
-                                    type="text"
-                                    placeholder="Search universities, people, or topics..."
-                                    className="bg-transparent border-none outline-none flex-1 text-lg text-slate-200 placeholder:text-slate-500"
-                                />
-                                <Button className="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-6">
-                                    Search
-                                </Button>
-                            </div>
-
-                            {/* Search Tabs */}
-                            <div className="flex gap-2 px-2 pb-2 mt-2 border-t border-slate-800/50 pt-2 overflow-x-auto">
-                                {["All", "Universities", "People", "Events", "Notes"].map((tab) => (
+                        {/* Desktop Search & Tabs - Sticky */}
+                        <div className="hidden md:block sticky top-0 z-40 bg-slate-950 -mt-20 pt-24 pb-4 border-b border-slate-800/50 shadow-md">
+                            <SearchBar />
+                            <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar pb-1">
+                                {["For You", "Trending", "People", "Universities", "Events"].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
-                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab
-                                            ? "bg-slate-800 text-blue-400"
-                                            : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border relative overflow-hidden group ${activeTab === tab
+                                            ? "bg-slate-100 text-slate-950 border-slate-100 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                                            : "bg-transparent border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                                             }`}
                                     >
-                                        {tab}
+                                        <span className="relative z-10">{tab}</span>
+                                        {activeTab === tab && (
+                                            <motion.div
+                                                layoutId="activeTab"
+                                                className="absolute inset-0 bg-white"
+                                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                            />
+                                        )}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                    </motion.div>
+
+                        {/* Content Feed */}
+                        <div className="space-y-6 min-h-[50vh]">
+                            {activeTab === "For You" && <ForYouFeed handleAuthAction={handleAuthAction} />}
+                            {activeTab === "People" && <PeopleFeed handleAuthAction={handleAuthAction} />}
+                            {activeTab === "Universities" && <UniversitiesFeed />}
+                            {/* Fallback for other tabs */}
+                            {["Trending", "Events"].includes(activeTab) && (
+                                <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+                                    <Search className="h-12 w-12 mb-4 opacity-20" />
+                                    <p>More {activeTab} content coming soon...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Sidebar - Trending & Who to Follow */}
+                    <div className="hidden lg:block lg:col-span-4 space-y-6">
+                        <TrendingSidebar />
+                        <WhoToFollow handleAuthAction={handleAuthAction} />
+                        <PremiumCard />
+                    </div>
+
                 </div>
-
-                {/* Featured Universities */}
-                <section className="mb-20">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                            <GraduationCap className="h-8 w-8 text-blue-400" />
-                            Top Universities
-                        </h2>
-                        <Button variant="ghost" className="text-slate-400 hover:text-white">
-                            View All <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {universities.map((uni, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 + (i * 0.1) }}
-                                onClick={() => handleAuthAction(() => console.log(`Clicked University: ${uni.name}`))}
-                                className="group relative h-64 rounded-3xl overflow-hidden cursor-pointer"
-                            >
-                                <div className="absolute inset-0">
-                                    <img src={uni.image} alt={uni.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 p-6">
-                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${uni.color} flex items-center justify-center mb-4 shadow-lg`}>
-                                        <GraduationCap className="h-6 w-6 text-white" />
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-1">{uni.name}</h3>
-                                    <p className="text-slate-400 text-sm flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" /> {uni.location}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Suggested People */}
-                <section className="mb-20">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-                            <Users className="h-8 w-8 text-purple-400" />
-                            People to Follow
-                        </h2>
-                        <Button variant="ghost" className="text-slate-400 hover:text-white">
-                            View All <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {people.map((person, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 + (i * 0.1) }}
-                                whileHover={{ y: -5, scale: 1.02 }}
-                                className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800 backdrop-blur-sm flex flex-col items-center text-center group hover:border-purple-500/30 transition-colors"
-                            >
-                                <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${person.gradient} p-1 mb-4`}>
-                                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-2xl">
-                                        {person.name.charAt(0)}
-                                    </div>
-                                </div>
-                                <h3 className="text-lg font-bold mb-1">{person.name}</h3>
-                                <p className="text-blue-400 text-sm font-medium mb-2">{person.role}</p>
-                                <p className="text-slate-400 text-sm mb-6">{person.bio}</p>
-                                <Button
-                                    variant="outline"
-                                    className="w-full rounded-xl border-slate-700 hover:bg-slate-800 hover:text-white"
-                                    onClick={() => handleAuthAction(() => console.log(`Connected with ${person.name}`))}
-                                >
-                                    Connect
-                                </Button>
-                            </motion.div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Trending Now */}
-                <section>
-                    <div className="flex items-center gap-2 mb-8">
-                        <TrendingUp className="h-6 w-6 text-green-400" />
-                        <h2 className="text-xl font-bold text-slate-300 uppercase tracking-wider">Trending Now</h2>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {["#Hackathon2025", "#FinalsWeek", "#AIArt", "#CampusLife", "#Internships", "#StudySetup", "#Coding", "#Design"].map((tag, i) => (
-                            <motion.div
-                                key={i}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/30 hover:bg-slate-800/50 cursor-pointer transition-colors text-center"
-                            >
-                                <span className="text-slate-300 font-medium">{tag}</span>
-                            </motion.div>
-                        ))}
-                    </div>
-                </section>
-
             </div>
             <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+        </div>
+    )
+}
+
+// --- Components ---
+
+function SearchBar() {
+    const [isFocused, setIsFocused] = useState(false)
+    const [query, setQuery] = useState("")
+
+    const recentSearches = [
+        { id: 1, name: "jenny_coox", subtitle: "Jenny Cox • 541K followers", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
+        { id: 2, name: "vaishnavi_bhadauria", subtitle: "Vaishnavi 🌙 • Following", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100" },
+        { id: 3, name: "apurvaa.pdf", subtitle: "अपूर्वा 🌸 • Following", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
+        { id: 4, name: "kunal_kushwaha", subtitle: "Kunal Kushwaha • Following", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100" },
+    ]
+
+    return (
+        <div className="relative z-50">
+            <div className={`relative flex items-center bg-slate-800/80 rounded-2xl px-4 py-3 transition-colors ${isFocused ? "bg-slate-800 ring-1 ring-slate-700" : "hover:bg-slate-800"}`}>
+                <Search className={`h-5 w-5 mr-3 transition-colors ${isFocused ? "text-slate-200" : "text-slate-500"}`} />
+                <input
+                    type="text"
+                    placeholder="Search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Delay to allow clicking items
+                    className="bg-transparent border-none outline-none flex-1 text-slate-200 placeholder:text-slate-500 text-sm"
+                />
+                {query && (
+                    <button onClick={() => setQuery("")} className="text-slate-500 hover:text-slate-300">
+                        <span className="sr-only">Clear</span>
+                        <div className="bg-slate-700 rounded-full p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                            </svg>
+                        </div>
+                    </button>
+                )}
+            </div>
+
+            {/* Recent Searches Dropdown */}
+            {isFocused && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/50">
+                        <span className="font-semibold text-sm text-slate-200">Recent</span>
+                        <button className="text-xs text-blue-400 hover:text-blue-300 font-medium">Clear all</button>
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                        {recentSearches.map((user) => (
+                            <div key={user.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 cursor-pointer transition-colors group">
+                                <div className="flex items-center gap-3">
+                                    <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                                    <div className="text-left">
+                                        <p className="text-sm font-semibold text-slate-200">{user.name}</p>
+                                        <p className="text-xs text-slate-500">{user.subtitle}</p>
+                                    </div>
+                                </div>
+                                <button className="text-slate-500 opacity-0 group-hover:opacity-100 hover:text-slate-300 transition-all p-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+function ForYouFeed({ handleAuthAction }: { handleAuthAction: (action: () => void) => void }) {
+    const posts = [
+        {
+            id: 1,
+            author: "Sarah Chen",
+            handle: "@sarah_design",
+            avatar: "SC",
+            gradient: "from-pink-500 to-rose-500",
+            time: "2h ago",
+            content: "Just finished the final prototype for the hackathon! 🚀 Can't wait to share it with everyone at the expo next week. #Design #Hackathon2025",
+            image: "https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&q=80&w=800",
+            likes: 124,
+            comments: 18,
+            shares: 5
+        },
+        {
+            id: 2,
+            author: "MIT Robotics",
+            handle: "@mit_robotics",
+            avatar: "MR",
+            gradient: "from-blue-500 to-cyan-500",
+            time: "4h ago",
+            content: "Our team just qualified for the international finals! Huge thanks to everyone who supported us. 🤖🏆",
+            image: "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?auto=format&fit=crop&q=80&w=800",
+            likes: 852,
+            comments: 45,
+            shares: 120
+        },
+        {
+            id: 3,
+            author: "Alex Rivera",
+            handle: "@arivera_dev",
+            avatar: "AR",
+            gradient: "from-green-500 to-emerald-500",
+            time: "6h ago",
+            content: "Anyone else struggling with the new React Server Components? needing some help debugging this graphQL query...",
+            likes: 45,
+            comments: 12,
+            shares: 2
+        }
+    ]
+
+    return (
+        <div className="space-y-4">
+            {posts.map((post, i) => (
+                <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:bg-slate-900/80 transition-colors cursor-pointer"
+                >
+                    <div className="flex gap-4">
+                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${post.gradient} flex-shrink-0 flex items-center justify-center text-white font-bold`}>
+                            {post.avatar}
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-slate-200">{post.author}</span>
+                                    {post.handle === "@mit_robotics" && <BadgeCheck className="h-4 w-4 text-blue-400" />}
+                                    <span className="text-slate-500 text-sm">{post.handle}</span>
+                                    <span className="text-slate-600 text-sm">· {post.time}</span>
+                                </div>
+                                <button className="text-slate-500 hover:text-slate-300">
+                                    <MoreHorizontal className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <p className="text-slate-300 mb-3 whitespace-pre-wrap leading-relaxed">
+                                {post.content}
+                            </p>
+
+                            {post.image && (
+                                <div className="mb-4 rounded-xl overflow-hidden border border-slate-800">
+                                    <img src={post.image} alt="Post content" className="w-full h-auto object-cover max-h-[400px]" />
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between text-slate-500 max-w-md">
+                                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 pl-0" onClick={() => handleAuthAction(() => { })}>
+                                    <MessageCircle className="h-5 w-5" />
+                                    <span>{post.comments}</span>
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2" onClick={() => handleAuthAction(() => { })}>
+                                    <Heart className="h-5 w-5" />
+                                    <span>{post.likes}</span>
+                                </Button>
+                                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2" onClick={() => handleAuthAction(() => { })}>
+                                    <Share2 className="h-5 w-5" />
+                                    <span>{post.shares}</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    )
+}
+
+function PeopleFeed({ handleAuthAction }: { handleAuthAction: (action: () => void) => void }) {
+    const people = [
+        { name: "Jessica Wu", role: "UX Designer", uni: "Parsons", followers: "12k", gradient: "from-purple-500 to-indigo-500" },
+        { name: "David Kim", role: "Founder", uni: "Stanford", followers: "8.5k", gradient: "from-blue-500 to-cyan-500" },
+        { name: "Emily Blunt", role: "Researcher", uni: "Oxford", followers: "15k", gradient: "from-orange-500 to-red-500" },
+        { name: "Michael Stark", role: "Engineer", uni: "MIT", followers: "5k", gradient: "from-slate-500 to-gray-500" },
+        { name: "Sarah Connor", role: "Activist", uni: "Berkeley", followers: "22k", gradient: "from-green-500 to-emerald-500" },
+    ]
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {people.map((person, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col items-center text-center hover:border-slate-700 transition-colors"
+                >
+                    <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${person.gradient} mb-4 p-1`}>
+                        <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center text-2xl font-bold">
+                            {person.name[0]}
+                        </div>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-200">{person.name}</h3>
+                    <p className="text-blue-400 text-sm mb-1">{person.role}</p>
+                    <p className="text-slate-500 text-xs mb-4">{person.uni} · {person.followers} followers</p>
+                    <Button variant="outline" className="w-full rounded-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white" onClick={() => handleAuthAction(() => { })}>
+                        Follow
+                    </Button>
+                </motion.div>
+            ))}
+        </div>
+    )
+}
+
+function UniversitiesFeed() {
+    const unis = [
+        { name: "Stanford", location: "USA", students: "16k", image: "https://images.unsplash.com/photo-1521791055366-0d553872125f?auto=format&fit=crop&q=80&w=500" },
+        { name: "Oxford", location: "UK", students: "24k", image: "https://images.unsplash.com/photo-1580843410763-48582e62a49f?auto=format&fit=crop&q=80&w=500" },
+        { name: "MIT", location: "USA", students: "11k", image: "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&q=80&w=500" },
+        { name: "ETH Zurich", location: "Switzerland", students: "22k", image: "https://images.unsplash.com/photo-1590642916589-59234a0a613c?auto=format&fit=crop&q=80&w=500" },
+    ]
+
+    return (
+        <div className="grid grid-cols-1 gap-6">
+            {unis.map((uni, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="group relative h-48 rounded-2xl overflow-hidden cursor-pointer"
+                >
+                    <div className="absolute inset-0">
+                        <img src={uni.image} alt={uni.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/40 to-transparent" />
+                    </div>
+                    <div className="absolute inset-0 p-6 flex flex-col justify-center">
+                        <h3 className="text-3xl font-bold text-white mb-2">{uni.name}</h3>
+                        <div className="flex items-center gap-4 text-slate-300">
+                            <div className="flex items-center gap-1 text-sm">
+                                <MapPin className="h-4 w-4 text-blue-400" /> {uni.location}
+                            </div>
+                            <div className="flex items-center gap-1 text-sm">
+                                <Users className="h-4 w-4 text-purple-400" /> {uni.students} Students
+                            </div>
+                        </div>
+                    </div>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 backdrop-blur-md p-3 rounded-full">
+                        <ArrowRight className="h-6 w-6 text-white" />
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    )
+}
+
+function TrendingSidebar() {
+    const trends = [
+        { tag: "#Hackathon2025", posts: "24.5k posts" },
+        { tag: "React 19", posts: "12k posts" },
+        { tag: "FinalsWeek", posts: "89k posts" },
+        { tag: "SummerInternships", posts: "45k posts" },
+        { tag: "#CampusLife", posts: "32k posts" },
+    ]
+
+    return (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+            <h3 className="font-bold text-xl mb-4 text-slate-200">Trending Now</h3>
+            <div className="space-y-4">
+                {trends.map((trend, i) => (
+                    <div key={i} className="flex justify-between items-start group cursor-pointer">
+                        <div>
+                            <p className="font-bold text-slate-300 group-hover:text-blue-400 transition-colors">{trend.tag}</p>
+                            <p className="text-xs text-slate-500">{trend.posts}</p>
+                        </div>
+                        <MoreHorizontal className="h-4 w-4 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                ))}
+            </div>
+            <Button variant="link" className="text-blue-400 p-0 h-auto mt-4 text-sm">
+                Show more
+            </Button>
+        </div>
+    )
+}
+
+function WhoToFollow({ handleAuthAction }: { handleAuthAction: (action: () => void) => void }) {
+    const suggestions = [
+        { name: "TechCrunch", handle: "@techcrunch", initial: "TC", color: "bg-green-600" },
+        { name: "Design Daily", handle: "@designdaily", initial: "DD", color: "bg-pink-600" },
+        { name: "Code Newbie", handle: "@codenewbie", initial: "CN", color: "bg-purple-600" },
+    ]
+
+    return (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+            <h3 className="font-bold text-xl mb-4 text-slate-200">Who to follow</h3>
+            <div className="space-y-4">
+                {suggestions.map((user, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full ${user.color} flex items-center justify-center font-bold text-xs`}>
+                                {user.initial}
+                            </div>
+                            <div>
+                                <p className="font-bold text-sm text-slate-200 hover:underline cursor-pointer">{user.name}</p>
+                                <p className="text-xs text-slate-500">{user.handle}</p>
+                            </div>
+                        </div>
+                        <Button size="sm" variant="outline" className="h-8 rounded-full border-slate-700 text-xs" onClick={() => handleAuthAction(() => { })}>
+                            Follow
+                        </Button>
+                    </div>
+                ))}
+            </div>
+            <Button variant="link" className="text-blue-400 p-0 h-auto mt-4 text-sm">
+                Show more
+            </Button>
+        </div>
+    )
+}
+
+function PremiumCard() {
+    return (
+        <div className="relative overflow-hidden rounded-2xl p-6 border border-slate-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20" />
+            <h3 className="relative z-10 font-bold text-lg mb-2">SociaVerse Premium</h3>
+            <p className="relative z-10 text-sm text-slate-400 mb-4">Unlock exclusive badges, analytics, and more.</p>
+            <Button className="relative z-10 w-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none">
+                Get Verified
+            </Button>
         </div>
     )
 }
