@@ -2,10 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Globe, Zap, Shield, ArrowRight, Activity, Users, Star, Search, MessageCircle, Heart, Wifi, Battery, Signal } from "lucide-react";
+import { Globe, Zap, Shield, ArrowRight, Activity, Users, Star, Search, MessageCircle, Heart, Wifi, Battery, Signal, Rocket, Laptop, GraduationCap } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LandingCarousel } from "@/components/landing-carousel";
+import { MouseSpotlight } from "@/components/mouse-spotlight";
+import { BackgroundBeams } from "@/components/ui/background-beams";
+import { Meteors } from "@/components/ui/meteors";
+import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { MouseEvent, useEffect, useState } from "react";
+
 
 
 
@@ -206,16 +211,45 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center bg-slate-950 text-slate-100 overflow-hidden w-full relative">
 
+      {/* Dynamic Backgrounds */}
+      <BackgroundBeams className="opacity-40" />
+      <MouseSpotlight />
+      <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
       <FloatingParticles />
 
-      {/* Background Ambience - Simplified to avoid clutter with spotlight */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-overlay"></div>
-      </div>
-
       {/* Hero Section */}
-      <section className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 px-4 z-10">
-        <div className="container max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      <section className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 px-4 z-10 overflow-hidden">
+
+        <div className="absolute inset-0 h-full w-full pointer-events-none">
+          <Meteors number={20} />
+        </div>
+
+        {/* Floating Background Icons */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <motion.div
+            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-20 left-[10%] opacity-20 text-blue-500"
+          >
+            <Rocket className="w-16 h-16" />
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute bottom-40 right-[15%] opacity-20 text-purple-500"
+          >
+            <Laptop className="w-20 h-20" />
+          </motion.div>
+          <motion.div
+            animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            className="absolute top-40 right-[5%] opacity-10 text-indigo-500"
+          >
+            <GraduationCap className="w-12 h-12" />
+          </motion.div>
+        </div>
+
+        <div className="container max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
 
           {/* Left Content */}
           <div className="flex-1 text-center lg:text-left z-20">
@@ -224,14 +258,14 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 backdrop-blur-md text-blue-400 text-xs font-medium mb-6 hover:bg-slate-800/50 transition-colors cursor-default">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/50 backdrop-blur-md text-blue-400 text-xs font-medium mb-6 hover:bg-slate-800/80 transition-all cursor-default shadow-lg shadow-blue-500/10">
                 <Star className="w-3 h-3 fill-blue-400" />
                 <span>The Social Platform for Students</span>
               </div>
 
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-[1.15]">
                 Your Campus, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 animate-gradient-x">
                   Connected.
                 </span>
               </h1>
@@ -241,12 +275,12 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button asChild className="h-11 px-6 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all shadow-lg shadow-blue-500/20">
+                <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
                   <Link href="/signup">
                     Get Started <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="h-11 px-6 rounded-full border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
                   <Link href="/explore">
                     Explore Features
                   </Link>
@@ -320,41 +354,59 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: <Globe className="h-6 w-6 text-blue-400" />,
+                icon: <Globe className="h-10 w-10 text-blue-400 group-hover/card:text-white transition-colors" />,
                 title: "Find Your Tribe",
                 description: "Connect with students who actually share your interests.",
-                gradient: "from-blue-500/5 to-cyan-500/5"
+                gradient: "from-blue-500/20 to-cyan-500/20"
               },
               {
-                icon: <Zap className="h-6 w-6 text-amber-400" />,
+                icon: <Zap className="h-10 w-10 text-amber-400 group-hover/card:text-white transition-colors" />,
                 title: "Instant Collab",
                 description: "Real-time sharing of notes and ideas with zero friction.",
-                gradient: "from-amber-500/5 to-orange-500/5"
+                gradient: "from-amber-500/20 to-orange-500/20"
               },
               {
-                icon: <Shield className="h-6 w-6 text-emerald-400" />,
+                icon: <Shield className="h-10 w-10 text-emerald-400 group-hover/card:text-white transition-colors" />,
                 title: "Verified & Safe",
                 description: "Verified student-only spaces for authentic connection.",
-                gradient: "from-emerald-500/5 to-green-500/5"
+                gradient: "from-emerald-500/20 to-green-500/20"
               }
             ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group p-6 rounded-2xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 transition-colors relative overflow-hidden"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                <div className="relative z-10">
-                  <div className="mb-4 p-3 rounded-xl bg-slate-950/50 w-fit border border-slate-800">
-                    {item.icon}
+              <CardContainer key={index} className="inter-var w-full h-full" containerClassName="block">
+                <CardBody className="bg-slate-900/40 relative group/card border-slate-800 w-full h-full rounded-xl p-6 border hover:border-slate-700 transition-colors">
+                  <CardItem
+                    translateZ="50"
+                    className="w-full mt-4"
+                  >
+                    <div className={`p-4 rounded-2xl bg-slate-950/50 w-fit border border-slate-700 mb-6 ${item.gradient}`}>
+                      {item.icon}
+                    </div>
+                  </CardItem>
+                  <CardItem
+                    as="h3"
+                    translateZ="60"
+                    className="text-xl font-bold text-slate-200"
+                  >
+                    {item.title}
+                  </CardItem>
+                  <CardItem
+                    as="p"
+                    translateZ="40"
+                    className="text-slate-400 text-sm max-w-sm mt-2 leading-relaxed"
+                  >
+                    {item.description}
+                  </CardItem>
+                  <div className="flex justify-between items-center mt-10">
+                    <CardItem
+                      translateZ={20}
+                      as="button"
+                      className="px-4 py-2 rounded-xl text-xs font-normal text-white"
+                    >
+                      Learn more →
+                    </CardItem>
                   </div>
-                  <h3 className="text-lg font-bold mb-2 text-slate-200">{item.title}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
-                </div>
-              </motion.div>
+                </CardBody>
+              </CardContainer>
             ))}
           </div>
         </div>
