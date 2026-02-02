@@ -15,7 +15,8 @@ export default function CommunityPage() {
             online: "142",
             description: "For the cybersecurity enthusiasts and ethical hackers.",
             color: "from-pink-500 to-rose-500",
-            icon: <Palette className="h-6 w-6" />
+            icon: <Palette className="h-6 w-6" />,
+            joined: true
         },
         {
             title: "Coding 💻",
@@ -23,7 +24,8 @@ export default function CommunityPage() {
             online: "520",
             description: "Debug, deploy, and discuss the latest tech stacks.",
             color: "from-blue-500 to-cyan-500",
-            icon: <Code className="h-6 w-6" />
+            icon: <Code className="h-6 w-6" />,
+            joined: true
         },
         {
             title: "Startup Squad 🚀",
@@ -31,7 +33,8 @@ export default function CommunityPage() {
             online: "89",
             description: "Building the next unicorn? Find your co-founders here.",
             color: "from-orange-500 to-amber-500",
-            icon: <Zap className="h-6 w-6" />
+            icon: <Zap className="h-6 w-6" />,
+            joined: false
         },
         {
             title: "Gaming Lounge 🎮",
@@ -39,7 +42,8 @@ export default function CommunityPage() {
             online: "1.2k",
             description: "Competitive gaming, casual lobbies, and game dev talk.",
             color: "from-green-500 to-emerald-500",
-            icon: <Gamepad2 className="h-6 w-6" />
+            icon: <Gamepad2 className="h-6 w-6" />,
+            joined: false
         },
         {
             title: "Music Makers 🎵",
@@ -47,7 +51,8 @@ export default function CommunityPage() {
             online: "210",
             description: "Collab on beats, share tracks, and discuss theory.",
             color: "from-purple-500 to-violet-500",
-            icon: <Music className="h-6 w-6" />
+            icon: <Music className="h-6 w-6" />,
+            joined: false
         },
         {
             title: "idkkkkkk",
@@ -55,7 +60,8 @@ export default function CommunityPage() {
             online: "340",
             description: "Connect with students from universities worldwide.",
             color: "from-indigo-500 to-blue-500",
-            icon: <Globe className="h-6 w-6" />
+            icon: <Globe className="h-6 w-6" />,
+            joined: true
         }
     ]
 
@@ -116,9 +122,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 }
 
 function CommunityContent({ communities }: { communities: any[] }) {
+    // Split communities into joined and not joined
+    const joinedCommunities = communities.filter(c => c.joined)
+    const otherCommunities = communities.filter(c => !c.joined)
+
     return (
         <>
-
             {/* Background Blobs */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <motion.div
@@ -192,60 +201,93 @@ function CommunityContent({ communities }: { communities: any[] }) {
                     ))}
                 </motion.div>
 
-                {/* Community Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {communities.map((community, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 + (i * 0.1) }}
-                            whileHover={{
-                                y: -10,
-                                scale: 1.02,
-                                rotateX: 5,
-                                rotateY: 5,
-                                boxShadow: "0 20px 40px -10px rgba(0,0,0,0.5)"
-                            }}
-                            className="group relative bg-slate-900/40 border border-slate-800 backdrop-blur-sm rounded-3xl overflow-hidden perspective-1000"
-                        >
-                            {/* Gradient Header */}
-                            <div className={`h-32 bg-gradient-to-r ${community.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
+                {/* Joined Communities Section */}
+                {joinedCommunities.length > 0 && (
+                    <div className="mb-16">
+                        <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                            <span className="w-2 h-8 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
+                            Your Communities
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {joinedCommunities.map((community, i) => (
+                                <CommunityCard key={i} community={community} index={i} />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
-                            <div className="p-6 relative">
-                                {/* Icon Badge */}
-                                <div className="absolute -top-10 left-6 w-20 h-20 rounded-2xl bg-slate-900 border-4 border-slate-950 flex items-center justify-center shadow-xl">
-                                    <div className={`w-full h-full rounded-xl bg-gradient-to-br ${community.color} opacity-20 absolute inset-0`} />
-                                    <div className="relative z-10 text-white">
-                                        {community.icon}
-                                    </div>
-                                </div>
-
-                                <div className="mt-12">
-                                    <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors">{community.title}</h3>
-                                    <p className="text-slate-400 mb-6 line-clamp-2">{community.description}</p>
-
-                                    <div className="flex items-center justify-between text-sm text-slate-500 mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <Users className="h-4 w-4" />
-                                            <span>{community.members}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                            <span>{community.online} online</span>
-                                        </div>
-                                    </div>
-
-                                    <Button className="w-full rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:border-transparent group-hover:shadow-lg group-hover:shadow-blue-500/20">
-                                        Join Community
-                                    </Button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                {/* Other Communities Section */}
+                <div>
+                    <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+                        <span className="w-2 h-8 rounded-full bg-slate-700" />
+                        Explore More
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {otherCommunities.map((community, i) => (
+                            <CommunityCard key={i} community={community} index={i} />
+                        ))}
+                    </div>
                 </div>
 
             </div>
         </>
+    )
+}
+
+function CommunityCard({ community, index }: { community: any, index: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 + (index * 0.1) }}
+            whileHover={{
+                y: -10,
+                scale: 1.02,
+                rotateX: 5,
+                rotateY: 5,
+                boxShadow: "0 20px 40px -10px rgba(0,0,0,0.5)"
+            }}
+            className="group relative bg-slate-900/40 border border-slate-800 backdrop-blur-sm rounded-3xl overflow-hidden perspective-1000"
+        >
+            {/* Gradient Header */}
+            <div className={`h-32 bg-gradient-to-r ${community.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
+
+            <div className="p-6 relative">
+                {/* Icon Badge */}
+                <div className="absolute -top-10 left-6 w-20 h-20 rounded-2xl bg-slate-900 border-4 border-slate-950 flex items-center justify-center shadow-xl">
+                    <div className={`w-full h-full rounded-xl bg-gradient-to-br ${community.color} opacity-20 absolute inset-0`} />
+                    <div className="relative z-10 text-white">
+                        {community.icon}
+                    </div>
+                </div>
+
+                <div className="mt-12">
+                    <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-400 transition-colors">{community.title}</h3>
+                    <p className="text-slate-400 mb-6 line-clamp-2">{community.description}</p>
+
+                    <div className="flex items-center justify-between text-sm text-slate-500 mb-6">
+                        <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            <span>{community.members}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span>{community.online} online</span>
+                        </div>
+                    </div>
+
+                    {!community.joined && (
+                        <Button className="w-full rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:border-transparent group-hover:shadow-lg group-hover:shadow-blue-500/20">
+                            Join Community
+                        </Button>
+                    )}
+                    {community.joined && (
+                        <Button variant="outline" className="w-full rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 cursor-default">
+                            Joined
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </motion.div>
     )
 }
