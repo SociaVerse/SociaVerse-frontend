@@ -1,19 +1,43 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs"
 import {
     Calendar, MapPin, Clock, Users, ArrowRight, Music, Code, Trophy, Star, Lock,
-    Search, SlidersHorizontal, Filter, Globe, Sparkles, DollarSign, Tag, X, ChevronDown
+    Search, SlidersHorizontal, Filter, Globe, Sparkles, DollarSign, Tag, X, ChevronDown,
+    Edit, Trash2
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet"
+import { useToast } from "@/components/ui/custom-toast"
 
-// Mock Data
+// Interface for Event
+interface Event {
+    id: number
+    organizer_name: string
+    title: string
+    description: string
+    category: string
+    image: string | null
+    start_date: string
+    end_date: string
+    location: string
+    mode: string
+    participation_type: string
+    min_team_size: number
+    max_team_size: number
+    community: string
+    rules: string | null
+    prize: string | null
+    is_promoted: boolean
+    attendees_count?: number // Optional if backend doesn't send it yet
+}
+
 const CATEGORIES = [
     { id: "all", label: "All Events" },
     { id: "tech", label: "Tech & Coding", icon: Code },
@@ -22,91 +46,33 @@ const CATEGORIES = [
     { id: "business", label: "Business", icon: Star },
 ]
 
-const EVENTS = [
-    {
-        id: 1,
-        title: "Inter-College Hackathon 2024",
-        description: "Build the future in 48 hours of intense coding and innovation.",
-        category: "Tech & Coding",
-        date: "Mar 15, 2024",
-        time: "48 Hours",
-        location: "Main Auditorium",
-        attendees: 450,
-        image: "https://images.unsplash.com/photo-1504384308090-c54be3855833?auto=format&fit=crop&q=80&w=1000",
-        prize: "$5,000",
-        organizer: "GDSC",
-        isPromoted: true,
-        type: "foryou"
-    },
-    {
-        id: 2,
-        title: "Neon Night Music Fest",
-        description: "Experience the rhythm of the night with top campus bands.",
-        category: "Entertainment",
-        date: "Mar 20, 2024",
-        time: "7:00 PM",
-        location: "Campus Grounds",
-        attendees: 1200,
-        image: "https://images.unsplash.com/photo-1459749411177-d4a37196040e?auto=format&fit=crop&q=80&w=1000",
-        prize: null,
-        organizer: "Music Club",
-        isPromoted: false,
-        type: "foryou"
-    },
-    {
-        id: 3,
-        title: "E-Sports Championship",
-        description: "Battle it out in Valorant, CS2, and FIFA.",
-        category: "Gaming",
-        date: "Mar 25, 2024",
-        time: "10:00 AM",
-        location: "Student Center",
-        attendees: 300,
-        image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1000",
-        prize: "$2,000",
-        organizer: "Gamers Guild",
-        isPromoted: false,
-        type: "following"
-    },
-    {
-        id: 4,
-        title: "Startup Pitch Day",
-        description: "Pitch your ideas to real investors and alumni.",
-        category: "Business",
-        date: "Apr 02, 2024",
-        time: "2:00 PM",
-        location: "Innovation Hub",
-        attendees: 150,
-        image: "https://images.unsplash.com/photo-1559136555-930d72f18615?auto=format&fit=crop&q=80&w=1000",
-        prize: "Seed Funding",
-        organizer: "E-Cell",
-        isPromoted: true,
-        type: "location"
-    },
-    {
-        id: 5,
-        title: "City Marathon 2024",
-        description: "Run for a cause. Open to all city residents.",
-        category: "Sports",
-        date: "Apr 10, 2024",
-        time: "6:00 AM",
-        location: "City Center",
-        attendees: 5000,
-        image: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&q=80&w=1000",
-        prize: "Medals",
-        organizer: "City Council",
-        isPromoted: false,
-        type: "location"
-    }
-]
-
 export default function EventsPage() {
     const { isAuthenticated, isLoading } = useAuth()
+    const { toast, confirm } = useToast()
     const [activeTab, setActiveTab] = useState("foryou")
     const [searchQuery, setSearchQuery] = useState("")
+    const [events, setEvents] = useState<Event[]>([])
+    const [isFetching, setIsFetching] = useState(true)
 
-    if (isLoading) {
-        return <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/events/')
+                if (response.ok) {
+                    const data = await response.json()
+                    setEvents(data)
+                }
+            } catch (error) {
+                console.error("Failed to fetch events:", error)
+            } finally {
+                setIsFetching(false)
+            }
+        }
+        fetchEvents()
+    }, [])
+
+    if (isLoading || isFetching) {
+        return <div className="min-h-screen bg-slate-950 flex items-center justify-center">
             <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
         </div>
     }
@@ -115,16 +81,61 @@ export default function EventsPage() {
         return <AuthLockOverlay />
     }
 
-    // Filter Logic (Simplified for UI Demo)
-    const filteredEvents = EVENTS.filter(event => {
-        if (activeTab === "foryou") return true // Show all mixed
-        if (activeTab === "following") return event.type === "following" || event.organizer === "GDSC"
-        if (activeTab === "location") return event.type === "location"
+    // Filter Logic
+    const filteredEvents = events.filter(event => {
+        if (activeTab === "foryou") return true
+        // For 'following', we'd normally check user follows. For now just show all or filter by a dummy logic
+        if (activeTab === "following") return true
+        if (activeTab === "location") return true // Needs geolocation in future
         return true
     }).filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter(e => activeTab === 'all' || activeTab === 'foryou' || activeTab === 'following' || activeTab === 'location' ? true : e.category.toLowerCase().includes(activeTab))
+
+    const handleDelete = async (id: number) => {
+        const isConfirmed = await confirm({
+            title: "Delete Event",
+            description: "Are you sure you want to delete this event? This action cannot be undone.",
+            confirmText: "Delete Event",
+            variant: "danger"
+        })
+
+        if (!isConfirmed) return
+
+        const token = localStorage.getItem("sociaverse_token")
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/events/${id}/`, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            })
+
+            if (response.ok) {
+                setEvents(prev => prev.filter(e => e.id !== id))
+                toast({
+                    type: "success",
+                    title: "Event Deleted",
+                    message: "The event has been successfully removed."
+                })
+            } else {
+                toast({
+                    type: "error",
+                    title: "Deletion Failed",
+                    message: "Could not delete the event. Please try again."
+                })
+            }
+        } catch (error) {
+            toast({
+                type: "error",
+                title: "Error",
+                message: "An unexpected error occurred."
+            })
+        }
+    }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-slate-100 selection:bg-purple-500/30 font-sans">
+        <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-purple-500/30 font-sans">
             {/* Background Atmosphere */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] opacity-30 animate-pulse" style={{ animationDuration: '8s' }} />
@@ -296,7 +307,7 @@ export default function EventsPage() {
                 {/* Grid */}
                 <div className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
                     {filteredEvents.map((event, index) => (
-                        <EventCard key={event.id} event={event} index={index} />
+                        <EventCard key={event.id} event={event} index={index} onDelete={handleDelete} />
                     ))}
                     {filteredEvents.length === 0 && (
                         <div className="col-span-full py-20 text-center bg-white/5 rounded-[3rem] border border-white/5">
@@ -315,13 +326,22 @@ export default function EventsPage() {
     )
 }
 
-function EventCard({ event, index }: { event: any, index: number }) {
+function EventCard({ event, index, onDelete }: { event: any, index: number, onDelete: (id: number) => void }) {
+    const { user } = useAuth()
+    const isOwner = user?.username === event.organizer_name
+    const router = useRouter()
+
+    const handleCardClick = () => {
+        router.push(`/events/${event.id}`)
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group relative bg-neutral-900 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col h-full"
+            onClick={handleCardClick}
+            className="group relative bg-neutral-900 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col h-full cursor-pointer"
         >
             {/* Image Section */}
             <div className="relative h-64 overflow-hidden shrink-0">
@@ -329,7 +349,7 @@ function EventCard({ event, index }: { event: any, index: number }) {
                 <div className="absolute inset-0 bg-blue-500/10 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <img
-                    src={event.image}
+                    src={event.image || "https://images.unsplash.com/photo-1504384308090-c54be3855833?auto=format&fit=crop&q=80&w=1000"} // Fallback image
                     alt={event.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
                 />
@@ -345,8 +365,20 @@ function EventCard({ event, index }: { event: any, index: number }) {
                     )}
                 </div>
 
-                <div className="absolute top-4 right-4 z-20">
-                    <Button size="icon" className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 hover:scale-110 transition-all">
+                <div className="absolute top-4 right-4 z-20 flex gap-2">
+                    {isOwner && (
+                        <>
+                            <Button asChild size="icon" onClick={(e) => e.stopPropagation()} className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-blue-600/80 hover:scale-110 transition-all">
+                                <Link href={`/events/${event.id}/edit`}>
+                                    <Edit className="w-4 h-4" />
+                                </Link>
+                            </Button>
+                            <Button size="icon" onClick={(e) => { e.stopPropagation(); onDelete(event.id) }} className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-red-400 hover:bg-red-500/80 hover:text-white hover:scale-110 transition-all">
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        </>
+                    )}
+                    <Button size="icon" onClick={(e) => e.stopPropagation()} className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 hover:scale-110 transition-all">
                         <Star className="w-4 h-4" />
                     </Button>
                 </div>
@@ -357,17 +389,17 @@ function EventCard({ event, index }: { event: any, index: number }) {
                 {/* Date Badge float */}
                 <div className="self-end mb-2">
                     <div className="bg-neutral-800/80 backdrop-blur-md rounded-2xl px-4 py-2 text-center border border-white/10 shadow-lg group-hover:bg-blue-600 group-hover:border-blue-500 transition-colors duration-300">
-                        <span className="block text-xs text-slate-400 group-hover:text-blue-100 uppercase font-black tracking-widest">{event.date.split(" ")[0]}</span>
-                        <span className="block text-xl font-black text-white">{event.date.split(" ")[1].replace(",", "")}</span>
+                        <span className="block text-xs text-slate-400 group-hover:text-blue-100 uppercase font-black tracking-widest">{new Date(event.start_date).toLocaleString('default', { month: 'short' })}</span>
+                        <span className="block text-xl font-black text-white">{new Date(event.start_date).getDate()}</span>
                     </div>
                 </div>
 
                 <div className="mb-auto">
                     <div className="flex items-center gap-2 mb-3">
                         <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-white transition-colors">
-                            {event.organizer}
+                            {event.organizer_name}
                         </span>
-                        {event.isPromoted && (
+                        {event.is_promoted && (
                             <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
                                 <Sparkles className="w-3 h-3" /> Promoted
                             </span>
@@ -390,19 +422,12 @@ function EventCard({ event, index }: { event: any, index: number }) {
                             <span className="font-medium">{event.location}</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-slate-500 pl-6">
-                            <span>{event.time}</span>
+                            <span>{new Date(event.start_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                     </div>
-
-                    <div className="flex -space-x-2">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="w-8 h-8 rounded-full border-2 border-neutral-900 bg-slate-800 flex items-center justify-center text-[10px] text-white overflow-hidden relative">
-                                <img src={`https://i.pravatar.cc/100?img=${i + 10}`} className="w-full h-full object-cover" />
-                            </div>
-                        ))}
-                        <div className="w-8 h-8 rounded-full border-2 border-neutral-900 bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-slate-300">
-                            +{event.attendees > 99 ? '99' : event.attendees}
-                        </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-slate-500 group-hover:text-white transition-colors">
+                        <span>Details</span>
+                        <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                     </div>
                 </div>
             </div>
@@ -414,10 +439,7 @@ function AuthLockOverlay() {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Ambience */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
-            </div>
+            {/* Background Ambience - Removed, handled by BackgroundManager (or simplified for overlay) */}
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}

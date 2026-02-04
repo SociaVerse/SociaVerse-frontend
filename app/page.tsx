@@ -7,6 +7,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LandingCarousel } from "@/components/landing-carousel";
 import { MouseSpotlight } from "@/components/mouse-spotlight";
 import { BackgroundBeams } from "@/components/ui/background-beams";
+import { FloatingParticles } from "@/components/ui/floating-particles";
 import { Meteors } from "@/components/ui/meteors";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { MouseEvent, useEffect, useState } from "react";
@@ -14,45 +15,7 @@ import { MouseEvent, useEffect, useState } from "react";
 
 
 
-function FloatingParticles() {
-  const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) return null
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {[...Array(20)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute bg-blue-500/20 rounded-full blur-[1px]"
-          initial={{
-            x: Math.random() * 100 + "vw",
-            y: Math.random() * 100 + "vh",
-            scale: Math.random() * 0.5 + 0.5,
-            opacity: Math.random() * 0.5 + 0.2
-          }}
-          animate={{
-            y: [null, Math.random() * 100 + "vh"],
-            opacity: [null, Math.random() * 0.5 + 0.2, 0]
-          }}
-          transition={{
-            duration: Math.random() * 20 + 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          style={{
-            width: Math.random() * 4 + 2 + "px",
-            height: Math.random() * 4 + 2 + "px",
-          }}
-        />
-      ))}
-    </div>
-  )
-}
 
 function PhoneMockup() {
   const x = useMotionValue(0);
@@ -216,6 +179,7 @@ export default function Home() {
       <MouseSpotlight />
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
       <FloatingParticles />
+
 
       {/* Hero Section */}
       <section className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 px-4 z-10 overflow-hidden">

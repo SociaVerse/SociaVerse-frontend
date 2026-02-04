@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar"; // <-- IMPORT THE NAVBAR
 import { AuthProvider } from "@/components/auth-provider";
+import { ToastProvider } from "@/components/ui/custom-toast";
 
 import { MouseSpotlight } from "@/components/mouse-spotlight";
+import PageTransition from "@/components/page-transition";
 
 export const metadata: Metadata = {
   title: "SociaVerse",
@@ -35,11 +37,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <MouseSpotlight />
-            <Navbar />
-            <main className="flex-1 flex flex-col relative z-10"> {/* Wrap children in main */}
-              {children}
-            </main>
+            <ToastProvider>
+              <MouseSpotlight />
+              <Navbar />
+              <main className="flex-1 flex flex-col relative z-10">
+                <PageTransition>{children}</PageTransition>
+              </main>
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
