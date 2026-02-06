@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, useMotionValue, useTransform } from "framer-motion"
 import { Search, Users, Zap, Code, Palette, Gamepad2, Music, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -86,32 +86,49 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
 
     if (!isAuthenticated) {
         return (
-            <div className="flex flex-col items-center justify-center p-4 min-h-[60vh] relative">
+            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 relative overflow-hidden">
+                {/* Subtle Ambient Background */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px]" />
+                </div>
+
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-md w-full text-center relative z-10 p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-xl shadow-2xl"
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="w-full max-w-sm relative z-10"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-900/20">
-                        <Lock className="w-8 h-8 text-blue-400" />
-                    </div>
+                    <div className="bg-neutral-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden group">
+                        {/* Top Gradient Line */}
+                        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-75" />
 
-                    <h2 className="text-3xl font-bold mb-3">Community Access</h2>
-                    <p className="text-slate-400 mb-8 leading-relaxed">
-                        Login to join tribes, connect with peers, and participate in discussions.
-                    </p>
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-2xl bg-neutral-800 border-t border-white/10 flex items-center justify-center mb-6 shadow-none group-hover:scale-110 transition-transform duration-500">
+                                <Lock className="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                            </div>
 
-                    <div className="flex flex-col gap-3">
-                        <Button asChild className="w-full h-12 text-base font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20">
-                            <Link href="/login">
-                                Log In to Join
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full h-12 text-base border-slate-700 hover:bg-slate-800 text-slate-300">
-                            <Link href="/signup">
-                                Create an Account
-                            </Link>
-                        </Button>
+                            <h2 className="text-2xl font-bold text-white mb-2">
+                                Member Access
+                            </h2>
+
+                            <p className="text-sm text-slate-400 mb-8 leading-relaxed">
+                                Join our thriving community to connect, collaborate, and compete with others.
+                            </p>
+
+                            <div className="space-y-3 w-full">
+                                <Button asChild className="w-full h-12 text-sm font-semibold bg-white text-black hover:bg-slate-200 hover:scale-[1.02] transition-all rounded-xl shadow-lg shadow-white/5">
+                                    <Link href="/login">
+                                        Log In
+                                    </Link>
+                                </Button>
+
+                                <Button asChild variant="ghost" className="w-full h-12 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                                    <Link href="/signup">
+                                        Create Account
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
             </div>

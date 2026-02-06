@@ -225,7 +225,7 @@ export function Login() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center ml-1">
                       <label className="text-sm font-medium text-slate-300">Password</label>
-                      <a href="#" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</a>
+                      <Link href="/forgot-password" className="text-xs text-blue-400 hover:text-blue-300">Forgot password?</Link>
                     </div>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

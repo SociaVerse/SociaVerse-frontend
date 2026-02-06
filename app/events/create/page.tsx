@@ -13,6 +13,8 @@ import {
     CheckCircle2, Sparkles, Zap, Smartphone, Monitor
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/custom-toast"
 
 // Steps Definition
 const STEPS = [
@@ -39,6 +41,8 @@ const COMMUNITIES = [
 ]
 
 export default function CreateEventPage() {
+    const router = useRouter()
+    const { toast } = useToast()
     const [currentStep, setCurrentStep] = useState(1)
     const [isPublished, setIsPublished] = useState(false)
     const [formData, setFormData] = useState({
@@ -60,6 +64,15 @@ export default function CreateEventPage() {
         description: "",
         rules: "",
         venue: "",
+        prize: "", // Total Pool (optional/summary)
+        prize_first: "",
+        prize_second: "",
+        prize_third: "",
+        prize_others: "",
+
+        // Step 3 (Registration Config)
+        registrationFields: ["Name", "Email"], // Default fields
+        webhookUrl: "",
     })
 
     const handleInputChange = (field: string, value: any) => {
@@ -101,6 +114,13 @@ export default function CreateEventPage() {
                 max_team_size: parseInt(String(formData.maxTeamSize)),
                 community: formData.community,
                 rules: formData.rules,
+                prize: formData.prize,
+                prize_first: formData.prize_first,
+                prize_second: formData.prize_second,
+                prize_third: formData.prize_third,
+                prize_others: formData.prize_others,
+                registration_fields: formData.registrationFields,
+                webhook_url: formData.webhookUrl || null,
             }
 
             const response = await fetch("http://127.0.0.1:8000/api/events/", {
@@ -113,7 +133,14 @@ export default function CreateEventPage() {
             })
 
             if (response.ok) {
-                setIsPublished(true)
+                const data = await response.json()
+                setCreatedEventId(data.event_id)
+                setShowVerification(true)
+                toast({
+                    type: "success",
+                    title: "Verification Sent",
+                    message: "Please verify your email to publish the event."
+                })
             } else {
                 const errorData = await response.json()
                 console.error("Submission failed:", errorData)
@@ -129,6 +156,107 @@ export default function CreateEventPage() {
 
     if (isPublished) {
         return <SuccessView eventName={formData.eventName} />
+    }
+
+    const [showVerification, setShowVerification] = useState(false)
+    const [isPublishing, setIsPublishing] = useState(false)
+    const [createdEventId, setCreatedEventId] = useState<string | null>(null)
+    const [otp, setOtp] = useState(["", "", "", "", "", ""])
+
+    const handleVerify = async () => {
+        setIsPublishing(true)
+        try {
+            const token = localStorage.getItem("sociaverse_token")
+            const otpValue = otp.join("")
+
+            const response = await fetch("http://127.0.0.1:8000/api/events/verify/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Token ${token}`
+                },
+                body: JSON.stringify({ event_id: createdEventId, otp: otpValue })
+            })
+
+            if (response.ok) {
+                toast({
+                    type: "success",
+                    title: "Event Verified!",
+                    message: "Your event has been successfully published."
+                })
+                router.push(`/events/${createdEventId}`)
+            } else {
+                const errorData = await response.json()
+                toast({
+                    type: "error",
+                    title: "Verification Failed",
+                    message: errorData.error || "Invalid OTP"
+                })
+            }
+        } catch (error) {
+            console.error("Verification error:", error)
+            toast({ type: "error", title: "Network Error", message: "Failed to verify event." })
+        } finally {
+            setIsPublishing(false)
+        }
+    }
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (value.length > 1) return
+        const newOtp = [...otp]
+        newOtp[index] = value
+        setOtp(newOtp)
+
+        // Auto focus next input
+        if (value && index < 5) {
+            const nextInput = document.getElementById(`otp-${index + 1}`)
+            nextInput?.focus()
+        }
+    }
+
+    const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            const prevInput = document.getElementById(`otp-${index - 1}`)
+            prevInput?.focus()
+        }
+    }
+
+    if (showVerification) {
+        return (
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4">
+                <div className="bg-neutral-900 border border-white/10 rounded-3xl p-8 max-w-md w-full text-center space-y-6">
+                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto text-blue-400">
+                        <CheckCircle2 className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-white mb-2">Verify Your Event</h2>
+                        <p className="text-slate-400">We've sent a 6-digit code to your email. Enter it below to publish your event.</p>
+                    </div>
+
+                    <div className="flex justify-center gap-2">
+                        {otp.map((digit, index) => (
+                            <Input
+                                key={index}
+                                id={`otp-${index}`}
+                                value={digit}
+                                onChange={(e) => handleOtpChange(index, e.target.value)}
+                                onKeyDown={(e) => handleKeyDown(index, e)}
+                                className="w-12 h-14 text-center text-xl font-bold bg-neutral-800 border-white/10 focus:border-blue-500 rounded-xl"
+                                maxLength={1}
+                            />
+                        ))}
+                    </div>
+
+                    <Button
+                        onClick={handleVerify}
+                        disabled={isPublishing || otp.join("").length !== 6}
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white h-12 rounded-xl font-bold"
+                    >
+                        {isPublishing ? "Verifying..." : "Verify & Publish"}
+                    </Button>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -148,7 +276,7 @@ export default function CreateEventPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <h1 className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mb-6 drop-shadow-sm">
+                        <h1 className="text-5xl font-black bg-clip-text text-transparent bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 mb-6 drop-shadow-sm">
                             Create Experience
                         </h1>
                         <p className="text-lg text-slate-400 max-w-2xl mx-auto">
@@ -164,7 +292,7 @@ export default function CreateEventPage() {
                         {/* Top 7 = 1.75rem. Centered relative to h-14 (3.5rem) */}
                         <div className="absolute top-7 left-0 w-full h-0.5 bg-slate-800 -z-10 rounded-full transform -translate-y-1/2" />
                         <motion.div
-                            className="absolute top-7 left-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 -z-10 rounded-full origin-left transform -translate-y-1/2"
+                            className="absolute top-7 left-0 h-0.5 bg-linear-to-r from-blue-500 to-purple-500 -z-10 rounded-full origin-left transform -translate-y-1/2"
                             initial={{ scaleX: 0 }}
                             animate={{ scaleX: (currentStep - 1) / (STEPS.length - 1) }}
                             transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -204,7 +332,7 @@ export default function CreateEventPage() {
                         <span className="text-slate-500 text-sm uppercase tracking-wider font-medium">{STEPS[currentStep - 1].title}</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out" style={{ width: `${(currentStep / STEPS.length) * 100}%` }} />
+                        <div className="h-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out" style={{ width: `${(currentStep / STEPS.length) * 100}%` }} />
                     </div>
                 </div>
 
@@ -214,7 +342,7 @@ export default function CreateEventPage() {
                     className="bg-neutral-900/60 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-6 md:p-12 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative overflow-hidden"
                 >
                     {/* Decorative Top Line */}
-                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-linear-to-r from-transparent via-purple-500/50 to-transparent" />
 
                     <AnimatePresence mode="wait" custom={1}>
                         <motion.div
@@ -258,12 +386,12 @@ export default function CreateEventPage() {
                                 <span className="relative z-10 flex items-center">
                                     Continue <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                                 </span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-10 transition-opacity" />
+                                <div className="absolute inset-0 bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-10 transition-opacity" />
                             </Button>
                         ) : (
                             <Button
                                 onClick={handlePublish}
-                                className="group relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-full h-16 px-12 text-lg font-bold shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_50px_rgba(168,85,247,0.7)] transition-all transform hover:-translate-y-1"
+                                className="group relative bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-full h-16 px-12 text-lg font-bold shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:shadow-[0_0_50px_rgba(168,85,247,0.7)] transition-all transform hover:-translate-y-1"
                             >
                                 <span className="flex items-center">
                                     {isLoading ? "Publishing..." : "Publish Event"} <Trophy className={`w-5 h-5 ml-2 group-hover:rotate-12 transition-transform ${isLoading ? 'animate-pulse' : ''}`} />
@@ -363,6 +491,22 @@ function Step1({ data, update }: { data: any, update: (field: string, value: any
                             <ArrowRight className="w-4 h-4 rotate-90" />
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className="space-y-3">
+                <Label className="text-slate-300 font-medium ml-1">Event Mode</Label>
+                <div className="grid grid-cols-2 gap-4">
+                    {['offline', 'online'].map((mode) => (
+                        <div
+                            key={mode}
+                            className={`cursor-pointer rounded-xl border p-4 flex items-center justify-center gap-2 transition-all ${data.mode === mode ? 'bg-purple-500/10 border-purple-500 text-purple-400' : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:bg-slate-900'}`}
+                            onClick={() => update("mode", mode)}
+                        >
+                            {mode === 'offline' ? <MapPin className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+                            <span className="capitalize font-medium">{mode}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -550,6 +694,109 @@ function Step3({ data, update }: { data: any, update: (field: string, value: any
                         />
                     </div>
                 </div>
+
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <Label className="text-xl font-bold text-white flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" /> Prize Distribution
+                    </Label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-yellow-400">1st Place (Gold)</Label>
+                            <Input
+                                placeholder="e.g. $1000"
+                                className="bg-neutral-950/50 border-yellow-500/30 focus:border-yellow-500 h-12 rounded-xl px-4"
+                                value={data.prize_first}
+                                onChange={(e) => update("prize_first", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-slate-400">2nd Place (Silver)</Label>
+                            <Input
+                                placeholder="e.g. $500"
+                                className="bg-neutral-950/50 border-slate-600/30 focus:border-slate-400 h-12 rounded-xl px-4"
+                                value={data.prize_second}
+                                onChange={(e) => update("prize_second", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-orange-400">3rd Place (Bronze)</Label>
+                            <Input
+                                placeholder="e.g. $250"
+                                className="bg-neutral-950/50 border-orange-700/30 focus:border-orange-600 h-12 rounded-xl px-4"
+                                value={data.prize_third}
+                                onChange={(e) => update("prize_third", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1">Others / Participation</Label>
+                            <Input
+                                placeholder="e.g. Certificates, Swags"
+                                className="bg-neutral-950/50 border-slate-800 focus:border-purple-500 h-12 rounded-xl px-4"
+                                value={data.prize_others}
+                                onChange={(e) => update("prize_others", e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 mt-4">
+                        <Label className="text-slate-300 font-medium ml-1">Total Prize Pool Display (Optional)</Label>
+                        <Input
+                            placeholder="e.g. Worth $5000+"
+                            className="bg-neutral-950/50 border-slate-800 focus:border-purple-500 h-12 rounded-xl px-4"
+                            value={data.prize}
+                            onChange={(e) => update("prize", e.target.value)}
+                        />
+                        <p className="text-xs text-slate-500">This will be shown as the main prize summary.</p>
+                    </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <Label className="text-xl font-bold text-white flex items-center gap-2">
+                        <Users className="w-5 h-5 text-blue-500" /> Registration Configuration
+                    </Label>
+                    <p className="text-sm text-slate-400">Customize what information you need from participants.</p>
+
+                    <div className="space-y-4">
+                        <Label className="text-slate-300 font-medium ml-1">Required Fields</Label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {['Name', 'Email', 'College', 'Discord ID', 'Phone', 'LinkedIn', 'GitHub'].map((field) => (
+                                <div
+                                    key={field}
+                                    className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${data.registrationFields.includes(field)
+                                        ? 'bg-blue-500/10 border-blue-500 text-white'
+                                        : 'bg-neutral-900 border-slate-800 text-slate-400 hover:bg-neutral-800'
+                                        }`}
+                                    onClick={() => {
+                                        const newFields = data.registrationFields.includes(field)
+                                            ? data.registrationFields.filter((f: any) => f !== field)
+                                            : [...data.registrationFields, field]
+                                        update("registrationFields", newFields)
+                                    }}
+                                >
+                                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${data.registrationFields.includes(field) ? 'bg-blue-500 border-blue-500' : 'border-slate-600'
+                                        }`}>
+                                        {data.registrationFields.includes(field) && <Check className="w-3.5 h-3.5 text-white" />}
+                                    </div>
+                                    <span className="text-sm font-medium">{field}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 mt-4">
+                        <Label className="text-slate-300 font-medium ml-1 flex items-center gap-2">
+                            Webhook URL <span className="text-slate-500 text-xs font-normal">(Optional)</span>
+                        </Label>
+                        <Input
+                            placeholder="https://discord.com/api/webhooks/..."
+                            className="bg-neutral-950/50 border-slate-800 focus:border-purple-500 h-12 rounded-xl px-4 font-mono text-sm"
+                            value={data.webhookUrl}
+                            onChange={(e) => update("webhookUrl", e.target.value)}
+                        />
+                        <p className="text-xs text-slate-500">We'll send a JSON payload here whenever someone registers.</p>
+                    </div>
+                </div>
             </div>
         </div>
     )
@@ -635,7 +882,7 @@ function SuccessView({ eventName }: { eventName: string }) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 className="max-w-xl w-full bg-neutral-900/60 backdrop-blur-2xl rounded-[2.5rem] p-12 border border-white/10 text-center shadow-2xl relative z-10"
             >
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-emerald-600 opacity-80" />
+                <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-green-400 to-emerald-600 opacity-80" />
 
                 <motion.div
                     initial={{ scale: 0, rotate: -45 }}

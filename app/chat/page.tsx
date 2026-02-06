@@ -85,7 +85,15 @@ const initialChats: Chat[] = [
     },
 ]
 
-export default function ChatPage() {
+import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
+
+// ... (existing imports and types and initialChats can stay, 
+// actually I'll just rewrite the component part and keep imports if I can matching the lines)
+// wait, I need to add useSearchParams to imports. 
+
+function ChatContent() {
+    const searchParams = useSearchParams()
     const [chats, setChats] = useState<Chat[]>(initialChats)
     const [selectedChatId, setSelectedChatId] = useState<number | null>(null)
     const [inputValue, setInputValue] = useState("")
@@ -105,6 +113,39 @@ export default function ChatPage() {
 
     const selectedChat = chats.find(c => c.id === selectedChatId)
     const filteredChats = chats.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    // Handle incoming inquiry from Marketplace
+    useEffect(() => {
+        const sellerUsername = searchParams.get("seller")
+        const sellerName = searchParams.get("sellerName")
+        const productTitle = searchParams.get("product")
+
+        if (sellerUsername && sellerName && productTitle) {
+            // Check if chat already exists (mock check by name for now as we don't have usernames in mock data)
+            // In a real app we'd check by ID or Username
+            const existingChat = chats.find(c => c.name === sellerName)
+
+            if (existingChat) {
+                setSelectedChatId(existingChat.id)
+                setInputValue(`Hi, I'm interested in your ${productTitle}! Is it still available?`)
+            } else {
+                // Create new mock chat
+                const newChatId = Math.max(...chats.map(c => c.id)) + 1
+                const newChat: Chat = {
+                    id: newChatId,
+                    name: sellerName,
+                    status: "online",
+                    avatar: sellerName.charAt(0).toUpperCase(),
+                    color: "from-pink-500 to-rose-500", // Default color for new chats
+                    unread: 0,
+                    messages: []
+                }
+                setChats(prev => [newChat, ...prev])
+                setSelectedChatId(newChat.id)
+                setInputValue(`Hi, I'm interested in your ${productTitle}! Is it still available?`)
+            }
+        }
+    }, [searchParams]) // Run once when params are available/change
 
     // Handle resize for responsive layout
     useEffect(() => {
@@ -152,9 +193,13 @@ export default function ChatPage() {
             }))
 
             setTimeout(() => {
+                const replyText = selectedChat?.messages.length === 0
+                    ? "Hey! Yes, it is still available. Are you on campus?"
+                    : "That sounds awesome! Let me check my schedule and get back to you shortly."
+
                 const reply: Message = {
                     id: (Date.now() + 1).toString(),
-                    text: "That sounds awesome! Let me check my schedule and get back to you shortly.",
+                    text: replyText,
                     sender: "them",
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     status: "read"
@@ -630,5 +675,13 @@ export default function ChatPage() {
             </AnimatePresence>
 
         </div>
+    )
+}
+
+export default function ChatPage() {
+    return (
+        <Suspense fallback={<div className="h-screen bg-slate-950 text-slate-100 flex items-center justify-center">Loading chat...</div>}>
+            <ChatContent />
+        </Suspense>
     )
 }

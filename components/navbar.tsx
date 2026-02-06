@@ -2,18 +2,26 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Globe, Menu, Search, Bell, User, Sparkles } from "lucide-react"
+import { Globe, Menu, Search, Bell, User, Sparkles, MessageCircle } from "lucide-react"
 import { ModeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
 // Define links in an array for cleaner code
 const navLinks = [
-  { href: "/features", label: "Features" },
+  { href: "/marketplace", label: "Marketplace" },
   { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
   { href: "/community", label: "Community" },
@@ -132,16 +140,64 @@ export function Navbar() {
           <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
             <Search className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
-            <Bell className="h-5 w-5" />
-          </Button>
+
           <motion.div
             className="bg-slate-800/50 backdrop-blur-sm rounded-full px-1 py-1 border border-slate-700/50 shadow-sm ml-2 flex items-center"
             whileHover={{ scale: 1.03 }}
           >
             {isAuthenticated ? (
               <>
-                <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all font-medium" onClick={logout}>
+                {/* Chat Icon - Functional */}
+                <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
+                  <Link href="/chat">
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                {/* Notification Bell - Functional Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-yellow-400 transition-all relative">
+                      <Bell className="h-5 w-5" />
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 bg-slate-900 border-slate-800 text-slate-200 p-2">
+                    <DropdownMenuLabel className="font-bold text-lg mb-2">Notifications</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-slate-700" />
+                    <div className="max-h-[300px] overflow-y-auto space-y-1">
+                      <DropdownMenuItem className="cursor-pointer hover:bg-slate-800 rounded-lg p-3 flex flex-col items-start gap-1">
+                        <div className="flex justify-between w-full">
+                          <span className="font-semibold text-blue-400 text-sm">New Message</span>
+                          <span className="text-[10px] text-slate-500">2 min ago</span>
+                        </div>
+                        <p className="text-xs text-slate-400">Alex sent you an inquiry about "iPad Pro".</p>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer hover:bg-slate-800 rounded-lg p-3 flex flex-col items-start gap-1">
+                        <div className="flex justify-between w-full">
+                          <span className="font-semibold text-green-400 text-sm">Item Listing</span>
+                          <span className="text-[10px] text-slate-500">1 hour ago</span>
+                        </div>
+                        <p className="text-xs text-slate-400">Your "Calculus Textbook" is now live on the marketplace.</p>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer hover:bg-slate-800 rounded-lg p-3 flex flex-col items-start gap-1">
+                        <div className="flex justify-between w-full">
+                          <span className="font-semibold text-purple-400 text-sm">Welcome!</span>
+                          <span className="text-[10px] text-slate-500">1 day ago</span>
+                        </div>
+                        <p className="text-xs text-slate-400">Welcome to SociaVerse! Explore events and connect.</p>
+                      </DropdownMenuItem>
+                    </div>
+                    <DropdownMenuSeparator className="bg-slate-700 mt-2" />
+                    <Button variant="ghost" className="w-full text-xs text-slate-400 hover:text-white mt-1 h-8">
+                      Mark all as read
+                    </Button>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <div className="w-px h-6 bg-slate-700 mx-1"></div>
+
+                <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-red-400 transition-all font-medium text-xs px-3" onClick={logout}>
                   Logout
                 </Button>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 ml-1 flex items-center justify-center border-2 border-slate-800 cursor-pointer hover:scale-110 transition-transform">
@@ -218,6 +274,26 @@ export function Navbar() {
                       </Button>
                     </motion.div>
                   ))}
+
+                  {/* Mobile Chat Link (Auth only) */}
+                  {isAuthenticated && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4, duration: 0.3 }}
+                    >
+                      <Button
+                        asChild
+                        variant="ghost"
+                        className="justify-start text-base rounded-full py-6 hover:bg-slate-800/70 text-slate-200 w-full group"
+                      >
+                        <Link href="/chat" className="flex items-center">
+                          <MessageCircle className="mr-2 h-5 w-5 text-blue-400 group-hover:text-blue-300" />
+                          <span className="group-hover:text-blue-400 transition-colors">Messages</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  )}
                 </div>
 
                 <motion.div

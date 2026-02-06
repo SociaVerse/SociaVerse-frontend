@@ -66,7 +66,11 @@ export default function EditEventPage() {
         community: "independent",
         description: "",
         rules: "",
-        prize: ""
+        prize: "",
+        prize_first: "",
+        prize_second: "",
+        prize_third: "",
+        prize_others: "",
     })
 
     useEffect(() => {
@@ -97,7 +101,11 @@ export default function EditEventPage() {
                         community: event.community,
                         description: event.description,
                         rules: event.rules,
-                        prize: event.prize || ""
+                        prize: event.prize || "",
+                        prize_first: event.prize_first || "",
+                        prize_second: event.prize_second || "",
+                        prize_third: event.prize_third || "",
+                        prize_others: event.prize_others || ""
                     })
                 } else {
                     toast({ type: "error", title: "Load Failed", message: "Failed to load event details." })
@@ -153,6 +161,11 @@ export default function EditEventPage() {
                 max_team_size: parseInt(String(formData.maxTeamSize)),
                 community: formData.community,
                 rules: formData.rules,
+                prize: formData.prize,
+                prize_first: formData.prize_first,
+                prize_second: formData.prize_second,
+                prize_third: formData.prize_third,
+                prize_others: formData.prize_others,
             }
 
             const response = await fetch(`http://127.0.0.1:8000/api/events/${id}/`, {
@@ -387,6 +400,22 @@ function Step1({ data, update }: { data: any, update: (field: string, value: any
                     </div>
                 </div>
 
+                <div className="space-y-3">
+                    <Label className="text-slate-300 font-medium ml-1">Event Mode</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                        {['offline', 'online'].map((mode) => (
+                            <div
+                                key={mode}
+                                className={`cursor-pointer rounded-xl border p-4 flex items-center justify-center gap-2 transition-all ${data.mode === mode ? 'bg-purple-500/10 border-purple-500 text-purple-400' : 'bg-slate-950/50 border-slate-800 text-slate-400 hover:bg-slate-900'}`}
+                                onClick={() => update("mode", mode)}
+                            >
+                                {mode === 'offline' ? <MapPin className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
+                                <span className="capitalize font-medium">{mode}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-3">
                         <Label className="text-slate-300 font-medium ml-1">Start Date</Label>
@@ -550,6 +579,62 @@ function Step3({ data, update }: { data: any, update: (field: string, value: any
                             value={data.venue}
                             onChange={(e) => update("venue", e.target.value)}
                         />
+                    </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-white/5">
+                    <Label className="text-xl font-bold text-white flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" /> Prize Distribution
+                    </Label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-yellow-400">1st Place (Gold)</Label>
+                            <Input
+                                placeholder="e.g. $1000"
+                                className="bg-neutral-950/50 border-yellow-500/30 focus:border-yellow-500 h-12 rounded-xl px-4"
+                                value={data.prize_first}
+                                onChange={(e) => update("prize_first", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-slate-400">2nd Place (Silver)</Label>
+                            <Input
+                                placeholder="e.g. $500"
+                                className="bg-neutral-950/50 border-slate-600/30 focus:border-slate-400 h-12 rounded-xl px-4"
+                                value={data.prize_second}
+                                onChange={(e) => update("prize_second", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1 text-orange-400">3rd Place (Bronze)</Label>
+                            <Input
+                                placeholder="e.g. $250"
+                                className="bg-neutral-950/50 border-orange-700/30 focus:border-orange-600 h-12 rounded-xl px-4"
+                                value={data.prize_third}
+                                onChange={(e) => update("prize_third", e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label className="text-slate-300 font-medium ml-1">Others / Participation</Label>
+                            <Input
+                                placeholder="e.g. Certificates, Swags"
+                                className="bg-neutral-950/50 border-slate-800 focus:border-purple-500 h-12 rounded-xl px-4"
+                                value={data.prize_others}
+                                onChange={(e) => update("prize_others", e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 mt-4">
+                        <Label className="text-slate-300 font-medium ml-1">Total Prize Pool Display (Optional)</Label>
+                        <Input
+                            placeholder="e.g. Worth $5000+"
+                            className="bg-neutral-950/50 border-slate-800 focus:border-purple-500 h-12 rounded-xl px-4"
+                            value={data.prize}
+                            onChange={(e) => update("prize", e.target.value)}
+                        />
+                        <p className="text-xs text-slate-500">This will be shown as the main prize summary.</p>
                     </div>
                 </div>
             </div>
