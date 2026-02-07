@@ -53,23 +53,78 @@ export default function EventsPage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [events, setEvents] = useState<Event[]>([])
     const [isFetching, setIsFetching] = useState(true)
+    const [favorites, setFavorites] = useState<Set<number>>(new Set())
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/events/')
-                if (response.ok) {
-                    const data = await response.json()
+                const token = localStorage.getItem("sociaverse_token")
+                const headers = token ? { 'Authorization': `Token ${token}` } : {}
+
+                const [eventsRes, favoritesRes] = await Promise.all([
+                    fetch('http://127.0.0.1:8000/api/events/', { headers: headers as HeadersInit }),
+                    token ? fetch('http://127.0.0.1:8000/api/events/favorites/', { headers: headers as HeadersInit }) : Promise.resolve(null)
+                ])
+
+                if (eventsRes.ok) {
+                    const data = await eventsRes.json()
                     setEvents(data)
                 }
+
+                if (favoritesRes && favoritesRes.ok) {
+                    const favs = await favoritesRes.json()
+                    setFavorites(new Set(favs))
+                }
             } catch (error) {
-                console.error("Failed to fetch events:", error)
+                console.error("Failed to fetch data:", error)
             } finally {
                 setIsFetching(false)
             }
         }
-        fetchEvents()
-    }, [])
+        fetchData()
+    }, [isAuthenticated])
+
+    const toggleFavorite = async (e: React.MouseEvent, eventId: number) => {
+        e.stopPropagation()
+        if (!isAuthenticated) return // Or show login modal
+
+        // Optimistic update
+        setFavorites(prev => {
+            const newFavs = new Set(prev)
+            if (newFavs.has(eventId)) {
+                newFavs.delete(eventId)
+            } else {
+                newFavs.add(eventId)
+            }
+            return newFavs
+        })
+
+        try {
+            const token = localStorage.getItem("sociaverse_token")
+            const response = await fetch(`http://127.0.0.1:8000/api/events/${eventId}/favorite/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            })
+
+            if (!response.ok) {
+                // Revert on failure
+                setFavorites(prev => {
+                    const newFavs = new Set(prev)
+                    if (newFavs.has(eventId)) {
+                        newFavs.delete(eventId) // Was added, so remove
+                    } else {
+                        newFavs.add(eventId) // Was removed, so add back
+                    }
+                    return newFavs
+                })
+                toast({ type: "error", title: "Error", message: "Failed to update favorite" })
+            }
+        } catch (error) {
+            console.error("Fav error:", error)
+        }
+    }
 
     if (isLoading || isFetching) {
         return <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -84,12 +139,12 @@ export default function EventsPage() {
     // Filter Logic
     const filteredEvents = events.filter(event => {
         if (activeTab === "foryou") return true
-        // For 'following', we'd normally check user follows. For now just show all or filter by a dummy logic
         if (activeTab === "following") return true
-        if (activeTab === "location") return true // Needs geolocation in future
+        if (activeTab === "location") return true
+        if (activeTab === "favorites") return favorites.has(event.id)
         return true
     }).filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        .filter(e => activeTab === 'all' || activeTab === 'foryou' || activeTab === 'following' || activeTab === 'location' ? true : e.category.toLowerCase().includes(activeTab))
+        .filter(e => activeTab === 'all' || activeTab === 'foryou' || activeTab === 'following' || activeTab === 'location' || activeTab === 'favorites' ? true : e.category.toLowerCase().includes(activeTab))
 
     const handleDelete = async (id: number) => {
         const isConfirmed = await confirm({
@@ -199,7 +254,7 @@ export default function EventsPage() {
 
                             {/* Tabs - Modernized Pill Style */}
                             <Tabs defaultValue="foryou" className="w-full md:w-auto" onValueChange={setActiveTab}>
-                                <TabsList className="bg-transparent border-none p-0 h-auto w-full md:w-auto grid grid-cols-3 md:flex gap-2">
+                                <TabsList className="bg-transparent border-none p-0 h-auto w-full md:w-auto grid grid-cols-4 md:flex gap-2">
                                     <TabsTrigger value="foryou" className="rounded-full px-4 py-2 text-sm bg-white/5 border border-white/5 data-[state=active]:bg-blue-600 data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-900/20 text-slate-400 font-medium transition-all">
                                         For You
                                     </TabsTrigger>
@@ -208,6 +263,9 @@ export default function EventsPage() {
                                     </TabsTrigger>
                                     <TabsTrigger value="location" className="rounded-full px-4 py-2 text-sm bg-white/5 border border-white/5 data-[state=active]:bg-emerald-600 data-[state=active]:border-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-900/20 text-slate-400 font-medium transition-all">
                                         Near Me
+                                    </TabsTrigger>
+                                    <TabsTrigger value="favorites" className="rounded-full px-4 py-2 text-sm bg-white/5 border border-white/5 data-[state=active]:bg-yellow-600 data-[state=active]:border-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-yellow-900/20 text-slate-400 font-medium transition-all">
+                                        Favorites
                                     </TabsTrigger>
                                 </TabsList>
                             </Tabs>
@@ -231,7 +289,7 @@ export default function EventsPage() {
                                         </Button>
                                     </SheetTrigger>
                                     <SheetContent className="bg-neutral-900/95 backdrop-blur-xl border-white/10 text-slate-100 sm:max-w-md">
-                                        {/* Filter Content (Unchanged) */}
+                                        {/* Filter Content */}
                                         <SheetHeader className="mb-6">
                                             <SheetTitle className="text-2xl font-bold text-white">Filter Events</SheetTitle>
                                         </SheetHeader>
@@ -286,7 +344,7 @@ export default function EventsPage() {
                             </div>
                         </div>
 
-                        {/* Quick Filters (Pills) - integrated into the bar */}
+                        {/* Quick Filters (Pills) */}
                         <div className=" mt-3 md:mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:justify-center px-1">
                             {CATEGORIES.map(cat => {
                                 const Icon = cat.icon
@@ -307,7 +365,14 @@ export default function EventsPage() {
                 {/* Grid */}
                 <div className="px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
                     {filteredEvents.map((event, index) => (
-                        <EventCard key={event.id} event={event} index={index} onDelete={handleDelete} />
+                        <EventCard
+                            key={event.id}
+                            event={event}
+                            index={index}
+                            onDelete={handleDelete}
+                            isFavorited={favorites.has(event.id)}
+                            onToggleFavorite={(e) => toggleFavorite(e, event.id)}
+                        />
                     ))}
                     {filteredEvents.length === 0 && (
                         <div className="col-span-full py-20 text-center bg-white/5 rounded-[3rem] border border-white/5">
@@ -326,7 +391,7 @@ export default function EventsPage() {
     )
 }
 
-function EventCard({ event, index, onDelete }: { event: any, index: number, onDelete: (id: number) => void }) {
+function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { event: any, index: number, onDelete: (id: number) => void, isFavorited: boolean, onToggleFavorite: (e: React.MouseEvent) => void }) {
     const { user } = useAuth()
     const isOwner = user?.username === event.organizer_name
     const router = useRouter()
@@ -341,7 +406,7 @@ function EventCard({ event, index, onDelete }: { event: any, index: number, onDe
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={handleCardClick}
-            className="group relative bg-neutral-900 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col h-full cursor-pointer"
+            className="group relative bg-neutral-900 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col cursor-pointer"
         >
             {/* Image Section */}
             <div className="relative h-64 overflow-hidden shrink-0">
@@ -378,8 +443,12 @@ function EventCard({ event, index, onDelete }: { event: any, index: number, onDe
                             </Button>
                         </>
                     )}
-                    <Button size="icon" onClick={(e) => e.stopPropagation()} className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-white/20 hover:scale-110 transition-all">
-                        <Star className="w-4 h-4" />
+                    <Button
+                        size="icon"
+                        onClick={onToggleFavorite}
+                        className={`h-10 w-10 rounded-full backdrop-blur-md border transition-all ${isFavorited ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500 hover:bg-yellow-500/30' : 'bg-white/10 border-white/10 text-white hover:bg-white/20 hover:scale-110'}`}
+                    >
+                        <Star className={`w-4 h-4 ${isFavorited ? 'fill-yellow-500' : ''}`} />
                     </Button>
                 </div>
             </div>
@@ -439,7 +508,11 @@ function AuthLockOverlay() {
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
             {/* Background Ambience */}
-            {/* Background Ambience - Removed, handled by BackgroundManager (or simplified for overlay) */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] opacity-30 animate-pulse" style={{ animationDuration: '8s' }} />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px] opacity-30 animate-pulse" style={{ animationDuration: '10s' }} />
+                <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-emerald-500/5 rounded-full blur-[100px]" />
+            </div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
