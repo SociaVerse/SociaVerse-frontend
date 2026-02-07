@@ -32,6 +32,9 @@ export function Login() {
     }
   }
 
+  const [showWelcome, setShowWelcome] = useState(false)
+  const [userData, setUserData] = useState<any>(null)
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({ email: "", password: "" })
@@ -62,7 +65,34 @@ export function Login() {
       if (response.ok) {
         if (data.token) {
           localStorage.setItem("sociaverse_token", data.token)
+
+          // Fetch user details for welcome screen
+          try {
+            const userResponse = await fetch("http://127.0.0.1:8000/api/users/me/", {
+              headers: {
+                'Authorization': `Token ${data.token}`
+              }
+            })
+            if (userResponse.ok) {
+              const userDetails = await userResponse.json()
+              setUserData(userDetails)
+              setShowWelcome(true)
+
+              // Login context update
+              login()
+
+              // Delay redirect
+              setTimeout(() => {
+                router.push("/events")
+              }, 2000)
+              return // Stop execution here to show welcome screen
+            }
+          } catch (err) {
+            console.error("Failed to fetch user details", err)
+          }
         }
+
+        // Fallback if user fetch fails
         login()
         router.push("/events")
       } else {
@@ -75,8 +105,64 @@ export function Login() {
       console.error("Login error:", error)
       setErrors(prev => ({ ...prev, password: "Network error. Please try again." }))
     } finally {
-      setIsLoading(false)
+      if (!showWelcome) setIsLoading(false)
     }
+  }
+
+  if (showWelcome && userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse-slow" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center z-10 flex flex-col items-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+            className="w-32 h-32 rounded-full border-4 border-blue-500 shadow-2xl overflow-hidden mb-6 relative"
+          >
+            <img
+              src={userData.profile_picture || `https://ui-avatars.com/api/?name=${userData.username}`}
+              alt={userData.username}
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-4xl md:text-5xl font-bold text-white mb-2"
+          >
+            Welcome, <span className="text-blue-400">{userData.username}</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-slate-400 text-lg"
+          >
+            Entering SociaVerse...
+          </motion.p>
+
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: 200 }}
+            transition={{ delay: 0.6, duration: 1.5 }}
+            className="h-1 bg-gradient-to-r from-blue-500 to-purple-500 mt-8 rounded-full"
+          />
+        </motion.div>
+      </div>
+    )
   }
 
   return (

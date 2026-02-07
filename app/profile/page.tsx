@@ -1,25 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/components/auth-provider"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
-    User, Mail, MapPin, Link as LinkIcon, Edit2, Settings, Share2, Camera, LogOut,
+    User, Mail, MapPin, Link as LinkIcon, Settings, Share2, Camera, LogOut, Lock,
     Calendar, Briefcase, Grid, Heart, Image as ImageIcon, MessageCircle, MoreHorizontal,
-    BadgeCheck
+    BadgeCheck, Loader2, X, Check, Trash2
 } from "lucide-react"
+import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
 import Link from "next/link"
+import { useToast } from "@/components/ui/custom-toast"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ProfilePage() {
-    const { isAuthenticated, logout, isLoading } = useAuth()
+    const { isAuthenticated, user, isLoading } = useAuth()
     const router = useRouter()
-    const [isEditing, setIsEditing] = useState(false)
     const [activeTab, setActiveTab] = useState("Posts")
+    const { toast } = useToast()
 
     // State
     const [profile, setProfile] = useState({
@@ -29,10 +38,13 @@ export default function ProfilePage() {
         bio: "",
         location: "",
         website: "",
+        gender: "",
+        social_links: {} as any,
+        is_private: false,
         avatar: null as string | null,
-        cover: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
-        joined: "September 2023",
-        role: "Software Engineer"
+        banner: null as string | null,
+        joined: "",
+        role: "Member"
     })
     const [isLoadingData, setIsLoadingData] = useState(true)
 
@@ -46,84 +58,40 @@ export default function ProfilePage() {
 
     const fetchProfile = async () => {
         try {
-            const token = localStorage.getItem('token')
-            // Mocking a successful fetch for development if API fails or for demo purposes
-            // In real scenario, uncomment the fetch logic:
-            /*
+            const token = localStorage.getItem('sociaverse_token')
             const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
                 const data = await response.json()
-                 setProfile(prev => ({
-                    ...prev,
+                setProfile({
                     name: `${data.first_name} ${data.last_name}`.trim() || data.username,
                     username: data.username,
                     email: data.email,
-                    location: data.college || "San Francisco, CA",
-                    // ... keep other fields or defaults
-                }))
+                    bio: data.bio || "",
+                    location: data.location || "",
+                    website: data.website || "",
+                    gender: data.gender || "",
+                    social_links: data.social_links || {},
+                    is_private: data.is_private || false,
+                    avatar: data.profile_picture || null,
+                    banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
+                    joined: "February 2026", // TODO: Add joined date to backend serializer if needed
+                    role: data.is_verified ? "Verified User" : "Member"
+                })
             }
-            */
-
-            // Simulating API load
-            setTimeout(() => {
-                setProfile(prev => ({
-                    ...prev,
-                    name: "Alex Rivera",
-                    username: "arivera_dev",
-                    email: "alex@example.com",
-                    bio: "Building digital experiences that matter. 🚀 Full-stack developer & UI enthusiast. Coffee lover ☕",
-                    location: "San Francisco, CA",
-                    website: "alexrivera.dev",
-                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200",
-                    cover: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&q=80&w=2000"
-                }))
-                setIsLoadingData(false)
-            }, 800)
-
         } catch (error) {
             console.error("Error fetching profile:", error)
+            toast({ title: "Error", message: "Failed to load profile data", type: "error" })
+        } finally {
             setIsLoadingData(false)
         }
     }
 
     if (isLoading || isLoadingData) {
         return (
-            <div className="min-h-screen bg-slate-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
-                {/* Skeleton Header */}
-                <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-                    <div className="w-full h-48 md:h-64 bg-slate-900 rounded-xl relative">
-                        <div className="absolute -bottom-16 left-8 w-32 h-32 md:w-40 md:h-40 bg-slate-800 rounded-full border-4 border-slate-950" />
-                    </div>
-
-                    <div className="flex justify-end pt-4 px-4 md:px-8">
-                        <div className="flex gap-3">
-                            <div className="w-24 h-10 bg-slate-900 rounded-full" />
-                            <div className="w-10 h-10 bg-slate-900 rounded-full" />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 px-2">
-                        {/* Left Col Skeleton */}
-                        <div className="space-y-6">
-                            <div className="h-64 bg-slate-900 rounded-xl" />
-                            <div className="h-48 bg-slate-900 rounded-xl" />
-                        </div>
-
-                        {/* Right Col Skeleton */}
-                        <div className="md:col-span-2 space-y-6">
-                            <div className="flex gap-8 border-b border-slate-800 pb-4">
-                                <div className="w-16 h-4 bg-slate-900 rounded" />
-                                <div className="w-16 h-4 bg-slate-900 rounded" />
-                                <div className="w-16 h-4 bg-slate-900 rounded" />
-                            </div>
-                            <div className="h-32 bg-slate-900 rounded-xl" />
-                            <div className="h-64 bg-slate-900 rounded-xl" />
-                            <div className="h-64 bg-slate-900 rounded-xl" />
-                        </div>
-                    </div>
-                </div>
+            <div className="min-h-screen bg-slate-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
             </div>
         )
     }
@@ -136,61 +104,54 @@ export default function ProfilePage() {
             {/* --- Cover Image --- */}
             <div className="relative h-64 md:h-80 w-full overflow-hidden group">
                 <img
-                    src={profile.cover}
+                    src={profile.banner!}
                     alt="Cover"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-
-                {/* Edit Cover Trigger */}
-                <div className="absolute top-24 right-4 md:top-auto md:bottom-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="secondary" size="sm" className="bg-black/50 hover:bg-black/70 text-white border-none backdrop-blur-md">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Edit Cover
-                    </Button>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
             </div>
 
             {/* --- Profile Header Info --- */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-20 md:-mt-24">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24 md:-mt-32">
                 <div className="flex flex-col md:flex-row items-start justify-between gap-6">
 
                     {/* Avatar & Key Info */}
-                    <div className="flex flex-col md:flex-row items-end md:items-end gap-6 relative">
+                    <div className="flex flex-col md:flex-row items-end md:items-end gap-6 relative w-full md:w-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="relative"
+                            className="relative mx-auto md:mx-0"
                         >
-                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 bg-slate-900 overflow-hidden shadow-2xl relative group cursor-pointer">
-                                <img src={profile.avatar || ""} alt={profile.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Camera className="w-8 h-8 text-white/80" />
-                                </div>
+                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 bg-slate-900 overflow-hidden shadow-2xl relative group">
+                                <img
+                                    src={profile.avatar || `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
+                                    alt={profile.name}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                             <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-6 h-6 bg-green-500 border-4 border-slate-950 rounded-full" title="Online" />
                         </motion.div>
 
-                        <div className="mb-2 md:mb-4 pt-2 md:pt-0">
-                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-2">
+                        <div className="mb-2 md:mb-4 pt-2 md:pt-0 text-center md:text-left flex-1">
+                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
                                 {profile.name}
-                                <BadgeCheck className="w-6 h-6 text-blue-500" />
+                                {profile.role === "Verified User" && <BadgeCheck className="w-6 h-6 text-blue-500" />}
+                                {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
                             <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
                         </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-3 mt-4 md:mt-0 md:self-end md:mb-6">
-                        <Button className="rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
-                            Edit Profile
-                        </Button>
+                    <div className="flex items-center gap-3 mt-4 md:mt-0 md:self-end md:mb-6 w-full md:w-auto justify-center md:justify-end">
+                        <Link href="/settings/profile">
+                            <Button className="rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
+                                Edit Profile
+                            </Button>
+                        </Link>
                         <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
                             <Share2 className="w-4 h-4 mr-2" />
                             Share
-                        </Button>
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-800 text-slate-400">
-                            <MoreHorizontal className="w-5 h-5" />
                         </Button>
                     </div>
                 </div>
@@ -205,22 +166,65 @@ export default function ProfilePage() {
                         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
                             <h3 className="text-lg font-bold text-white mb-4">Intro</h3>
                             <div className="space-y-4 text-sm text-slate-400">
-                                <p className="text-slate-300 leading-relaxed text-base">{profile.bio}</p>
+                                {profile.bio && (
+                                    <p className="text-slate-300 leading-relaxed text-base">{profile.bio}</p>
+                                )}
                                 <div className="flex items-center gap-3">
                                     <Briefcase className="w-5 h-5 text-slate-500" />
                                     <span>{profile.role}</span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin className="w-5 h-5 text-slate-500" />
-                                    <span>{profile.location}</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <LinkIcon className="w-5 h-5 text-slate-500" />
-                                    <a href={`https://${profile.website}`} className="text-blue-400 hover:underline">{profile.website}</a>
-                                </div>
+                                {profile.location && (
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-5 h-5 text-slate-500" />
+                                        <span>{profile.location}</span>
+                                    </div>
+                                )}
+                                {profile.website && (
+                                    <div className="flex items-center gap-3">
+                                        <LinkIcon className="w-5 h-5 text-slate-500" />
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate max-w-[200px]">
+                                            {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-3">
                                     <Calendar className="w-5 h-5 text-slate-500" />
                                     <span>Joined {profile.joined}</span>
+                                </div>
+                                {profile.gender && profile.gender !== 'N' && (
+                                    <div className="flex items-center gap-3">
+                                        <User className="w-5 h-5 text-slate-500" />
+                                        <span>{profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : 'Other'}</span>
+                                    </div>
+                                )}
+
+                                {/* Social Links */}
+                                <div className="flex flex-wrap gap-3 pt-2">
+                                    {profile.social_links.twitter && (
+                                        <a href={profile.social_links.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-500/20 hover:text-blue-500 transition-colors">
+                                            <FaTwitter className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.instagram && (
+                                        <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-pink-500/20 hover:text-pink-500 transition-colors">
+                                            <FaInstagram className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.linkedin && (
+                                        <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-700/20 hover:text-blue-700 transition-colors">
+                                            <FaLinkedin className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.github && (
+                                        <a href={profile.social_links.github} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-white/10 hover:text-white transition-colors">
+                                            <FaGithub className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.website && (
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-green-500/20 hover:text-green-500 transition-colors">
+                                            <FaGlobe className="w-4 h-4" />
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -231,16 +235,8 @@ export default function ProfilePage() {
                                 <h3 className="text-lg font-bold text-white">Photos</h3>
                                 <Button variant="link" className="text-blue-400 p-0 h-auto text-sm">See all</Button>
                             </div>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="aspect-square rounded-lg overflow-hidden bg-slate-800 hover:opacity-90 cursor-pointer transition-opacity">
-                                        <img
-                                            src={`https://images.unsplash.com/photo-${1550000000000 + i * 1000000}?auto=format&fit=crop&q=80&w=200`}
-                                            alt="Gallery"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                ))}
+                            <div className="text-center py-8 text-slate-500 text-sm">
+                                No photos yet
                             </div>
                         </div>
                     </div>
@@ -249,12 +245,12 @@ export default function ProfilePage() {
                     <div className="lg:col-span-8">
 
                         {/* Custom Tabs */}
-                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px">
+                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto">
                             {["Posts", "About", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`pb-4 text-sm font-semibold transition-colors relative ${activeTab === tab ? "text-blue-400" : "text-slate-500 hover:text-slate-300"
+                                    className={`pb-4 text-sm font-semibold transition-colors relative whitespace-nowrap ${activeTab === tab ? "text-blue-400" : "text-slate-500 hover:text-slate-300"
                                         }`}
                                 >
                                     {tab}
@@ -276,17 +272,13 @@ export default function ProfilePage() {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {activeTab === "Posts" && <PostsFeed profile={profile} />}
+                                {activeTab === "Posts" && <PostsFeed profile={profile} currentUser={user} />}
                                 {activeTab === "About" && (
                                     <div className="text-slate-400 text-center py-10">About details coming soon...</div>
                                 )}
                                 {activeTab === "Media" && (
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
-                                                <img src={`https://images.unsplash.com/photo-${1550000000000 + i * 5000000}?auto=format&fit=crop&q=80&w=600`} alt="Media" className="w-full h-full object-cover" />
-                                            </div>
-                                        ))}
+                                    <div className="text-center py-12 text-slate-500">
+                                        No media yet
                                     </div>
                                 )}
                             </motion.div>
@@ -299,93 +291,380 @@ export default function ProfilePage() {
     )
 }
 
+
+
+
 // --- Sub-components for Feed ---
 
-function PostsFeed({ profile }: { profile: any }) {
+// --- Sub-components for Feed ---
+
+function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any }) {
+    const [content, setContent] = useState("")
+    const [images, setImages] = useState<File[]>([])
+    const [posts, setPosts] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const { toast } = useToast()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    useEffect(() => {
+        fetchPosts()
+    }, [])
+
+    const fetchPosts = async () => {
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const response = await fetch('http://127.0.0.1:8000/api/posts/', {
+                headers: { 'Authorization': `Token ${token}` }
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setPosts(data)
+            }
+        } catch (error) {
+            console.error("Error fetching posts:", error)
+        }
+    }
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const selectedFiles = Array.from(e.target.files)
+            if (images.length + selectedFiles.length > 10) {
+                toast({ title: "Limit Exceeded", message: "You can only upload up to 10 images.", type: "error" })
+                return
+            }
+            setImages(prev => [...prev, ...selectedFiles])
+        }
+    }
+
+    const removeImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index))
+    }
+
+    const handleCreatePost = () => {
+        if (!content.trim() && images.length === 0) return
+        setShowConfirm(true)
+    }
+
+    const confirmPost = async () => {
+        setShowConfirm(false)
+        setIsLoading(true)
+        const formData = new FormData()
+        formData.append('content', content)
+        images.forEach(image => {
+            formData.append('uploaded_images', image)
+        })
+
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const response = await fetch('http://127.0.0.1:8000/api/posts/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            })
+
+            if (response.ok) {
+                const newPost = await response.json()
+                setPosts(prev => [newPost, ...prev])
+                setContent("")
+                setImages([])
+                setShowSuccess(true)
+                setTimeout(() => setShowSuccess(false), 3000)
+                toast({ title: "Success", message: "Post created successfully!", type: "success" })
+            } else {
+                toast({ title: "Error", message: "Failed to create post.", type: "error" })
+            }
+        } catch (error) {
+            console.error("Error creating post:", error)
+            toast({ title: "Error", message: "Something went wrong.", type: "error" })
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleDeletePost = async (postId: number) => {
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const response = await fetch(`http://127.0.0.1:8000/api/posts/${postId}/`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Token ${token}` }
+            })
+
+            if (response.ok) {
+                setPosts(prev => prev.filter(p => p.id !== postId))
+                toast({ title: "Deleted", message: "Post deleted successfully.", type: "success" })
+            } else {
+                toast({ title: "Error", message: "Failed to delete post.", type: "error" })
+            }
+        } catch (error) {
+            console.error("Error deleting post:", error)
+            toast({ title: "Error", message: "Failed to delete post.", type: "error" })
+        }
+    }
+
     return (
-        <div className="space-y-6">
-            {/* Create Post Input */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden flex-shrink-0">
-                    <img src={profile.avatar} alt="Me" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                    <input
-                        type="text"
-                        placeholder="What's on your mind?"
-                        className="w-full bg-transparent border-none outline-none text-slate-200 placeholder:text-slate-500 h-10"
-                    />
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/50">
-                        <div className="flex gap-2 text-blue-400">
-                            <Button variant="ghost" size="icon" className="hover:bg-blue-500/10 hover:text-blue-400 rounded-full w-8 h-8">
-                                <ImageIcon className="w-5 h-5" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="hover:bg-blue-500/10 hover:text-blue-400 rounded-full w-8 h-8">
-                                <MapPin className="w-5 h-5" />
-                            </Button>
+        <div className="space-y-6 relative">
+            {/* Success Animation */}
+            <AnimatePresence>
+                {showSuccess && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                    >
+                        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col items-center shadow-2xl">
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                                className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-6"
+                            >
+                                <Check className="w-10 h-10 text-slate-950" strokeWidth={3} />
+                            </motion.div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Post Published!</h2>
+                            <p className="text-slate-400">Your moment has been shared.</p>
                         </div>
-                        <Button size="sm" className="rounded-full bg-blue-600 hover:bg-blue-500 text-white px-6">Post</Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Lightbox */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedImage(null)}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 cursor-pointer"
+                    >
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full z-[10000]"
+                            onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+                        >
+                            <X className="w-8 h-8" />
+                        </Button>
+                        <motion.img
+                            layoutId={selectedImage}
+                            src={selectedImage}
+                            alt="Full screen"
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Confirmation Dialog */}
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Ready to publish?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Your post will be visible to your followers and on your profile.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmPost} className="bg-blue-600 text-white hover:bg-blue-700">Publish Post</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Create Post Input and List -- only show create input if looking at own profile */}
+            {currentUser && currentUser.username === profile.username && (
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4">
+                    <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden flex-shrink-0">
+                            <img
+                                src={currentUser.profile_picture || `https://ui-avatars.com/api/?name=${currentUser.username}`}
+                                alt="Me"
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="flex-1 space-y-3">
+                            <textarea
+                                placeholder="What's on your mind?"
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                className="w-full bg-transparent border-none outline-none text-slate-200 placeholder:text-slate-500 min-h-[40px] resize-none"
+                                rows={Math.max(2, content.split('\n').length)}
+                            />
+
+                            {/* Image Previews */}
+                            {images.length > 0 && (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                    {images.map((img, index) => (
+                                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
+                                            <img src={URL.createObjectURL(img)} alt="Preview" className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => removeImage(index)}
+                                                className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-800/50">
+                                <div className="flex gap-2 text-blue-400">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        ref={fileInputRef}
+                                        onChange={handleImageUpload}
+                                    />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="hover:bg-blue-500/10 hover:text-blue-400 rounded-full w-8 h-8"
+                                    >
+                                        <ImageIcon className="w-5 h-5" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="hover:bg-blue-500/10 hover:text-blue-400 rounded-full w-8 h-8">
+                                        <MapPin className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                                <Button
+                                    size="sm"
+                                    className="rounded-full bg-blue-600 hover:bg-blue-500 text-white px-6"
+                                    onClick={handleCreatePost}
+                                    disabled={isLoading || (!content.trim() && images.length === 0)}
+                                >
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            {/* Pinned Post */}
-            <PostCard
-                author={profile}
-                time="Pinned"
-                content="Excited to announce I'm joining the SociaVerse team! 🌍 Let's build the future of social connection together."
-                image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1200"
-                stats={{ likes: 420, comments: 45, shares: 12 }}
-                isPinned
-            />
-
-            {/* Normal Post */}
-            <PostCard
-                author={profile}
-                time="2h ago"
-                content="Just pushed some updates to my portfolio. Check it out and let me know what you think! 🎨 #WebDesign #React"
-                stats={{ likes: 85, comments: 12, shares: 3 }}
-            />
+            {/* Posts List */}
+            {posts.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                    <p>No posts yet. {currentUser && currentUser.username === profile.username ? "Share your first moment!" : ""}</p>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    {posts.map((post) => (
+                        <PostCard key={post.id} post={post} currentUser={currentUser} onDelete={handleDeletePost} onImageClick={setSelectedImage} />
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
 
-function PostCard({ author, time, content, image, stats, isPinned }: any) {
+function PostCard({ post, currentUser, onDelete, onImageClick }: { post: any, currentUser: any, onDelete: (id: number) => void, onImageClick: (src: string) => void }) {
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const isOwner = currentUser && post.author.username === currentUser.username
+
+    const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+        return new Date(dateString).toLocaleDateString(undefined, options)
+    }
+
+    const getImageUrl = (path: string | null) => {
+        if (!path) return null
+        if (path.startsWith('http')) return path
+        return `http://127.0.0.1:8000${path}`
+    }
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors"
+            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors group relative"
         >
+            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            This action cannot be undone. This post will be permanently removed.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => onDelete(post.id)} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <div className="flex gap-3 mb-3">
-                <img src={author.avatar} alt={author.name} className="w-10 h-10 rounded-full object-cover border border-slate-800" />
-                <div>
-                    <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-slate-200">{author.name}</h4>
-                        {isPinned && <span className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full flex items-center gap-1"><BadgeCheck className="w-3 h-3" /> Pinned</span>}
+                <img
+                    src={getImageUrl(post.author.profile_picture) || `https://ui-avatars.com/api/?name=${post.author.username}`}
+                    alt={post.author.username}
+                    className="w-10 h-10 rounded-full object-cover border border-slate-800"
+                />
+                <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-200">{post.author.first_name || post.author.username}</h4>
+                            {post.author.is_verified && <BadgeCheck className="w-4 h-4 text-blue-500" />}
+                        </div>
+                        {isOwner && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => setShowDeleteConfirm(true)}
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        )}
                     </div>
-                    <p className="text-xs text-slate-500">@{author.username} · {time}</p>
+                    <p className="text-xs text-slate-500">@{post.author.username} · {formatDate(post.created_at)}</p>
                 </div>
             </div>
 
-            <p className="text-slate-300 mb-4 whitespace-pre-wrap leading-relaxed">{content}</p>
+            <p className="text-slate-300 mb-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
 
-            {image && (
-                <div className="rounded-xl overflow-hidden mb-4 border border-slate-800">
-                    <img src={image} alt="Post" className="w-full h-auto object-cover" />
+            {/* Images Grid */}
+            {post.images && post.images.length > 0 && (
+                <div className={`grid gap-2 mb-4 rounded-xl overflow-hidden ${post.images.length === 1 ? 'grid-cols-1' :
+                    post.images.length === 2 ? 'grid-cols-2' :
+                        'grid-cols-2 md:grid-cols-3'
+                    }`}>
+                    {post.images.map((imgObj: any, index: number) => {
+                        const imgUrl = getImageUrl(imgObj.image) || ''
+                        return (
+                            <div key={imgObj.id} className={`relative ${post.images.length === 1 ? 'aspect-video' : 'aspect-square'}`}>
+                                <motion.img
+                                    layoutId={imgUrl}
+                                    src={imgUrl}
+                                    alt={`Post Image ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                    onClick={() => onImageClick(imgUrl)}
+                                />
+                            </div>
+                        )
+                    })}
                 </div>
             )}
 
             <div className="flex items-center justify-between text-slate-500 pt-2 border-t border-slate-800/50">
-                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2 rounded-full">
-                    <Heart className="w-4 h-4" /> {stats.likes}
+                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2 rounded-full transition-colors">
+                    <Heart className="w-4 h-4" /> Like
                 </Button>
-                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 rounded-full">
-                    <MessageCircle className="w-4 h-4" /> {stats.comments}
+                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 rounded-full transition-colors">
+                    <MessageCircle className="w-4 h-4" /> Comment
                 </Button>
-                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2 rounded-full">
-                    <Share2 className="w-4 h-4" /> {stats.shares}
+                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2 rounded-full transition-colors">
+                    <Share2 className="w-4 h-4" /> Share
                 </Button>
             </div>
         </motion.div>

@@ -10,6 +10,8 @@ interface User {
     first_name: string
     last_name: string
     college: string
+    profile_picture: string | null
+    is_verified: boolean
 }
 
 interface AuthContextType {
