@@ -98,10 +98,10 @@ function SearchBar() {
     const [query, setQuery] = useState("")
 
     const recentSearches = [
-        { id: 1, name: "jenny_coox", subtitle: "Jenny Cox • 541K followers", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
-        { id: 2, name: "vaishnavi_bhadauria", subtitle: "Vaishnavi 🌙 • Following", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100" },
-        { id: 3, name: "apurvaa.pdf", subtitle: "अपूर्वा 🌸 • Following", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
-        { id: 4, name: "kunal_kushwaha", subtitle: "Kunal Kushwaha • Following", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100" },
+        { id: 1, name: "Jenny", subtitle: "Jenny Cox • 541K followers", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
+        { id: 2, name: "Emma", subtitle: "Emma 🌙 • Following", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100" },
+        { id: 3, name: "Apurva", subtitle: "Apurva 🌸 • Following", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
+        { id: 4, name: "Kunal", subtitle: "Kunal • Following", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100" },
     ]
 
     return (
