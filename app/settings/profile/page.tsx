@@ -7,10 +7,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/custom-toast"
+import { Switch } from "@/components/ui/switch"
 import {
     Loader2, Camera, Instagram, Twitter, Linkedin, Github, Globe, MapPin,
-    User as UserIcon, Calendar, Save
+    User as UserIcon, Calendar, Save, Lock
 } from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function ProfileSettingsPage() {
     const { isAuthenticated, isLoading } = useAuth()
@@ -32,6 +43,8 @@ export default function ProfileSettingsPage() {
     const githubRef = useRef<HTMLInputElement>(null)
 
     const [gender, setGender] = useState("")
+    const [isPrivate, setIsPrivate] = useState(false)
+    const [showPrivacyConfirm, setShowPrivacyConfirm] = useState(false)
 
     // File Uploads
     const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -62,6 +75,7 @@ export default function ProfileSettingsPage() {
                 if (dobRef.current) dobRef.current.value = data.date_of_birth || ""
 
                 setGender(data.gender || "")
+                setIsPrivate(data.is_private || false)
                 setAvatarPreview(data.profile_picture)
                 setBannerPreview(data.banner_image)
 
@@ -94,6 +108,49 @@ export default function ProfileSettingsPage() {
         }
     }
 
+    const handlePrivacyToggle = (checked: boolean) => {
+        if (checked) {
+            setShowPrivacyConfirm(true)
+        } else {
+            updatePrivacy(false)
+        }
+    }
+
+    const confirmPrivacy = () => {
+        setShowPrivacyConfirm(false)
+        updatePrivacy(true)
+    }
+
+    const updatePrivacy = async (newVal: boolean) => {
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const formData = new FormData()
+            formData.append('is_private', newVal ? 'true' : 'false') // FormData needs string
+
+            // We can also use JSON if backend supports partially, but here existing handleSubmit uses FormData
+            // Let's stick to FormData for consistency or PATCH specific field?
+            // Since existing PATCH endpoint checks for fields in request.data, it should be fine.
+
+            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            })
+
+            if (response.ok) {
+                setIsPrivate(newVal)
+                toast({ title: "Updated", message: `Account is now ${newVal ? 'Private' : 'Public'}`, type: "success" })
+            } else {
+                toast({ title: "Error", message: "Failed to update privacy settings", type: "error" })
+            }
+        } catch (error) {
+            console.error(error)
+            toast({ title: "Error", message: "Network error", type: "error" })
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
@@ -117,11 +174,7 @@ export default function ProfileSettingsPage() {
             if (avatarFile) formData.append('profile_picture', avatarFile)
             if (bannerFile) formData.append('banner_image', bannerFile)
 
-            // Social Links (Serialize as JSON string for now, or handle in backend as json)
-            // Note: Since we are using FormData, sending JSON object directly might be tricky depending on DRF setup.
-            // Let's create a dictionary and append it as a string if backend expects stringified JSON or handle normally.
-            // The backend User model has social_links as JSONField. DRF handles JSON parsing usually.
-            // But FormData sends strings. We might need to send it as a JSON string key.
+            // Social Links
             const socialLinks = {
                 twitter: twitterRef.current?.value,
                 instagram: instagramRef.current?.value,
@@ -166,6 +219,22 @@ export default function ProfileSettingsPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+
+            <AlertDialog open={showPrivacyConfirm} onOpenChange={setShowPrivacyConfirm}>
+                <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Make account private?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                            Only people you approve can see your photos and videos. Your existing followers won't be affected.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmPrivacy} className="bg-blue-600 text-white hover:bg-blue-700">Switch to Private</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <div className="flex items-center justify-between border-b border-slate-800 pb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Edit Profile</h1>
@@ -182,6 +251,25 @@ export default function ProfileSettingsPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8 max-w-3xl">
+
+                {/* Privacy Section */}
+                <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/50">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 font-semibold text-white">
+                                <Lock className="w-4 h-4 text-slate-400" />
+                                Private Account
+                            </div>
+                            <p className="text-sm text-slate-400 max-w-md">
+                                When your account is private, only people you approve can see your photos and videos.
+                            </p>
+                        </div>
+                        <Switch
+                            checked={isPrivate}
+                            onCheckedChange={handlePrivacyToggle}
+                        />
+                    </div>
+                </div>
 
                 {/* Images Section */}
                 <div className="space-y-6">

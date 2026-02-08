@@ -24,6 +24,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+import { UserList } from "@/components/user-list"
+
 export default function ProfilePage() {
     const { isAuthenticated, user, isLoading } = useAuth()
     const router = useRouter()
@@ -32,6 +34,7 @@ export default function ProfilePage() {
 
     // State
     const [profile, setProfile] = useState({
+        id: 0,
         name: "",
         username: "",
         email: "",
@@ -41,6 +44,8 @@ export default function ProfilePage() {
         gender: "",
         social_links: {} as any,
         is_private: false,
+        followers_count: 0,
+        following_count: 0,
         avatar: null as string | null,
         banner: null as string | null,
         joined: "",
@@ -65,6 +70,7 @@ export default function ProfilePage() {
             if (response.ok) {
                 const data = await response.json()
                 setProfile({
+                    id: data.id,
                     name: `${data.first_name} ${data.last_name}`.trim() || data.username,
                     username: data.username,
                     email: data.email,
@@ -74,6 +80,8 @@ export default function ProfilePage() {
                     gender: data.gender || "",
                     social_links: data.social_links || {},
                     is_private: data.is_private || false,
+                    followers_count: data.followers_count || 0,
+                    following_count: data.following_count || 0,
                     avatar: data.profile_picture || null,
                     banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
                     joined: "February 2026", // TODO: Add joined date to backend serializer if needed
@@ -139,6 +147,14 @@ export default function ProfilePage() {
                                 {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
                             <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
+                            <div className="flex items-center justify-center md:justify-start gap-6 mt-2 text-slate-300">
+                                <div className="cursor-pointer hover:text-white transition-colors" onClick={() => setActiveTab("Followers")}>
+                                    <span className="font-bold text-white">{profile.followers_count}</span> Followers
+                                </div>
+                                <div className="cursor-pointer hover:text-white transition-colors" onClick={() => setActiveTab("Following")}>
+                                    <span className="font-bold text-white">{profile.following_count}</span> Following
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -246,7 +262,7 @@ export default function ProfilePage() {
 
                         {/* Custom Tabs */}
                         <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto">
-                            {["Posts", "About", "Media", "Likes"].map((tab) => (
+                            {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
@@ -273,6 +289,12 @@ export default function ProfilePage() {
                                 transition={{ duration: 0.2 }}
                             >
                                 {activeTab === "Posts" && <PostsFeed profile={profile} currentUser={user} />}
+                                {activeTab === "Followers" && (
+                                    <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
+                                )}
+                                {activeTab === "Following" && (
+                                    <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
+                                )}
                                 {activeTab === "About" && (
                                     <div className="text-slate-400 text-center py-10">About details coming soon...</div>
                                 )}
@@ -316,7 +338,7 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
     const fetchPosts = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('http://127.0.0.1:8000/api/posts/', {
+            const response = await fetch(`http://127.0.0.1:8000/api/posts/?username=${profile.username}`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {

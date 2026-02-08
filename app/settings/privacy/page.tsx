@@ -1,154 +1,190 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/custom-toast"
-import { Shield, Lock, Users, Ban, Loader2 } from "lucide-react"
+import { Loader2, Ban, EyeOff, UserX } from "lucide-react"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/components/auth-provider"
+import Link from "next/link"
 
 export default function PrivacySettingsPage() {
-    const { isAuthenticated, isLoading } = useAuth()
-    const { toast } = useToast()
-    const [loading, setLoading] = useState(false)
-    const [fetching, setFetching] = useState(true)
-
-    const [isPrivate, setIsPrivate] = useState(false)
     const [blockedUsers, setBlockedUsers] = useState<any[]>([])
+    const [restrictedUsers, setRestrictedUsers] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+    const { toast } = useToast()
+    const { isAuthenticated } = useAuth()
 
     useEffect(() => {
         if (isAuthenticated) {
-            fetchPrivacySettings()
+            fetchData()
         }
     }, [isAuthenticated])
 
-    const fetchPrivacySettings = async () => {
+    const fetchData = async () => {
+        setIsLoading(true)
+        const token = localStorage.getItem('sociaverse_token')
+        const headers: HeadersInit = {}
+        if (token) headers['Authorization'] = `Token ${token}`
+
         try {
-            const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
+            const [blockedRes, restrictedRes] = await Promise.all([
+                fetch('http://127.0.0.1:8000/api/users/blocked-users/', { headers }),
+                fetch('http://127.0.0.1:8000/api/users/restricted-users/', { headers })
+            ])
+
+            if (blockedRes.ok) setBlockedUsers(await blockedRes.json())
+            if (restrictedRes.ok) setRestrictedUsers(await restrictedRes.json())
+
+        } catch (error) {
+            console.error("Error fetching privacy data", error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleUnblock = async (userId: number) => {
+        const token = localStorage.getItem('sociaverse_token')
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/users/block/${userId}/`, {
+                method: 'DELETE',
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
-                const data = await response.json()
-                setIsPrivate(data.is_private)
-                // Assuming blocked_users comes as a list of objects or IDs. 
-                // For now, let's mock the blocked users list or handle if backend returns it.
-                // If backend returns IDs, we might need to fetch their details. 
-                // For this implementation, we will assume empty list if not provided precisely.
-                setBlockedUsers(data.blocked_users || [])
+                setBlockedUsers(prev => prev.filter(u => u.id !== userId))
+                toast({ title: "Unblocked", message: "User has been unblocked.", type: "success" })
             }
         } catch (error) {
-            console.error("Error fetching privacy settings:", error)
-        } finally {
-            setFetching(false)
+            console.error(error)
         }
     }
 
-    const handlePrivacyToggle = async (checked: boolean) => {
-        setIsPrivate(checked) // Optimistic update
+    const handleUnrestrict = async (userId: number) => {
+        const token = localStorage.getItem('sociaverse_token')
         try {
-            const token = localStorage.getItem('sociaverse_token')
-            const formData = new FormData()
-            formData.append('is_private', checked.toString())
-
-            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
-                method: 'PATCH',
-                headers: { 'Authorization': `Token ${token}` },
-                body: formData
+            const response = await fetch(`http://127.0.0.1:8000/api/users/restrict/${userId}/`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Token ${token}` }
             })
-
-            if (!response.ok) {
-                throw new Error("Failed to update")
+            if (response.ok) {
+                setRestrictedUsers(prev => prev.filter(u => u.id !== userId))
+                toast({ title: "Unrestricted", message: "User has been unrestricted.", type: "success" })
             }
-            toast({
-                title: checked ? "Account Private" : "Account Public",
-                message: checked ? "Only followers can see your posts." : "Anyone can see your posts.",
-                type: "success"
-            })
         } catch (error) {
-            setIsPrivate(!checked) // Revert
-            toast({ title: "Error", message: "Failed to update privacy settings", type: "error" })
+            console.error(error)
         }
     }
 
-    const MockBlockedUser = ({ name, refresh }: { name: string, refresh: () => void }) => (
-        <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
-                    <Ban className="w-5 h-5" />
-                </div>
-                <span className="font-medium text-slate-200">{name}</span>
-            </div>
-            <Button variant="outline" size="sm" className="text-xs border-slate-700 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50">
-                Unblock
-            </Button>
-        </div>
-    )
-
-    if (fetching) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            </div>
-        )
+    if (isLoading) {
+        return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-blue-500" /></div>
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="border-b border-slate-800 pb-6">
-                <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Shield className="w-6 h-6 text-green-500" /> Privacy & Safety
-                </h1>
-                <p className="text-slate-400 mt-1">Manage who can see your content and interact with you.</p>
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-lg font-medium text-white">Privacy & Safety</h3>
+                <p className="text-sm text-slate-400">
+                    Manage accounts that you have blocked or restricted.
+                </p>
             </div>
 
-            {/* Account Privacy */}
-            <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                        <Label className="text-lg font-medium text-white flex items-center gap-2">
-                            <Lock className="w-4 h-4 text-blue-400" /> Private Account
-                        </Label>
-                        <p className="text-sm text-slate-400 max-w-md">
-                            When your account is private, only people you approve can see your photos and videos. Your existing followers won't be affected.
-                        </p>
-                    </div>
-                    <Switch
-                        checked={isPrivate}
-                        onCheckedChange={handlePrivacyToggle}
-                        className="data-[state=checked]:bg-blue-600"
-                    />
-                </div>
-            </div>
+            <Tabs defaultValue="blocked" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-slate-800">
+                    <TabsTrigger value="blocked">Blocked Accounts</TabsTrigger>
+                    <TabsTrigger value="restricted">Restricted Accounts</TabsTrigger>
+                </TabsList>
 
-            {/* Blocked Users */}
-            <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 space-y-6">
-                <div>
-                    <Label className="text-lg font-medium text-white flex items-center gap-2">
-                        <Ban className="w-4 h-4 text-red-400" /> Blocked Users
-                    </Label>
-                    <p className="text-sm text-slate-400 mt-1">
-                        They won't be able to find your profile, posts, or story on SociaVerse. SociaVerse won't let them know you blocked them.
-                    </p>
-                </div>
+                <TabsContent value="blocked" className="mt-4 space-y-4">
+                    <Card className="bg-slate-900 border-slate-800 text-slate-200">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Ban className="w-5 h-5 text-red-500" /> Blocked Users
+                            </CardTitle>
+                            <CardDescription className="text-slate-400">
+                                Users you block cannot see your profile, posts, or interact with you.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {blockedUsers.length === 0 ? (
+                                <div className="text-center py-8 text-slate-500">
+                                    <UserX className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                    <p>You haven't blocked anyone yet.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {blockedUsers.map(user => (
+                                        <div key={user.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                    className="w-10 h-10 rounded-full object-cover"
+                                                    alt=""
+                                                />
+                                                <div>
+                                                    <p className="font-semibold text-white">{user.username}</p>
+                                                    <p className="text-xs text-slate-400">{user.first_name} {user.last_name}</p>
+                                                </div>
+                                            </div>
+                                            <Button variant="destructive" size="sm" onClick={() => handleUnblock(user.id)}>
+                                                Unblock
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
-                <div className="space-y-3">
-                    {blockedUsers.length > 0 ? (
-                        blockedUsers.map((user: any) => (
-                            <div key={user.id} className="text-slate-300">{user.username}</div>
-                        ))
-                    ) : (
-                        // Mock Data for demonstration since we don't have real blocked flow yet
-                        <>
-                            <p className="text-sm text-slate-500 italic pb-2">No blocked users found.</p>
-                            {/* Hidden mock for UI preview */}
-                            {/* <MockBlockedUser name="@spammer123" refresh={() => {}} /> */}
-                        </>
-                    )}
-                </div>
-            </div>
+                <TabsContent value="restricted" className="mt-4 space-y-4">
+                    <Card className="bg-slate-900 border-slate-800 text-slate-200">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <EyeOff className="w-5 h-5 text-orange-500" /> Restricted Accounts
+                            </CardTitle>
+                            <CardDescription className="text-slate-400">
+                                You won't see notifications from restricted accounts, but they can still see your posts.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {restrictedUsers.length === 0 ? (
+                                <div className="text-center py-8 text-slate-500">
+                                    <EyeOff className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                    <p>You haven't restricted anyone yet.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {restrictedUsers.map(user => (
+                                        <div key={user.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                    className="w-10 h-10 rounded-full object-cover"
+                                                    alt=""
+                                                />
+                                                <div>
+                                                    <p className="font-semibold text-white">{user.username}</p>
+                                                    <p className="text-xs text-slate-400">{user.first_name} {user.last_name}</p>
+                                                </div>
+                                            </div>
+                                            <Button variant="secondary" size="sm" onClick={() => handleUnrestrict(user.id)}>
+                                                Unrestrict
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }

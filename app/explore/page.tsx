@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp, Filter, MoreHorizontal, Heart, MessageCircle, Share2, BadgeCheck } from "lucide-react"
+import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp, Filter, MoreHorizontal, Heart, MessageCircle, Share2, BadgeCheck, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -96,13 +96,30 @@ export default function ExplorePage() {
 function SearchBar() {
     const [isFocused, setIsFocused] = useState(false)
     const [query, setQuery] = useState("")
+    const [results, setResults] = useState<any[]>([])
+    const router = useRouter()
 
-    const recentSearches = [
-        { id: 1, name: "Jenny", subtitle: "Jenny Cox • 541K followers", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
-        { id: 2, name: "Emma", subtitle: "Emma 🌙 • Following", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100" },
-        { id: 3, name: "Apurva", subtitle: "Apurva 🌸 • Following", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
-        { id: 4, name: "Kunal", subtitle: "Kunal • Following", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=100" },
-    ]
+    const handleSearch = async (val: string) => {
+        setQuery(val)
+        if (val.length > 1) {
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/api/users/search/?q=${val}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    setResults(data)
+                }
+            } catch (error) {
+                console.error("Search error:", error)
+            }
+        } else {
+            setResults([])
+        }
+    }
+
+    const handleSelectUser = (username: string) => {
+        router.push(`/u/${username}`)
+        setIsFocused(false)
+    }
 
     return (
         <div className="relative z-50">
@@ -110,51 +127,60 @@ function SearchBar() {
                 <Search className={`h-5 w-5 mr-3 transition-colors ${isFocused ? "text-slate-200" : "text-slate-500"}`} />
                 <input
                     type="text"
-                    placeholder="Search"
+                    placeholder="Search people..."
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => setIsFocused(true)}
-                    onBlur={() => setTimeout(() => setIsFocused(false), 200)} // Delay to allow clicking items
+                    // onBlur={() => setTimeout(() => setIsFocused(false), 200)}
                     className="bg-transparent border-none outline-none flex-1 text-slate-200 placeholder:text-slate-500 text-sm"
                 />
                 {query && (
-                    <button onClick={() => setQuery("")} className="text-slate-500 hover:text-slate-300">
-                        <span className="sr-only">Clear</span>
-                        <div className="bg-slate-700 rounded-full p-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                            </svg>
-                        </div>
+                    <button onClick={() => { setQuery(""); setResults([]) }} className="text-slate-500 hover:text-slate-300">
+                        <X className="w-4 h-4" />
                     </button>
                 )}
             </div>
 
-            {/* Recent Searches Dropdown */}
-            {isFocused && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/50">
-                        <span className="font-semibold text-sm text-slate-200">Recent</span>
-                        <button className="text-xs text-blue-400 hover:text-blue-300 font-medium">Clear all</button>
-                    </div>
-                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-                        {recentSearches.map((user) => (
-                            <div key={user.id} className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 cursor-pointer transition-colors group">
-                                <div className="flex items-center gap-3">
-                                    <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
-                                    <div className="text-left">
-                                        <p className="text-sm font-semibold text-slate-200">{user.name}</p>
-                                        <p className="text-xs text-slate-500">{user.subtitle}</p>
+            {/* Search Results Dropdown */}
+            {isFocused && (query.length > 0 || results.length > 0) && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsFocused(false)} />
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800/50">
+                            <span className="font-semibold text-sm text-slate-200">Results</span>
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                            {results.length > 0 ? (
+                                results.map((user) => (
+                                    <div
+                                        key={user.id}
+                                        onClick={() => handleSelectUser(user.username)}
+                                        className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/50 cursor-pointer transition-colors group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                alt={user.username}
+                                                className="w-10 h-10 rounded-full object-cover"
+                                            />
+                                            <div className="text-left">
+                                                <div className="flex items-center gap-1">
+                                                    <p className="text-sm font-semibold text-slate-200">{user.first_name} {user.last_name}</p>
+                                                    {user.is_verified && <BadgeCheck className="w-3 h-3 text-blue-500" />}
+                                                </div>
+                                                <p className="text-xs text-slate-500">@{user.username}</p>
+                                            </div>
+                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="p-4 text-center text-slate-500 text-sm">
+                                    No users found.
                                 </div>
-                                <button className="text-slate-500 opacity-0 group-hover:opacity-100 hover:text-slate-300 transition-all p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        ))}
+                            )}
+                        </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     )

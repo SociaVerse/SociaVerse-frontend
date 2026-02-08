@@ -1,165 +1,602 @@
 "use client"
 
 import { useState, useEffect, use } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { useAuth } from "@/components/auth-provider"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { User, Mail, MapPin, Link as LinkIcon, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react"
+import {
+    User, MapPin, Link as LinkIcon, Share2, Lock,
+    Calendar, Briefcase, Heart, MessageCircle, MoreHorizontal,
+    BadgeCheck, Loader2, X, UserPlus, MessageSquare, Check
+} from "lucide-react"
+import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
+import { useToast } from "@/components/ui/custom-toast"
+import Link from "next/link"
+import { UserList } from "@/components/user-list"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Ban, EyeOff, Flag } from "lucide-react"
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
-    // Unwrapping params using React.use() as recommended in Next.js 15+ (though 14 logic also works, safe to use promise unwrapping pattern if unsure about precise version, but here simply awaiting or using use() hook is standard for async params in newer Next.js or standard props in older. Given package.json said Next 16, params is a Promise)
-
     const { username } = use(params)
+    const { isAuthenticated, user: currentUser } = useAuth()
+    const router = useRouter()
+    const [activeTab, setActiveTab] = useState("Posts")
+    const { toast } = useToast()
 
-    const [isFollowing, setIsFollowing] = useState(false)
+    // State
     const [profile, setProfile] = useState({
-        name: username.charAt(0).toUpperCase() + username.slice(1), // Mock name from username
-        username: username,
-        bio: "Digital creator and tech enthusiast. Sharing my journey through code and pixels. 📸 💻",
-        location: "New York, USA",
-        website: "portfolio.dev",
-        followers: 1234,
-        following: 567,
-        posts: 42,
-        avatar: null
+        id: 0,
+        name: "",
+        username: "",
+        bio: "",
+        location: "",
+        website: "",
+        gender: "",
+        social_links: {} as any,
+        is_private: false,
+        followers_count: 0,
+        following_count: 0,
+        avatar: null as string | null,
+        banner: null as string | null,
+        joined: "",
+        role: "Member",
+        is_verified: false,
+        is_blocked: false,
+        is_restricted: false,
     })
+    const [isLoadingData, setIsLoadingData] = useState(true)
+    const [followStatus, setFollowStatus] = useState<'none' | 'pending' | 'accepted' | 'self'>('none')
+    const [isFollowLoading, setIsFollowLoading] = useState(false)
 
-    // Mock Fetching data
     useEffect(() => {
-        // Simulate fetching user data
-        console.log("Fetching data for", username)
-        // setProfile(...)
-    }, [username])
+        if (username) {
+            fetchProfile()
+        }
+    }, [username, isAuthenticated])
 
+    const fetchProfile = async () => {
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const headers: HeadersInit = {}
+            if (token) headers['Authorization'] = `Token ${token}`
+
+            const response = await fetch(`http://127.0.0.1:8000/api/users/u/${username}/`, { headers })
+
+            if (response.ok) {
+                const data = await response.json()
+                setProfile({
+                    id: data.id,
+                    name: `${data.first_name} ${data.last_name}`.trim() || data.username,
+                    username: data.username,
+                    bio: data.bio || "",
+                    location: data.location || "",
+                    website: data.website || "",
+                    gender: data.gender || "",
+                    social_links: data.social_links || {},
+                    is_private: data.is_private || false,
+                    followers_count: data.followers_count || 0,
+                    following_count: data.following_count || 0,
+                    avatar: data.profile_picture || null,
+                    banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
+                    joined: "February 2026",
+                    role: data.is_verified ? "Verified User" : "Member",
+                    is_verified: data.is_verified,
+                    is_blocked: data.is_blocked || false,
+                    is_restricted: data.is_restricted || false,
+                })
+                setFollowStatus(data.follow_status || 'none')
+            } else {
+                toast({ title: "Error", message: "User not found", type: "error" })
+            }
+        } catch (error) {
+            console.error("Error fetching profile:", error)
+        } finally {
+            setIsLoadingData(false)
+        }
+    }
+
+    const handleFollow = async () => {
+        if (!isAuthenticated) {
+            router.push("/login")
+            return
+        }
+        if (isFollowLoading) return
+
+        setIsFollowLoading(true)
+        const token = localStorage.getItem('sociaverse_token')
+
+        try {
+            let method = 'POST'
+            if (followStatus === 'accepted' || followStatus === 'pending') {
+                method = 'DELETE'
+            }
+
+            const response = await fetch(`http://127.0.0.1:8000/api/users/${profile.id}/follow/`, {
+                method: method,
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                if (data.status === 'following') {
+                    setFollowStatus('accepted')
+                    setProfile(prev => ({ ...prev, followers_count: prev.followers_count + 1 }))
+                } else if (data.status === 'requested') {
+                    setFollowStatus('pending')
+                    toast({ title: "Requested", message: "Follow request sent.", type: "success" })
+                } else if (data.status === 'unfollowed') {
+                    if (followStatus === 'accepted') {
+                        setProfile(prev => ({ ...prev, followers_count: Math.max(0, prev.followers_count - 1) }))
+                    }
+                    setFollowStatus('none')
+                }
+            } else {
+                const err = await response.json()
+                toast({ title: "Error", message: err.error || "Action failed", type: "error" })
+            }
+        } catch (error) {
+            console.error("Follow action error:", error)
+            toast({ title: "Error", message: "Something went wrong", type: "error" })
+        } finally {
+            setIsFollowLoading(false)
+        }
+    }
+
+    const handleBlock = async () => {
+        if (!isAuthenticated) return
+        const token = localStorage.getItem('sociaverse_token')
+        try {
+            const method = profile.is_blocked ? 'DELETE' : 'POST'
+            const response = await fetch(`http://127.0.0.1:8000/api/users/block/${profile.id}/`, {
+                method: method,
+                headers: { 'Authorization': `Token ${token}` }
+            })
+            if (response.ok) {
+                setProfile(prev => ({ ...prev, is_blocked: !prev.is_blocked }))
+                if (!profile.is_blocked) {
+                    // Start blocking -> Also unfollows
+                    setFollowStatus('none')
+                    toast({ title: "Blocked", message: `You have blocked @${profile.username}`, type: "success" })
+                } else {
+                    toast({ title: "Unblocked", message: `You have unblocked @${profile.username}`, type: "success" })
+                }
+            }
+        } catch (error) {
+            console.error("Block error", error)
+        }
+    }
+
+    const handleRestrict = async () => {
+        if (!isAuthenticated) return
+        const token = localStorage.getItem('sociaverse_token')
+        try {
+            const method = profile.is_restricted ? 'DELETE' : 'POST'
+            const response = await fetch(`http://127.0.0.1:8000/api/users/restrict/${profile.id}/`, {
+                method: method,
+                headers: { 'Authorization': `Token ${token}` }
+            })
+            if (response.ok) {
+                setProfile(prev => ({ ...prev, is_restricted: !prev.is_restricted }))
+                toast({
+                    title: profile.is_restricted ? "Unrestricted" : "Restricted",
+                    message: `@${profile.username} has been ${profile.is_restricted ? "unrestricted" : "restricted"}.`,
+                    type: "success"
+                })
+            }
+        } catch (error) {
+            console.error("Restrict error", error)
+        }
+    }
+
+    if (isLoadingData) {
+        return (
+            <div className="min-h-screen bg-slate-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            </div>
+        )
+    }
+
+    const isPrivateAndHidden = profile.is_private && followStatus !== 'accepted' && followStatus !== 'self'
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 pt-24 pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background Gradients */}
-            <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-purple-900/20 to-slate-950 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="min-h-screen bg-slate-950 text-slate-200 pb-20">
 
-            <main className="max-w-4xl mx-auto relative z-10">
+            {/* --- Cover Image --- */}
+            <div className="relative h-64 md:h-80 w-full overflow-hidden group">
+                <img
+                    src={profile.banner!}
+                    alt="Cover"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+            </div>
 
-                {/* Header / Cover */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="w-full h-48 md:h-64 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 relative shadow-2xl overflow-hidden"
-                >
-                    <div className="absolute inset-0 bg-black/20" />
-                </motion.div>
+            {/* --- Profile Header Info --- */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24 md:-mt-32">
+                <div className="flex flex-col md:flex-row items-start justify-between gap-6">
 
-                <div className="px-4 md:px-8 -mt-20 relative">
-                    <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-4">
-                        {/* Avatar */}
+                    {/* Avatar & Key Info */}
+                    <div className="flex flex-col md:flex-row items-end md:items-end gap-6 relative w-full md:w-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: 0.2, duration: 0.4 }}
-                            className="relative group"
+                            className="relative mx-auto md:mx-0"
                         >
-                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-slate-950 bg-slate-900 flex items-center justify-center shadow-xl overflow-hidden">
-                                {profile.avatar ? (
-                                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <User className="w-16 h-16 text-slate-600" />
-                                )}
+                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 bg-slate-900 overflow-hidden shadow-2xl relative group">
+                                <img
+                                    src={profile.avatar ? (profile.avatar.startsWith('http') ? profile.avatar : `http://127.0.0.1:8000${profile.avatar}`) : `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
+                                    alt={profile.name}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
                         </motion.div>
 
-                        {/* Action Buttons */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="flex space-x-3 mb-4 md:mb-8"
-                        >
+                        <div className="mb-2 md:mb-4 pt-2 md:pt-0 text-center md:text-left flex-1">
+                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
+                                {profile.name}
+                                {profile.is_verified && <BadgeCheck className="w-6 h-6 text-blue-500" />}
+                                {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
+                            </h1>
+                            <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
+                            <div className="flex items-center justify-center md:justify-start gap-6 mt-2 text-slate-300">
+                                <div><span className="font-bold text-white">{profile.followers_count}</span> Followers</div>
+                                <div><span className="font-bold text-white">{profile.following_count}</span> Following</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-3 mt-4 md:mt-0 md:self-end md:mb-6 w-full md:w-auto justify-center md:justify-end">
+                        {followStatus === 'self' ? (
+                            <Link href="/settings/profile">
+                                <Button className="rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
+                                    Edit Profile
+                                </Button>
+                            </Link>
+                        ) : (
                             <Button
-                                onClick={() => setIsFollowing(!isFollowing)}
-                                className={`transition-all ${isFollowing ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-blue-600 hover:bg-blue-500 text-white'}`}
+                                onClick={handleFollow}
+                                disabled={isFollowLoading}
+                                className={`rounded-full font-semibold px-6 min-w-[120px] transition-all ${followStatus === 'accepted' || followStatus === 'pending'
+                                    ? "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    : "bg-white text-slate-950 hover:bg-slate-200"
+                                    }`}
                             >
-                                {isFollowing ? (
-                                    <>Following</>
-                                ) : (
+                                {isFollowLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                     <>
-                                        <UserPlus className="w-4 h-4 mr-2" />
-                                        Follow
+                                        {followStatus === 'none' && <><UserPlus className="w-4 h-4 mr-2" /> Follow</>}
+                                        {followStatus === 'pending' && "Requested"}
+                                        {followStatus === 'accepted' && "Following"}
                                     </>
                                 )}
                             </Button>
-                            <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 backdrop-blur-sm">
-                                <MessageSquare className="w-4 h-4 mr-2" />
-                                Message
-                            </Button>
-                            <Button variant="outline" size="icon" className="border-slate-700 bg-slate-900/50 text-slate-300 hover:bg-slate-800 backdrop-blur-sm">
-                                <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                        </motion.div>
+                        )}
+
+                        <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Message
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
+                                    <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800 text-slate-200">
+                                <DropdownMenuItem className="focus:bg-slate-800 cursor-pointer text-red-400 hover:text-red-300" onClick={handleBlock}>
+                                    <Ban className="w-4 h-4 mr-2" />
+                                    {profile.is_blocked ? "Unblock" : "Block"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="focus:bg-slate-800 cursor-pointer" onClick={handleRestrict}>
+                                    <EyeOff className="w-4 h-4 mr-2" />
+                                    {profile.is_restricted ? "Unrestrict" : "Restrict"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="focus:bg-slate-800 cursor-pointer">
+                                    <Flag className="w-4 h-4 mr-2" />
+                                    Report
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
+                </div>
 
-                    {/* Profile Info */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="mt-8 grid gap-8 md:grid-cols-3"
-                    >
-                        {/* Left Column: Bio/Stats */}
-                        <div className="space-y-6">
-                            <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg">
-                                <h1 className="text-2xl font-bold text-white mb-1">{profile.name}</h1>
-                                <p className="text-blue-400 font-medium mb-4">@{profile.username}</p>
-                                <p className="text-slate-300 mb-6 leading-relaxed">
-                                    {profile.bio}
-                                </p>
+                {/* --- Main Content Grid --- */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
 
-                                <div className="space-y-3 text-sm border-t border-slate-800 pt-4">
-                                    <div className="flex items-center text-slate-400">
-                                        <MapPin className="w-4 h-4 mr-3 text-blue-500" />
+                    {/* LEFT SIDEBAR (Intro & Photos) */}
+                    <div className="lg:col-span-4 space-y-6">
+
+                        {/* Intro Card */}
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
+                            <h3 className="text-lg font-bold text-white mb-4">Intro</h3>
+                            <div className="space-y-4 text-sm text-slate-400">
+                                {profile.bio && (
+                                    <p className="text-slate-300 leading-relaxed text-base">{profile.bio}</p>
+                                )}
+                                <div className="flex items-center gap-3">
+                                    <Briefcase className="w-5 h-5 text-slate-500" />
+                                    <span>{profile.role}</span>
+                                </div>
+                                {profile.location && (
+                                    <div className="flex items-center gap-3">
+                                        <MapPin className="w-5 h-5 text-slate-500" />
                                         <span>{profile.location}</span>
                                     </div>
-                                    <div className="flex items-center text-slate-400">
-                                        <LinkIcon className="w-4 h-4 mr-3 text-blue-500" />
-                                        <a href={`https://${profile.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors">{profile.website}</a>
+                                )}
+                                {profile.website && (
+                                    <div className="flex items-center gap-3">
+                                        <LinkIcon className="w-5 h-5 text-slate-500" />
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate max-w-[200px]">
+                                            {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
                                     </div>
+                                )}
+                                <div className="flex items-center gap-3">
+                                    <Calendar className="w-5 h-5 text-slate-500" />
+                                    <span>Joined {profile.joined}</span>
                                 </div>
-                            </div>
+                                {profile.gender && profile.gender !== 'N' && (
+                                    <div className="flex items-center gap-3">
+                                        <User className="w-5 h-5 text-slate-500" />
+                                        <span>{profile.gender === 'M' ? 'Male' : profile.gender === 'F' ? 'Female' : 'Other'}</span>
+                                    </div>
+                                )}
 
-                            <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-xl p-6 shadow-lg">
-                                <div className="grid grid-cols-3 gap-4 text-center">
-                                    <div>
-                                        <div className="text-xl font-bold text-white">{profile.posts}</div>
-                                        <div className="text-xs text-slate-500">Posts</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xl font-bold text-white">{profile.followers}</div>
-                                        <div className="text-xs text-slate-500">Followers</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xl font-bold text-white">{profile.following}</div>
-                                        <div className="text-xs text-slate-500">Following</div>
-                                    </div>
+                                {/* Social Links */}
+                                <div className="flex flex-wrap gap-3 pt-2">
+                                    {profile.social_links.twitter && (
+                                        <a href={profile.social_links.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-500/20 hover:text-blue-500 transition-colors">
+                                            <FaTwitter className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.instagram && (
+                                        <a href={profile.social_links.instagram} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-pink-500/20 hover:text-pink-500 transition-colors">
+                                            <FaInstagram className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.linkedin && (
+                                        <a href={profile.social_links.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-blue-700/20 hover:text-blue-700 transition-colors">
+                                            <FaLinkedin className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.social_links.github && (
+                                        <a href={profile.social_links.github} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-white/10 hover:text-white transition-colors">
+                                            <FaGithub className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.website && (
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-800 rounded-full hover:bg-green-500/20 hover:text-green-500 transition-colors">
+                                            <FaGlobe className="w-4 h-4" />
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right Column: Content */}
-                        <div className="md:col-span-2 space-y-6">
-                            <h3 className="text-xl font-semibold text-white px-1">Posts</h3>
-                            {/* Placeholder Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div key={i} className="bg-slate-900/40 border border-slate-800 rounded-xl aspect-video flex items-center justify-center text-slate-600 hover:bg-slate-900/60 hover:border-slate-700 transition-all cursor-pointer group">
-                                        <span className="group-hover:text-slate-400 transition-colors">Post Preview {i}</span>
-                                    </div>
-                                ))}
-                            </div>
+                    </div>
+
+                    {/* MAIN FEED (Right Column) */}
+                    <div className="lg:col-span-8">
+
+                        {/* Custom Tabs */}
+                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto">
+                            {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    disabled={isPrivateAndHidden} // Disable tabs if private
+                                    className={`pb-4 text-sm font-semibold transition-colors relative whitespace-nowrap ${activeTab === tab ? "text-blue-400" : "text-slate-500 hover:text-slate-300"
+                                        } ${isPrivateAndHidden ? "opacity-50 cursor-not-allowed" : ""}`}
+                                >
+                                    {tab}
+                                    {activeTab === tab && (
+                                        <motion.div
+                                            layoutId="profileTab"
+                                            className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-t-full"
+                                        />
+                                    )}
+                                </button>
+                            ))}
                         </div>
 
-                    </motion.div>
-
+                        {/* Content Area */}
+                        {isPrivateAndHidden ? (
+                            <div className="flex flex-col items-center justify-center py-16 bg-slate-900/30 border border-slate-800 rounded-2xl">
+                                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-4">
+                                    <Lock className="w-8 h-8 text-slate-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">This account is private</h3>
+                                <p className="text-slate-400">Follow to see their posts and media.</p>
+                            </div>
+                        ) : (
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeTab}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    {activeTab === "Posts" && <PostsFeed username={username} currentUser={currentUser} />}
+                                    {activeTab === "Followers" && (
+                                        <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
+                                    )}
+                                    {activeTab === "Following" && (
+                                        <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
+                                    )}
+                                    {activeTab === "About" && (
+                                        <div className="text-slate-400 text-center py-10">About details coming soon...</div>
+                                    )}
+                                    {activeTab === "Media" && (
+                                        <div className="text-center py-12 text-slate-500">
+                                            No media yet
+                                        </div>
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+                        )}
+                    </div>
                 </div>
-            </main>
+            </div>
         </div>
+    )
+}
+
+function PostsFeed({ username, currentUser }: { username: string, currentUser: any }) {
+    const [posts, setPosts] = useState<any[]>([])
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (username) fetchPosts()
+    }, [username])
+
+    const fetchPosts = async () => {
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const headers: HeadersInit = {}
+            if (token) headers['Authorization'] = `Token ${token}`
+
+            const response = await fetch(`http://127.0.0.1:8000/api/posts/?username=${username}`, {
+                headers
+            })
+            if (response.ok) {
+                const data = await response.json()
+                setPosts(data)
+            }
+        } catch (error) {
+            console.error("Error fetching posts:", error)
+        }
+    }
+
+    return (
+        <div className="space-y-6 relative">
+            {/* Lightbox */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedImage(null)}
+                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 cursor-pointer"
+                    >
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full z-[10000]"
+                            onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+                        >
+                            <X className="w-8 h-8" />
+                        </Button>
+                        <motion.img
+                            layoutId={selectedImage}
+                            src={selectedImage}
+                            alt="Full screen"
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Posts List */}
+            {posts.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                    <p>No posts yet.</p>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    {posts.map((post) => (
+                        <PostCard key={post.id} post={post} currentUser={currentUser} onImageClick={setSelectedImage} />
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+function PostCard({ post, currentUser, onImageClick }: { post: any, currentUser: any, onImageClick: (src: string) => void }) {
+
+    const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+        return new Date(dateString).toLocaleDateString(undefined, options)
+    }
+
+    const getImageUrl = (path: string | null) => {
+        if (!path) return null
+        if (path.startsWith('http')) return path
+        return `http://127.0.0.1:8000${path}`
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors group relative"
+        >
+            <div className="flex gap-3 mb-3">
+                <img
+                    src={getImageUrl(post.author.profile_picture) || `https://ui-avatars.com/api/?name=${post.author.username}`}
+                    alt={post.author.username}
+                    className="w-10 h-10 rounded-full object-cover border border-slate-800"
+                />
+                <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-slate-200">{post.author.first_name || post.author.username}</h4>
+                            {post.author.is_verified && <BadgeCheck className="w-4 h-4 text-blue-500" />}
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-500">@{post.author.username} · {formatDate(post.created_at)}</p>
+                </div>
+            </div>
+
+            <p className="text-slate-300 mb-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+
+            {/* Images Grid */}
+            {post.images && post.images.length > 0 && (
+                <div className={`grid gap-2 mb-4 rounded-xl overflow-hidden ${post.images.length === 1 ? 'grid-cols-1' :
+                    post.images.length === 2 ? 'grid-cols-2' :
+                        'grid-cols-2 md:grid-cols-3'
+                    }`}>
+                    {post.images.map((imgObj: any, index: number) => {
+                        const imgUrl = getImageUrl(imgObj.image) || ''
+                        return (
+                            <div key={imgObj.id} className={`relative ${post.images.length === 1 ? 'aspect-video' : 'aspect-square'}`}>
+                                <motion.img
+                                    layoutId={imgUrl}
+                                    src={imgUrl}
+                                    alt={`Post Image ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
+                                    onClick={() => onImageClick(imgUrl)}
+                                />
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+
+            <div className="flex items-center justify-between text-slate-500 pt-2 border-t border-slate-800/50">
+                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2 rounded-full transition-colors">
+                    <Heart className="w-4 h-4" /> Like
+                </Button>
+                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 rounded-full transition-colors">
+                    <MessageCircle className="w-4 h-4" /> Comment
+                </Button>
+                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2 rounded-full transition-colors">
+                    <Share2 className="w-4 h-4" /> Share
+                </Button>
+            </div>
+        </motion.div>
     )
 }
