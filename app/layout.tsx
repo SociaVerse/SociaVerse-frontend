@@ -5,6 +5,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar"; // <-- IMPORT THE NAVBAR
+import { MobileNav } from "@/components/mobile-nav";
 import { AuthProvider } from "@/components/auth-provider";
 import { ToastProvider } from "@/components/ui/custom-toast";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
             <ToastProvider>
               <MouseSpotlight />
               <Navbar />
+              <MobileNav />
               <main className="flex-1 flex flex-col relative z-10">
                 <PageTransition>{children}</PageTransition>
               </main>

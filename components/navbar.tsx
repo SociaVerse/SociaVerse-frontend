@@ -37,6 +37,8 @@ const navLinks = [
   { href: "/community", label: "Community" },
 ]
 
+import { usePathname } from "next/navigation"
+
 export function Navbar() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
@@ -44,6 +46,8 @@ export function Navbar() {
   const { isAuthenticated, logout, user } = useAuth()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const pathname = usePathname()
+  const isChatPage = pathname === "/chat" || pathname?.startsWith("/chat/")
 
   const handleLogout = () => {
     setShowLogoutConfirm(false)
@@ -138,7 +142,8 @@ export function Navbar() {
           "sticky top-4 z-50 w-full mx-auto max-w-[95%] rounded-full transition-all duration-300",
           scrolled
             ? "bg-slate-900/90 backdrop-blur-lg shadow-lg border border-slate-700/50 shadow-blue-500/10"
-            : "bg-slate-900/70 backdrop-blur-md"
+            : "bg-slate-900/70 backdrop-blur-md",
+          isChatPage ? "hidden md:block" : "" // Hide on mobile if on chat page
         )}
       >
         <div className="px-6 flex h-16 items-center justify-between">
@@ -265,134 +270,8 @@ export function Navbar() {
             </motion.div>
           </motion.div>
 
-          {/* Mobile Menu */}
-          <motion.div
-            className="flex items-center md:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="ml-2 rounded-full hover:bg-slate-800/70 hover:scale-110 transition-all">
-                  <Menu className="h-5 w-5 text-slate-200" />
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6 bg-slate-900/95 backdrop-blur-lg border-l border-slate-700/50">
-                <motion.div
-                  className="flex flex-col h-full"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Link href="/" className="flex items-center space-x-2 mb-8 group">
-                    <motion.div
-                      className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                      <Globe className="h-5 w-5 text-white" />
-                    </motion.div>
-                    <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                      SociaVerse
-                    </span>
-                  </Link>
-
-                  {/* Mobile Nav Links */}
-                  <div className="flex flex-col gap-2 mb-8">
-                    {navLinks.map((link, index) => (
-                      <motion.div
-                        key={link.href}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 * index, duration: 0.3 }}
-                      >
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className="justify-start text-base rounded-full py-6 hover:bg-slate-800/70 text-slate-200 w-full group"
-                        >
-                          <Link href={link.href} className="flex items-center">
-                            {/* {link.icon && <motion.span whileHover={{ rotate: 15 }} className="mr-2">{link.icon}</motion.span>} */}
-                            <span className="group-hover:text-blue-400 transition-colors">{link.label}</span>
-                          </Link>
-                        </Button>
-                      </motion.div>
-                    ))}
-
-                    {/* Mobile Chat & Notifications Link (Auth only) */}
-                    {isAuthenticated && (
-                      <>
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.4, duration: 0.3 }}
-                        >
-                          <Button
-                            asChild
-                            variant="ghost"
-                            className="justify-start text-base rounded-full py-6 hover:bg-slate-800/70 text-slate-200 w-full group"
-                          >
-                            <Link href="/chat" className="flex items-center">
-                              <MessageCircle className="mr-2 h-5 w-5 text-blue-400 group-hover:text-blue-300" />
-                              <span className="group-hover:text-blue-400 transition-colors">Messages</span>
-                            </Link>
-                          </Button>
-                        </motion.div>
-
-                        <motion.div
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.45, duration: 0.3 }}
-                        >
-                          <Button
-                            asChild
-                            variant="ghost"
-                            className="justify-start text-base rounded-full py-6 hover:bg-slate-800/70 text-slate-200 w-full group"
-                          >
-                            <Link href="/notifications" className="flex items-center">
-                              <Bell className="mr-2 h-5 w-5 text-yellow-400 group-hover:text-yellow-300" />
-                              <span className="group-hover:text-yellow-400 transition-colors">Notifications</span>
-                            </Link>
-                          </Button>
-                        </motion.div>
-                      </>
-                    )}
-                  </div>
-
-                  <motion.div
-                    className="mt-auto space-y-4"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.3 }}
-                  >
-                    {isAuthenticated ? (
-                      <Button variant="ghost" className="w-full justify-start rounded-full hover:bg-slate-800/70 text-slate-200 group" onClick={() => setShowLogoutConfirm(true)}>
-                        <span className="flex items-center text-red-400 group-hover:text-red-300 transition-colors">
-                          <User className="mr-2 h-5 w-5" />
-                          Logout
-                        </span>
-                      </Button>
-                    ) : (
-                      // ... (rest of the file)
-                      <>
-                        <Button asChild variant="ghost" className="w-full justify-start rounded-full hover:bg-slate-800/70 text-slate-200 group">
-                          <Link href="/login" className="flex items-center">
-                            <User className="mr-2 h-5 w-5 group-hover:text-blue-400 transition-colors" />
-                            <span className="group-hover:text-blue-400 transition-colors">Login</span>
-                          </Link>
-                        </Button>
-                        <Button asChild className="w-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:scale-[1.02] transition-all">
-                          <Link href="/signup">Sign Up</Link>
-                        </Button>
-                      </>
-                    )}
-                  </motion.div>
-                </motion.div>
-              </SheetContent>
-            </Sheet>
-          </motion.div>
+          {/* Mobile Menu - Hidden as replaced by Bottom Nav */}
+          <div className="hidden"></div>
 
         </div>
       </motion.header>

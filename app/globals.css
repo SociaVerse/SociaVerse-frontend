@@ -126,6 +126,14 @@ html {
   body {
     @apply bg-background text-foreground;
     position: relative;
+    padding-bottom: 5rem;
+    /* Space for mobile nav */
+  }
+
+  @media (min-width: 768px) {
+    body {
+      padding-bottom: 0;
+    }
   }
 
   body::before {

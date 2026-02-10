@@ -1,15 +1,19 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     Search, Phone, Video, MoreVertical, Send, Paperclip,
     Smile, ArrowLeft, Check, CheckCheck, MoreHorizontal,
-    Image as ImageIcon, Mic
+    Image as ImageIcon, Mic, Lock, ShieldCheck, Info, Shield, Zap,
+    Home, Globe, User
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
+import { Meteors } from "@/components/ui/meteors"
+import Link from "next/link"
 
 // Types
 type Message = {
@@ -85,13 +89,6 @@ const initialChats: Chat[] = [
     },
 ]
 
-import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
-
-// ... (existing imports and types and initialChats can stay, 
-// actually I'll just rewrite the component part and keep imports if I can matching the lines)
-// wait, I need to add useSearchParams to imports. 
-
 function ChatContent() {
     const searchParams = useSearchParams()
     const [chats, setChats] = useState<Chat[]>(initialChats)
@@ -121,22 +118,19 @@ function ChatContent() {
         const productTitle = searchParams.get("product")
 
         if (sellerUsername && sellerName && productTitle) {
-            // Check if chat already exists (mock check by name for now as we don't have usernames in mock data)
-            // In a real app we'd check by ID or Username
             const existingChat = chats.find(c => c.name === sellerName)
 
             if (existingChat) {
                 setSelectedChatId(existingChat.id)
                 setInputValue(`Hi, I'm interested in your ${productTitle}! Is it still available?`)
             } else {
-                // Create new mock chat
                 const newChatId = Math.max(...chats.map(c => c.id)) + 1
                 const newChat: Chat = {
                     id: newChatId,
                     name: sellerName,
                     status: "online",
                     avatar: sellerName.charAt(0).toUpperCase(),
-                    color: "from-pink-500 to-rose-500", // Default color for new chats
+                    color: "from-pink-500 to-rose-500",
                     unread: 0,
                     messages: []
                 }
@@ -145,7 +139,7 @@ function ChatContent() {
                 setInputValue(`Hi, I'm interested in your ${productTitle}! Is it still available?`)
             }
         }
-    }, [searchParams]) // Run once when params are available/change
+    }, [searchParams])
 
     // Handle resize for responsive layout
     useEffect(() => {
@@ -274,7 +268,24 @@ function ChatContent() {
     }, [localStream, isCameraOff])
 
     return (
-        <div className="h-screen bg-slate-950 text-slate-100 pt-20 pb-4 px-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
+        <div className="h-screen bg-slate-950 text-slate-100 pt-4 md:pt-28 pb-20 md:pb-4 px-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
+            {/* Background Ambience */}
+            <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
+                <div
+                    className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+                    style={{
+                        clipPath:
+                            'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+                    }}
+                />
+            </div>
+
+            {/* Meteors Effect */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 mobile-only-hide">
+                <Meteors number={10} />
+            </div>
+
+
 
             {/* Call Overlay */}
             <AnimatePresence>
@@ -394,7 +405,7 @@ function ChatContent() {
                 )}
             </AnimatePresence>
 
-            {/* Friends Sidebar */}
+            {/* Sidebar */}
             <AnimatePresence mode="popLayout">
                 {(!isMobile || !selectedChatId) && (
                     <motion.div
@@ -402,26 +413,32 @@ function ChatContent() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         className={cn(
-                            "w-full md:w-[380px] lg:w-[420px] flex flex-col bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-slate-800/60 overflow-hidden shadow-2xl",
+                            "w-full md:w-[380px] lg:w-[420px] flex flex-col bg-slate-900/40 backdrop-blur-3xl rounded-3xl border border-white/5 overflow-hidden shadow-2xl",
                             "h-full"
                         )}
                     >
                         {/* Header */}
-                        <div className="p-6 border-b border-slate-800/60 bg-slate-900/40">
+                        <div className="p-6 border-b border-white/5 bg-slate-900/20">
                             <div className="flex items-center justify-between mb-6">
-                                <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Messages</h1>
-                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-800/50">
-                                    <MoreHorizontal className="w-5 h-5 text-slate-400" />
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Messages</h1>
+                                    <div className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1">
+                                        <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                                        <span className="text-[10px] font-medium text-emerald-400 uppercase tracking-widest">Secure</span>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5 text-slate-400 hover:text-white">
+                                    <MoreHorizontal className="w-5 h-5" />
                                 </Button>
                             </div>
                             <div className="relative group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                                 <input
                                     type="text"
-                                    placeholder="Search conversations..."
+                                    placeholder="Search encrypted chats..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/50 focus:bg-slate-800 transition-all placeholder:text-slate-500"
+                                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500/30 focus:bg-white/10 transition-all placeholder:text-slate-600 text-slate-200"
                                 />
                             </div>
                         </div>
@@ -436,48 +453,53 @@ function ChatContent() {
                                     animate={{ opacity: 1, y: 0 }}
                                     onClick={() => setSelectedChatId(chat.id)}
                                     className={cn(
-                                        "p-3 rounded-2xl cursor-pointer transition-all duration-200 group relative overflow-hidden",
+                                        "p-3 rounded-2xl cursor-pointer transition-all duration-300 group relative overflow-hidden",
                                         selectedChatId === chat.id
-                                            ? "bg-blue-600/10 border border-blue-500/20 shadow-lg shadow-blue-900/10"
-                                            : "hover:bg-slate-800/40 border border-transparent hover:border-slate-800"
+                                            ? "bg-white/10 border border-white/10 shadow-lg shadow-black/20"
+                                            : "hover:bg-white/5 border border-transparent hover:border-white/5"
                                     )}
                                 >
                                     {/* Active Indicator Bar */}
                                     {selectedChatId === chat.id && (
                                         <motion.div
                                             layoutId="activeBar"
-                                            className="absolute left-0 top-3 bottom-0 w-1 h-8 my-auto bg-blue-500 rounded-r-full"
+                                            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-blue-500 rounded-r-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                                         />
                                     )}
 
-                                    <div className="flex items-center gap-4 pl-2">
+                                    <div className="flex items-center gap-4 pl-3">
                                         <div className="relative">
-                                            <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${chat.color} flex items-center justify-center text-lg font-bold shadow-lg`}>
+                                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${chat.color} flex items-center justify-center text-lg font-bold shadow-lg text-white`}>
                                                 {chat.avatar}
                                             </div>
                                             {chat.status === "online" && (
-                                                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-[3px] border-slate-900" />
+                                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-slate-900 flex items-center justify-center">
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                </div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center mb-1">
-                                                <h3 className={cn("font-semibold truncate", selectedChatId === chat.id ? "text-blue-100" : "text-slate-200")}>
+                                                <h3 className={cn("font-semibold truncate tracking-tight", selectedChatId === chat.id ? "text-white" : "text-slate-200")}>
                                                     {chat.name}
                                                 </h3>
-                                                <span className="text-xs text-slate-500 font-medium">
+                                                <span className="text-[11px] text-slate-500 font-medium">
                                                     {chat.messages[chat.messages.length - 1]?.time}
                                                 </span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <p className={cn(
-                                                    "text-sm truncate max-w-[85%]",
-                                                    selectedChatId === chat.id ? "text-blue-200/70" : "text-slate-400 group-hover:text-slate-300",
-                                                    chat.status === "typing" && "text-blue-400 font-medium animate-pulse"
-                                                )}>
-                                                    {chat.status === "typing" ? "Typing..." : chat.messages[chat.messages.length - 1]?.text}
-                                                </p>
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <Lock className="w-3 h-3 text-slate-600 shrink-0" />
+                                                    <p className={cn(
+                                                        "text-sm truncate",
+                                                        selectedChatId === chat.id ? "text-slate-300" : "text-slate-400 group-hover:text-slate-300",
+                                                        chat.status === "typing" && "text-blue-400 font-medium animate-pulse"
+                                                    )}>
+                                                        {chat.status === "typing" ? "Typing..." : chat.messages[chat.messages.length - 1]?.text}
+                                                    </p>
+                                                </div>
                                                 {chat.unread > 0 && (
-                                                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-[10px] font-bold text-white shadow-lg shadow-blue-500/20">
+                                                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-lg shadow-blue-600/30 ml-2">
                                                         {chat.unread}
                                                     </span>
                                                 )}
@@ -498,14 +520,14 @@ function ChatContent() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className={cn(
-                            "flex-1 bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-slate-800/60 overflow-hidden flex flex-col shadow-2xl relative",
+                            "flex-1 bg-slate-900/40 backdrop-blur-3xl rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-2xl relative",
                             !selectedChatId && "hidden md:flex items-center justify-center"
                         )}
                     >
                         {selectedChat ? (
                             <>
                                 {/* Chat Header */}
-                                <div className="p-4 px-6 border-b border-slate-800/60 flex items-center justify-between bg-slate-900/40 backdrop-blur-xl z-10">
+                                <div className="p-4 px-6 border-b border-white/5 flex items-center justify-between bg-slate-900/40 backdrop-blur-xl z-10 glass-header">
                                     <div className="flex items-center gap-4">
                                         <Button
                                             variant="ghost"
@@ -516,23 +538,31 @@ function ChatContent() {
                                             <ArrowLeft className="h-5 w-5" />
                                         </Button>
                                         <div className="relative">
-                                            <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${selectedChat.color} flex items-center justify-center font-bold shadow-md`}>
+                                            <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${selectedChat.color} flex items-center justify-center font-bold shadow-md text-white`}>
                                                 {selectedChat.avatar}
                                             </div>
                                             {selectedChat.status === "online" && (
-                                                <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
+                                                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-slate-900 flex items-center justify-center">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                                </div>
                                             )}
                                         </div>
-                                        <div>
-                                            <h2 className="font-bold text-lg leading-tight">{selectedChat.name}</h2>
-                                            <div className="flex items-center gap-2">
+                                        <div className="min-w-0 flex-1">
+                                            <h2 className="font-bold text-lg leading-tight text-white truncate">{selectedChat.name}</h2>
+                                            <div className="flex items-center gap-2 mt-0.5 text-xs font-medium overflow-hidden">
                                                 {selectedChat.status === "online" ? (
-                                                    <span className="text-xs text-emerald-400 font-medium">Online</span>
+                                                    <span className="text-emerald-400 flex items-center gap-1 shrink-0">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Online
+                                                    </span>
                                                 ) : selectedChat.status === "typing" ? (
-                                                    <span className="text-xs text-blue-400 font-medium animate-pulse">Typing...</span>
+                                                    <span className="text-blue-400 animate-pulse shrink-0">Typing...</span>
                                                 ) : (
-                                                    <span className="text-xs text-slate-500">Last seen {selectedChat.lastSeen}</span>
+                                                    <span className="text-slate-500 shrink-0 truncate">Last seen {selectedChat.lastSeen}</span>
                                                 )}
+                                                <span className="text-slate-700 mx-1">•</span>
+                                                <span className="text-[10px] bg-slate-800/80 px-1.5 py-0.5 rounded text-slate-400 flex items-center gap-1 border border-white/5 whitespace-nowrap shrink-0">
+                                                    <Lock className="w-2.5 h-2.5" /> Encrypted
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -540,7 +570,7 @@ function ChatContent() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-full"
+                                            className="text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
                                             onClick={() => handleStartCall("audio")}
                                         >
                                             <Phone className="h-5 w-5" />
@@ -548,51 +578,54 @@ function ChatContent() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-full"
+                                            className="text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
                                             onClick={() => handleStartCall("video")}
                                         >
                                             <Video className="h-5 w-5" />
                                         </Button>
-                                        <div className="w-px h-6 bg-slate-800 mx-2" />
-                                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-full">
+                                        <div className="w-px h-6 bg-white/10 mx-2" />
+                                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
                                             <MoreVertical className="h-5 w-5" />
                                         </Button>
                                     </div>
                                 </div>
 
                                 {/* Messages */}
-                                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative">
-                                    {/* Chat background decoration */}
-                                    <div className="absolute inset-0 bg-[url('/chat-pattern.svg')] opacity-[0.03] pointer-events-none" />
+                                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative custom-scrollbar">
+                                    <div className="flex justify-center mb-8 mt-4">
+                                        <div className="bg-yellow-500/5 border border-yellow-500/10 rounded-xl px-4 py-2 flex items-center gap-2 text-xs text-yellow-500/80">
+                                            <Lock className="w-3 h-3" />
+                                            <span>Messages are end-to-end encrypted. No one outside of this chat, not even SociaVerse, can read or listen to them.</span>
+                                        </div>
+                                    </div>
 
                                     {selectedChat.messages.map((msg, idx) => {
                                         const isMe = msg.sender === "me"
-                                        const isLast = idx === selectedChat.messages.length - 1
                                         return (
                                             <motion.div
                                                 key={msg.id}
                                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                                 className={cn(
-                                                    "flex w-full group",
+                                                    "flex w-full group items-end",
                                                     isMe ? "justify-end" : "justify-start"
                                                 )}
                                             >
                                                 {!isMe && (
-                                                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${selectedChat.color} flex items-center justify-center text-xs font-bold mr-2 mt-auto shadow-sm self-end mb-1`}>
+                                                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${selectedChat.color} flex items-center justify-center text-xs font-bold text-white mr-2 mb-1 shadow-md`}>
                                                         {selectedChat.avatar}
                                                     </div>
                                                 )}
                                                 <div className={cn(
-                                                    "max-w-[75%] md:max-w-[60%] rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-sm relative",
+                                                    "max-w-[75%] md:max-w-[60%] px-5 py-3 text-sm leading-relaxed shadow-lg relative transition-all duration-200",
                                                     isMe
-                                                        ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-sm"
-                                                        : "bg-slate-800/80 text-slate-100 rounded-tl-sm border border-slate-700/50"
+                                                        ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm shadow-blue-900/20"
+                                                        : "bg-slate-800/60 backdrop-blur-md text-slate-100 rounded-2xl rounded-tl-sm border border-white/5"
                                                 )}>
                                                     <p>{msg.text}</p>
                                                     <div className={cn(
-                                                        "flex items-center gap-1 text-[10px] mt-1.5 opacity-70",
-                                                        isMe ? "justify-end text-blue-100" : "text-slate-400"
+                                                        "flex items-center gap-1 text-[10px] mt-1.5",
+                                                        isMe ? "justify-end text-blue-100/70" : "text-slate-400"
                                                     )}>
                                                         <span>{msg.time}</span>
                                                         {isMe && (
@@ -607,80 +640,99 @@ function ChatContent() {
                                 </div>
 
                                 {/* Input Area */}
-                                <div className="p-4 md:p-5 bg-slate-900/40 border-t border-slate-800/60 backdrop-blur-md">
-                                    <form
-                                        onSubmit={handleSendMessage}
-                                        className="flex items-center gap-3 bg-slate-800/40 rounded-3xl p-2 pl-4 border border-slate-700/40 focus-within:border-blue-500/30 focus-within:bg-slate-800/60 transition-all shadow-lg"
-                                    >
-                                        <Button type="button" variant="ghost" size="icon" className="text-slate-400 hover:text-white rounded-full h-9 w-9 hover:bg-slate-700/50 transition-colors">
+                                <div className="p-4 md:p-6 bg-slate-900/40 backdrop-blur-xl border-t border-white/5">
+                                    <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-2 pl-4 flex items-center gap-3 shadow-xl focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20 transition-all">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-slate-400 hover:text-white rounded-full h-9 w-9 hover:bg-white/10 transition-colors"
+                                        >
                                             <Paperclip className="h-5 w-5" />
                                         </Button>
                                         <Input
                                             type="text"
                                             value={inputValue}
                                             onChange={(e) => setInputValue(e.target.value)}
-                                            placeholder="Type a message..."
+                                            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                                            placeholder="Type a secure message..."
                                             className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 text-slate-200 placeholder:text-slate-500 h-10 px-0"
                                         />
-                                        <div className="flex items-center gap-1 pr-1">
-                                            <Button type="button" variant="ghost" size="icon" className="text-slate-400 hover:text-white rounded-full h-9 w-9 hover:bg-slate-700/50 transition-colors">
+                                        <div className="flex items-center gap-2 pr-1">
+                                            <Button type="button" variant="ghost" size="icon" className="text-slate-400 hover:text-white rounded-full h-9 w-9 hover:bg-white/10 transition-colors">
                                                 <Smile className="h-5 w-5" />
                                             </Button>
-                                            <AnimatePresence>
+                                            <AnimatePresence mode="wait">
                                                 {inputValue.trim() ? (
                                                     <motion.div
+                                                        key="send"
                                                         initial={{ scale: 0, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
                                                         exit={{ scale: 0, opacity: 0 }}
                                                     >
-                                                        <Button type="submit" size="icon" className="bg-blue-600 hover:bg-blue-500 text-white rounded-full h-9 w-9 shadow-lg shadow-blue-600/20">
-                                                            <Send className="h-4 w-4 ml-0.5" />
+                                                        <Button
+                                                            onClick={handleSendMessage}
+                                                            size="icon"
+                                                            className="bg-blue-600 hover:bg-blue-500 text-white rounded-full h-10 w-10 shadow-lg shadow-blue-600/30"
+                                                        >
+                                                            <Send className="h-5 w-5 ml-0.5" />
                                                         </Button>
                                                     </motion.div>
                                                 ) : (
                                                     <motion.div
+                                                        key="mic"
                                                         initial={{ scale: 0, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
                                                         exit={{ scale: 0, opacity: 0 }}
                                                     >
-                                                        <Button type="button" variant="ghost" size="icon" className="text-slate-400 hover:text-white rounded-full h-9 w-9 hover:bg-slate-700/50">
+                                                        <Button type="button" variant="ghost" size="icon" className="text-slate-400 hover:text-white rounded-full h-10 w-10 hover:bg-white/10">
                                                             <Mic className="h-5 w-5" />
                                                         </Button>
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>
                                         </div>
-                                    </form>
+                                    </div>
+                                    <div className="text-center mt-3">
+                                        <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1.5">
+                                            <Lock className="w-2.5 h-2.5" />
+                                            <span>End-to-end encrypted</span>
+                                        </p>
+                                    </div>
                                 </div>
                             </>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center bg-slate-900/20">
-                                <div className="relative mb-8 group">
-                                    <div className="absolute inset-0 bg-blue-500/20 blur-2xl rounded-full group-hover:bg-blue-500/30 transition-all duration-500" />
-                                    <div className="w-24 h-24 rounded-3xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center relative shadow-2xl transform group-hover:-translate-y-2 transition-transform duration-500">
-                                        <Send className="h-10 w-10 text-blue-400" />
+                                <div className="relative mb-8 group cursor-default">
+                                    <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full group-hover:bg-blue-500/30 transition-all duration-700" />
+                                    <div className="w-32 h-32 rounded-[2rem] bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center relative shadow-2xl transform group-hover:-translate-y-2 transition-transform duration-500">
+                                        <ShieldCheck className="h-16 w-16 text-blue-500" />
                                     </div>
-                                    <div className="absolute -right-4 -bottom-4 w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shadow-xl transform group-hover:translate-x-1 group-hover:translate-y-1 transition-transform duration-500 delay-75">
-                                        <Smile className="h-7 w-7 text-purple-400" />
+                                    {/* Decorative icons */}
+                                    <div className="absolute -right-6 -bottom-2 w-16 h-16 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center shadow-xl transform rotate-12 group-hover:rotate-6 transition-all duration-500 delay-75">
+                                        <Lock className="h-8 w-8 text-emerald-500" />
+                                    </div>
+                                    <div className="absolute -left-6 -bottom-2 w-16 h-16 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center shadow-xl transform -rotate-12 group-hover:-rotate-6 transition-all duration-500 delay-75">
+                                        <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-10 h-10 rounded-full" />
                                     </div>
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-200 mb-3">Welcome to SociaVerse Chat</h3>
-                                <p className="max-w-xs text-slate-400 leading-relaxed">
-                                    Select a conversation from the sidebar to start messaging your friends.
+                                <h3 className="text-3xl font-bold text-white mb-3 tracking-tight">SociaVerse Secure Chat</h3>
+                                <p className="max-w-sm text-slate-400 text-lg leading-relaxed">
+                                    Select a conversation to start messaging. <br />
+                                    <span className="text-sm opacity-70">Your private messages are end-to-end encrypted.</span>
                                 </p>
                             </div>
                         )}
                     </motion.div>
                 )}
             </AnimatePresence>
-
         </div>
     )
 }
 
 export default function ChatPage() {
     return (
-        <Suspense fallback={<div className="h-screen bg-slate-950 text-slate-100 flex items-center justify-center">Loading chat...</div>}>
+        <Suspense fallback={<div className="h-screen bg-slate-950 text-slate-100 flex items-center justify-center text-lg animate-pulse">Loading secure chat...</div>}>
             <ChatContent />
         </Suspense>
     )

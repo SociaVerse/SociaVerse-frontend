@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/custom-toast"
 import { BadgeCheck, ShieldCheck, Zap, Star, Check, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
+import Link from "next/link"
 
 export default function VerifiedPage() {
     const { isAuthenticated, isLoading } = useAuth()
@@ -41,41 +42,7 @@ export default function VerifiedPage() {
         }
     }
 
-    const handleSubscribe = async () => {
-        setLoading(true)
-        try {
-            // Simulate payment processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000))
-
-            const token = localStorage.getItem('sociaverse_token')
-            const formData = new FormData()
-            formData.append('is_premium', 'true')
-            // Also set is_verified to true for visual badge if they are linked
-            // Or maybe just premium implies badge. Let's set both for now to be sure user gets the badge.
-            formData.append('is_verified', 'true')
-
-            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
-                method: 'PATCH',
-                headers: { 'Authorization': `Token ${token}` },
-                body: formData
-            })
-
-            if (response.ok) {
-                setIsVerified(true)
-                toast({
-                    title: "Welcome to SociaVerse Verified!",
-                    message: "You are now a verified member. Enjoy your blue tick!",
-                    type: "success"
-                })
-            } else {
-                throw new Error("Failed to subscribe")
-            }
-        } catch (error) {
-            toast({ title: "Error", message: "Payment failed. Please try again.", type: "error" })
-        } finally {
-            setLoading(false)
-        }
-    }
+    // Removed handleSubscribe logic
 
     if (fetching) {
         return (
@@ -133,8 +100,7 @@ export default function VerifiedPage() {
                 <div className="text-center mb-8">
                     <h3 className="text-lg font-medium text-slate-400 uppercase tracking-widest mb-2">Membership</h3>
                     <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-5xl font-bold text-white">$14.99</span>
-                        <span className="text-slate-500">/month</span>
+                        <span className="text-2xl font-bold text-white">Choose Plan</span>
                     </div>
                 </div>
 
@@ -154,13 +120,13 @@ export default function VerifiedPage() {
                         <Check className="w-5 h-5 mr-2" /> Active Member
                     </Button>
                 ) : (
-                    <Button
-                        onClick={handleSubscribe}
-                        disabled={loading}
-                        className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02]"
-                    >
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Subscribe Now"}
-                    </Button>
+                    <Link href="/settings/verified/subscribe" className="w-full block">
+                        <Button
+                            className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-[1.02]"
+                        >
+                            View Plans
+                        </Button>
+                    </Link>
                 )}
 
                 <p className="text-xs text-center text-slate-500 mt-4">
