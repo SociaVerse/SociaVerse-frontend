@@ -302,19 +302,24 @@ function NavbarNotifications() {
     }
   }
 
+  // Initial fetch for badge
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchNotifications()
+    }
+  }, [isAuthenticated])
+
+  // Fetch when opening dropdown
   useEffect(() => {
     if (isAuthenticated && isOpen) {
       fetchNotifications()
-    } else if (isAuthenticated && !isOpen) {
-      // Poll or fetch once on mount? Let's fetch on mount too for badge
-      fetchNotifications()
     }
-  }, [isAuthenticated, isOpen])
+  }, [isOpen])
 
-  // Poll every minute
+  // Poll every 5 minutes (reduced frequency)
   useEffect(() => {
     if (!isAuthenticated) return
-    const interval = setInterval(fetchNotifications, 60000)
+    const interval = setInterval(fetchNotifications, 300000) // 5 minutes
     return () => clearInterval(interval)
   }, [isAuthenticated])
 

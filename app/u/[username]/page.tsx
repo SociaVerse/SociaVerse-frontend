@@ -281,10 +281,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             </Button>
                         )}
 
-                        <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Message
-                        </Button>
+                        <Link href={`/chat?user=${profile.username}`}>
+                            <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
+                                <MessageSquare className="w-4 h-4 mr-2" />
+                                Message
+                            </Button>
+                        </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
