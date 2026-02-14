@@ -15,6 +15,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/custom-toast"
+import { compressImage } from "@/utils/image-compression"
 
 // Steps Definition
 const STEPS = [
@@ -409,15 +410,24 @@ export default function CreateEventPage() {
 
 function Step1({ data, update }: { data: any, update: (field: string, value: any) => void }) {
     const fileInputRef = React.useRef<HTMLInputElement>(null)
+    const [isCompressing, setIsCompressing] = useState(false)
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                update("eventImage", reader.result)
+            setIsCompressing(true)
+            try {
+                const compressedFile = await compressImage(file)
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    update("eventImage", reader.result)
+                    setIsCompressing(false)
+                }
+                reader.readAsDataURL(compressedFile)
+            } catch (error) {
+                console.error("Compression failed", error)
+                setIsCompressing(false)
             }
-            reader.readAsDataURL(file)
         }
     }
 
@@ -452,6 +462,13 @@ function Step1({ data, update }: { data: any, update: (field: string, value: any
                                 </div>
                                 <p className="text-lg font-medium text-slate-300 group-hover:text-white">Upload Banner Image</p>
                                 <p className="text-sm text-slate-500 mt-1">Recommended: 1920x1080 (PNG, JPG)</p>
+                            </div>
+                        )}
+
+                        {isCompressing && (
+                            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-20">
+                                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2" />
+                                <p className="text-white font-medium text-sm">Compressing...</p>
                             </div>
                         )}
 

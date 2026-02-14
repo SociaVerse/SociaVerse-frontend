@@ -14,6 +14,7 @@ import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-ico
 import { useToast } from "@/components/ui/custom-toast"
 import Link from "next/link"
 import { UserList } from "@/components/user-list"
+import { PostCard } from "@/components/post-card"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -456,6 +457,16 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 function PostsFeed({ username, currentUser }: { username: string, currentUser: any }) {
     const [posts, setPosts] = useState<any[]>([])
     const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const { isAuthenticated } = useAuth()
+    const router = useRouter()
+
+    const handleAuthAction = (action: () => void) => {
+        if (!isAuthenticated) {
+            router.push("/login")
+            return
+        }
+        action()
+    }
 
     useEffect(() => {
         if (username) fetchPosts()
@@ -518,7 +529,12 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
             ) : (
                 <div className="space-y-6">
                     {posts.map((post) => (
-                        <PostCard key={post.id} post={post} currentUser={currentUser} onImageClick={setSelectedImage} />
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            handleAuthAction={handleAuthAction}
+                            onImageClick={setSelectedImage}
+                        />
                     ))}
                 </div>
             )}
@@ -526,79 +542,4 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
     )
 }
 
-function PostCard({ post, currentUser, onImageClick }: { post: any, currentUser: any, onImageClick: (src: string) => void }) {
 
-    const formatDate = (dateString: string) => {
-        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
-        return new Date(dateString).toLocaleDateString(undefined, options)
-    }
-
-    const getImageUrl = (path: string | null) => {
-        if (!path) return null
-        if (path.startsWith('http')) return path
-        return `http://127.0.0.1:8000${path}`
-    }
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors group relative"
-        >
-            <div className="flex gap-3 mb-3">
-                <img
-                    src={getImageUrl(post.author.profile_picture) || `https://ui-avatars.com/api/?name=${post.author.username}`}
-                    alt={post.author.username}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-800"
-                />
-                <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-slate-200">{post.author.first_name || post.author.username}</h4>
-                            {post.author.is_verified && <BadgeCheck className="w-4 h-4 text-blue-500" />}
-                        </div>
-                    </div>
-                    <p className="text-xs text-slate-500">@{post.author.username} · {formatDate(post.created_at)}</p>
-                </div>
-            </div>
-
-            <p className="text-slate-300 mb-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
-
-            {/* Images Grid */}
-            {post.images && post.images.length > 0 && (
-                <div className={`grid gap-2 mb-4 rounded-xl overflow-hidden ${post.images.length === 1 ? 'grid-cols-1' :
-                    post.images.length === 2 ? 'grid-cols-2' :
-                        'grid-cols-2 md:grid-cols-3'
-                    }`}>
-                    {post.images.map((imgObj: any, index: number) => {
-                        const imgUrl = getImageUrl(imgObj.image) || ''
-                        return (
-                            <div key={imgObj.id} className={`relative ${post.images.length === 1 ? 'aspect-video' : 'aspect-square'}`}>
-                                <motion.img
-                                    layoutId={imgUrl}
-                                    src={imgUrl}
-                                    alt={`Post Image ${index + 1}`}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
-                                    onClick={() => onImageClick(imgUrl)}
-                                />
-                            </div>
-                        )
-                    })}
-                </div>
-            )}
-
-            <div className="flex items-center justify-between text-slate-500 pt-2 border-t border-slate-800/50">
-                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2 rounded-full transition-colors">
-                    <Heart className="w-4 h-4" /> Like
-                </Button>
-                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 rounded-full transition-colors">
-                    <MessageCircle className="w-4 h-4" /> Comment
-                </Button>
-                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2 rounded-full transition-colors">
-                    <Share2 className="w-4 h-4" /> Share
-                </Button>
-            </div>
-        </motion.div>
-    )
-}

@@ -190,32 +190,38 @@ export function Navbar() {
           >
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-full px-2 py-1 border border-slate-700/50 shadow-sm">
               <AnimatePresence>
-                {navLinks.map((link) => (
-                  <Button
-                    key={link.href}
-                    asChild
-                    variant="ghost"
-                    className="relative px-4 py-2 text-sm font-medium text-slate-200 rounded-full transition-all duration-200 hover:bg-slate-700/50"
-                    onMouseEnter={() => setHoveredLink(link.href)}
-                    onMouseLeave={() => setHoveredLink(null)}
-                  >
-                    <Link href={link.href} className="flex items-center">
-                      {/* {link.icon && link.icon} */}
-                      {/* Commented out link.icon call since it's not in the object definition above, mimicking user snippet but avoiding crash if undefined */}
-                      {hoveredLink === link.href && (
-                        <motion.span
-                          layoutId="navbar-hover"
-                          className="absolute inset-0 z-[-1] rounded-full bg-slate-700 shadow-sm"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                        />
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href))
+                  return (
+                    <Button
+                      key={link.href}
+                      asChild
+                      variant="ghost"
+                      className={cn(
+                        "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
+                        isActive
+                          ? "bg-slate-950 text-blue-400 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] scale-[0.96] border border-white/5"
+                          : "text-slate-200 hover:bg-slate-700/50 hover:text-white"
                       )}
-                      {link.label}
-                    </Link>
-                  </Button>
-                ))}
+                      onMouseEnter={() => setHoveredLink(link.href)}
+                      onMouseLeave={() => setHoveredLink(null)}
+                    >
+                      <Link href={link.href} className="flex items-center">
+                        {hoveredLink === link.href && !isActive && (
+                          <motion.span
+                            layoutId="navbar-hover"
+                            className="absolute inset-0 z-[-1] rounded-full bg-slate-700 shadow-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        )}
+                        {link.label}
+                      </Link>
+                    </Button>
+                  )
+                })}
               </AnimatePresence>
             </div>
           </motion.nav>

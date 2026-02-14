@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
+import { compressImage } from "@/utils/image-compression"
 
 // ... (Reuse constants from create/page.tsx or move to a shared file)
 const EVENT_TYPES = [
@@ -321,15 +322,24 @@ export default function EditEventPage() {
 
 function Step1({ data, update }: { data: any, update: (field: string, value: any) => void }) {
     const fileInputRef = React.useRef<HTMLInputElement>(null)
+    const [isCompressing, setIsCompressing] = useState(false)
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                update("eventImage", reader.result)
+            setIsCompressing(true)
+            try {
+                const compressedFile = await compressImage(file)
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                    update("eventImage", reader.result)
+                    setIsCompressing(false)
+                }
+                reader.readAsDataURL(compressedFile)
+            } catch (error) {
+                console.error("Compression failed", error)
+                setIsCompressing(false)
             }
-            reader.readAsDataURL(file)
         }
     }
 
@@ -363,6 +373,12 @@ function Step1({ data, update }: { data: any, update: (field: string, value: any
                                     <ImageIcon className="w-8 h-8 text-slate-400 group-hover:text-blue-400 transition-colors" />
                                 </div>
                                 <p className="text-lg font-medium text-slate-300 group-hover:text-white">Upload Banner Image</p>
+                            </div>
+                        )}
+                        {isCompressing && (
+                            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-20">
+                                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2" />
+                                <p className="text-white font-medium text-sm">Compressing...</p>
                             </div>
                         )}
                         {data.eventImage && (

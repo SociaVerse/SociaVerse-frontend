@@ -1,4 +1,13 @@
-const API_URL = "http://127.0.0.1:8000/api/chat"
+const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+        const protocol = window.location.protocol;
+        const host = window.location.hostname;
+        return `${protocol}//${host}:8000/api/chat`;
+    }
+    return 'http://127.0.0.1:8000/api/chat';
+};
+
+const API_URL = getBaseUrl();
 
 interface User {
     id: number
@@ -6,6 +15,7 @@ interface User {
     email: string
     avatar?: string
     profile_picture?: string | null
+    is_blocked?: boolean
 }
 
 export interface Conversation {
@@ -24,6 +34,9 @@ export interface Message {
     starred_by?: number[]
     pinned_by?: number[]
     reply_to?: string
+    audio_url?: string
+    duration?: number
+    waveform?: number[]
 }
 
 const getHeaders = () => {
@@ -67,7 +80,12 @@ export const chatService = {
             headers: getHeaders(),
             body: JSON.stringify({ delete_type: deleteType })
         })
-        if (!response.ok) throw new Error("Failed to delete message")
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete message failed:', response.status, errorText);
+            throw new Error(`Failed to delete message: ${response.status} ${errorText}`);
+        }
     },
 
     performAction: async (messageId: string, action: 'like' | 'star' | 'pin' | 'report', data?: any): Promise<any> => {
@@ -120,6 +138,24 @@ export const chatService = {
             headers: getHeaders()
         })
         if (!response.ok) throw new Error("Failed to mute conversation")
+        return response.json()
+    },
+
+    uploadVoiceNote: async (audioBlob: Blob): Promise<{ url: string }> => {
+        const formData = new FormData()
+        formData.append('audio', audioBlob, 'voice_note.webm')
+
+        const token = typeof window !== 'undefined' ? localStorage.getItem("sociaverse_token") : null
+
+        const response = await fetch(`${API_URL}/upload/`, {
+            method: 'POST',
+            headers: {
+                "Authorization": `Token ${token}`
+            },
+            body: formData
+        })
+
+        if (!response.ok) throw new Error("Failed to upload voice note")
         return response.json()
     }
 }

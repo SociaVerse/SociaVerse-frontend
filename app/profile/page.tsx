@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { UserList } from "@/components/user-list"
+import { PostCard } from "@/components/post-card"
+import { compressImage } from "@/utils/image-compression"
 
 export default function ProfilePage() {
     const { isAuthenticated, user, isLoading } = useAuth()
@@ -350,14 +352,35 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
         }
     }
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [isCompressing, setIsCompressing] = useState(false);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const selectedFiles = Array.from(e.target.files)
             if (images.length + selectedFiles.length > 10) {
                 toast({ title: "Limit Exceeded", message: "You can only upload up to 10 images.", type: "error" })
                 return
             }
-            setImages(prev => [...prev, ...selectedFiles])
+
+            setIsCompressing(true);
+            try {
+                const compressedFiles = await Promise.all(
+                    selectedFiles.map(async (file) => {
+                        try {
+                            const compressed = await compressImage(file);
+                            return compressed;
+                        } catch (err) {
+                            console.error("Failed to compress", file.name, err);
+                            return file; // Fallback to original
+                        }
+                    })
+                );
+                setImages(prev => [...prev, ...compressedFiles])
+            } catch (error) {
+                console.error("Error processing images", error);
+            } finally {
+                setIsCompressing(false);
+            }
         }
     }
 
@@ -426,6 +449,17 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
             console.error("Error deleting post:", error)
             toast({ title: "Error", message: "Failed to delete post.", type: "error" })
         }
+    }
+
+    const { isAuthenticated } = useAuth()
+    const router = useRouter()
+
+    const handleAuthAction = (action: () => void) => {
+        if (!isAuthenticated) {
+            router.push("/login")
+            return
+        }
+        action()
     }
 
     return (
@@ -563,9 +597,9 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
                                     size="sm"
                                     className="rounded-full bg-blue-600 hover:bg-blue-500 text-white px-6"
                                     onClick={handleCreatePost}
-                                    disabled={isLoading || (!content.trim() && images.length === 0)}
+                                    disabled={isLoading || isCompressing || (!content.trim() && images.length === 0)}
                                 >
-                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
+                                    {isLoading || isCompressing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
                                 </Button>
                             </div>
                         </div>
@@ -581,7 +615,13 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
             ) : (
                 <div className="space-y-6">
                     {posts.map((post) => (
-                        <PostCard key={post.id} post={post} currentUser={currentUser} onDelete={handleDeletePost} onImageClick={setSelectedImage} />
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            handleAuthAction={handleAuthAction}
+                            onDelete={handleDeletePost}
+                            onImageClick={setSelectedImage}
+                        />
                     ))}
                 </div>
             )}
@@ -589,106 +629,4 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
     )
 }
 
-function PostCard({ post, currentUser, onDelete, onImageClick }: { post: any, currentUser: any, onDelete: (id: number) => void, onImageClick: (src: string) => void }) {
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-    const isOwner = currentUser && post.author.username === currentUser.username
 
-    const formatDate = (dateString: string) => {
-        const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
-        return new Date(dateString).toLocaleDateString(undefined, options)
-    }
-
-    const getImageUrl = (path: string | null) => {
-        if (!path) return null
-        if (path.startsWith('http')) return path
-        return `http://127.0.0.1:8000${path}`
-    }
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-colors group relative"
-        >
-            <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-                <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Post?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-400">
-                            This action cannot be undone. This post will be permanently removed.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDelete(post.id)} className="bg-red-600 text-white hover:bg-red-700">Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <div className="flex gap-3 mb-3">
-                <img
-                    src={getImageUrl(post.author.profile_picture) || `https://ui-avatars.com/api/?name=${post.author.username}`}
-                    alt={post.author.username}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-800"
-                />
-                <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <h4 className="font-bold text-slate-200">{post.author.first_name || post.author.username}</h4>
-                            {post.author.is_verified && <BadgeCheck className="w-4 h-4 text-blue-500" />}
-                        </div>
-                        {isOwner && (
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-slate-500 hover:text-red-500 hover:bg-red-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => setShowDeleteConfirm(true)}
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
-                        )}
-                    </div>
-                    <p className="text-xs text-slate-500">@{post.author.username} · {formatDate(post.created_at)}</p>
-                </div>
-            </div>
-
-            <p className="text-slate-300 mb-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
-
-            {/* Images Grid */}
-            {post.images && post.images.length > 0 && (
-                <div className={`grid gap-2 mb-4 rounded-xl overflow-hidden ${post.images.length === 1 ? 'grid-cols-1' :
-                    post.images.length === 2 ? 'grid-cols-2' :
-                        'grid-cols-2 md:grid-cols-3'
-                    }`}>
-                    {post.images.map((imgObj: any, index: number) => {
-                        const imgUrl = getImageUrl(imgObj.image) || ''
-                        return (
-                            <div key={imgObj.id} className={`relative ${post.images.length === 1 ? 'aspect-video' : 'aspect-square'}`}>
-                                <motion.img
-                                    layoutId={imgUrl}
-                                    src={imgUrl}
-                                    alt={`Post Image ${index + 1}`}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 cursor-pointer"
-                                    onClick={() => onImageClick(imgUrl)}
-                                />
-                            </div>
-                        )
-                    })}
-                </div>
-            )}
-
-            <div className="flex items-center justify-between text-slate-500 pt-2 border-t border-slate-800/50">
-                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2 rounded-full transition-colors">
-                    <Heart className="w-4 h-4" /> Like
-                </Button>
-                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 rounded-full transition-colors">
-                    <MessageCircle className="w-4 h-4" /> Comment
-                </Button>
-                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2 rounded-full transition-colors">
-                    <Share2 className="w-4 h-4" /> Share
-                </Button>
-            </div>
-        </motion.div>
-    )
-}

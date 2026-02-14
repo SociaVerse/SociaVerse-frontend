@@ -309,7 +309,16 @@ export default function CommunityLayout({
     )
 
     return (
-        <div className="flex bg-slate-950 text-white overflow-hidden h-[calc(100vh-5rem)] md:h-[calc(100vh-4rem)] pt-4">
+        <div
+            className="flex bg-slate-950 text-white overflow-hidden h-[calc(100vh-5rem)] md:h-[calc(100vh-4rem)] pt-4"
+            style={community?.primary_color ? ({
+                '--primary': community.primary_color,
+                '--ring': community.primary_color,
+                '--sidebar-primary': community.primary_color,
+                '--sidebar-ring': community.primary_color,
+                '--sidebar-accent-foreground': community.primary_color,
+            } as React.CSSProperties) : {}}
+        >
 
             {/* Mobile Header Trigger */}
             <div className="md:hidden absolute top-4 left-4 z-50">

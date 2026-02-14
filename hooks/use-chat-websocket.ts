@@ -4,6 +4,9 @@ interface Message {
     message: string
     sender_id: number
     reply_to?: string
+    audio_url?: string
+    duration?: number
+    waveform?: number[]
 }
 
 export function useChatWebSocket(conversationId: number | null) {
@@ -49,9 +52,13 @@ export function useChatWebSocket(conversationId: number | null) {
         }
     }, [conversationId])
 
-    const sendMessage = useCallback((text: string, replyToId?: string) => {
+    const sendMessage = useCallback((text: string, replyToId?: string, extraData?: { audio_url?: string, duration?: number, waveform?: number[] }) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ message: text, reply_to: replyToId }))
+            ws.current.send(JSON.stringify({
+                message: text,
+                reply_to: replyToId,
+                ...extraData
+            }))
         } else {
             console.warn("WebSocket not ready. Queueing or ignoring message.")
             // Ideally queue messages here, but for now just warn

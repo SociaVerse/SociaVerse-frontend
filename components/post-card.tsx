@@ -1,18 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
 import { Heart, MessageCircle, Share2, MoreHorizontal, BadgeCheck, Send, X, Trash2, Edit2, Reply, CornerDownRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Post, Comment, api } from "@/services/api"
 import { useAuth } from "@/components/auth-provider"
 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 interface PostCardProps {
     post: Post;
     handleAuthAction: (action: () => void) => void;
+    onDelete?: (id: number) => void;
+    onImageClick?: (src: string) => void;
 }
 
-export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps) {
+export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImageClick }: PostCardProps) {
     const [post, setPost] = useState(initialPost);
     const [isLiked, setIsLiked] = useState(initialPost.is_liked);
     const [likesCount, setLikesCount] = useState(initialPost.likes_count);
@@ -21,7 +30,16 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState("");
     const [isLoadingComments, setIsLoadingComments] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    const isAuthor = user?.id === post.author.id;
+
+    const handleDeletePost = async () => {
+        if (onDelete) {
+            onDelete(post.id);
+        }
+    };
 
     const handleLike = async () => {
         handleAuthAction(async () => {
@@ -87,6 +105,7 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -111,9 +130,39 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
                             <span className="text-slate-500 text-sm truncate">@{post.author.username}</span>
                             <span className="text-slate-600 text-sm flex-shrink-0">· {formatTime(post.created_at)}</span>
                         </div>
-                        <button className="text-slate-500 hover:text-slate-300">
-                            <MoreHorizontal className="h-5 w-5" />
-                        </button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="text-slate-500 hover:text-slate-300">
+                                    <MoreHorizontal className="h-5 w-5" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-800">
+                                {isAuthor && onDelete && (
+                                    <DropdownMenuItem className="text-red-400 focus:text-red-300 focus:bg-slate-800 cursor-pointer" onClick={() => setShowDeleteDialog(true)}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Post
+                                    </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem className="text-slate-300 focus:text-white focus:bg-slate-800 cursor-pointer">
+                                    Report Post
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                            <AlertDialogContent className="bg-slate-900 border-slate-800">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-slate-100">Delete Post?</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-slate-400">
+                                        This action cannot be undone. This post will be permanently removed.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDeletePost} className="bg-red-600 hover:bg-red-700 text-white border-none">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
 
                     <p className="text-slate-300 mb-3 whitespace-pre-wrap leading-relaxed break-words">
@@ -121,12 +170,24 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
                     </p>
 
                     {post.images && post.images.length > 0 && (
-                        <div className="mb-4 rounded-xl overflow-hidden border border-slate-800">
-                            <img
-                                src={post.images[0].image.startsWith('http') ? post.images[0].image : `http://127.0.0.1:8000${post.images[0].image}`}
-                                alt="Post content"
-                                className="w-full h-auto object-cover max-h-[500px]"
-                            />
+                        <div className={`grid gap-2 mb-4 rounded-xl overflow-hidden border border-slate-800 ${post.images.length === 1 ? 'grid-cols-1' :
+                            post.images.length === 2 ? 'grid-cols-2' :
+                                'grid-cols-2 md:grid-cols-3'
+                            }`}>
+                            {post.images.map((imgObj, index) => {
+                                const imgUrl = imgObj.image.startsWith('http') ? imgObj.image : `http://127.0.0.1:8000${imgObj.image}`;
+                                return (
+                                    <div key={imgObj.id || index} className={`relative ${post.images.length === 1 ? '' : 'aspect-square'}`}>
+                                        <img
+                                            src={imgUrl}
+                                            alt={`Post content ${index + 1}`}
+                                            className={`w-full h-full object-cover ${onImageClick ? 'cursor-pointer hover:scale-105 transition-transform duration-500' : ''}`}
+                                            style={{ maxHeight: post.images.length === 1 ? '500px' : 'none' }}
+                                            onClick={() => onImageClick?.(imgUrl)}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
 
@@ -143,9 +204,31 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
                         <Button
                             variant="ghost"
                             size="sm"
-                            className={`hover:text-pink-500 gap-2 ${isLiked ? 'text-pink-500' : ''}`}
+                            className={`hover:text-pink-500 gap-2 relative ${isLiked ? 'text-pink-500' : ''}`}
                             onClick={handleLike}
                         >
+                            {/* Heart Explosion Particles */}
+                            <AnimatePresence>
+                                {isLiked && (
+                                    <>
+                                        {[...Array(8)].map((_, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ scale: 0, opacity: 1, x: 0, y: 0 }}
+                                                animate={{
+                                                    scale: 0,
+                                                    opacity: 0,
+                                                    x: Math.cos(i * 45 * (Math.PI / 180)) * 30,
+                                                    y: Math.sin(i * 45 * (Math.PI / 180)) * 30
+                                                }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                                className="absolute inset-0 m-auto w-2 h-2 rounded-full bg-pink-500 pointer-events-none"
+                                            />
+                                        ))}
+                                    </>
+                                )}
+                            </AnimatePresence>
                             <motion.div
                                 whileTap={{ scale: 0.8 }}
                                 animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}

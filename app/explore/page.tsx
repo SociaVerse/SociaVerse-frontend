@@ -1,6 +1,6 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Search, MapPin, Users, GraduationCap, ArrowRight, Star, TrendingUp, Filter, MoreHorizontal, Heart, MessageCircle, Share2, BadgeCheck, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
@@ -39,12 +39,12 @@ export default function ExplorePage() {
                         {/* Desktop Search & Tabs - Sticky */}
                         <div className="hidden md:block sticky top-0 z-40 bg-slate-950 -mt-20 pt-24 pb-4 border-b border-slate-800/50 shadow-md">
                             <SearchBar />
-                            <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar pb-1">
+                            <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
                                 {["For You", "Trending", "People", "Universities", "Events"].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border relative overflow-hidden group ${activeTab === tab
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border relative overflow-hidden group snap-center ${activeTab === tab
                                             ? "bg-slate-100 text-slate-950 border-slate-100 shadow-[0_0_15px_rgba(255,255,255,0.3)]"
                                             : "bg-transparent border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                                             }`}
@@ -64,16 +64,30 @@ export default function ExplorePage() {
 
                         {/* Content Feed */}
                         <div className="space-y-6 min-h-[50vh]">
-                            {activeTab === "For You" && <ForYouFeed handleAuthAction={handleAuthAction} />}
-                            {activeTab === "People" && <PeopleFeed handleAuthAction={handleAuthAction} />}
-                            {activeTab === "Universities" && <UniversitiesFeed />}
-                            {/* Fallback for other tabs */}
-                            {["Trending", "Events"].includes(activeTab) && (
-                                <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-                                    <Search className="h-12 w-12 mb-4 opacity-20" />
-                                    <p>More {activeTab} content coming soon...</p>
-                                </div>
-                            )}
+                            <AnimatePresence mode="wait">
+                                {activeTab === "For You" && (
+                                    <motion.div key="foryou" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                                        <ForYouFeed handleAuthAction={handleAuthAction} />
+                                    </motion.div>
+                                )}
+                                {activeTab === "People" && (
+                                    <motion.div key="people" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                                        <PeopleFeed handleAuthAction={handleAuthAction} />
+                                    </motion.div>
+                                )}
+                                {activeTab === "Universities" && (
+                                    <motion.div key="unis" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                                        <UniversitiesFeed />
+                                    </motion.div>
+                                )}
+                                {/* Fallback for other tabs */}
+                                {["Trending", "Events"].includes(activeTab) && (
+                                    <motion.div key="other" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="flex flex-col items-center justify-center py-20 text-slate-500">
+                                        <Search className="h-12 w-12 mb-4 opacity-20" />
+                                        <p>More {activeTab} content coming soon...</p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
@@ -188,6 +202,7 @@ function SearchBar() {
 
 import { api, Post } from "@/services/api"
 import { PostCard } from "@/components/post-card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect } from "react"
 
 function ForYouFeed({ handleAuthAction }: { handleAuthAction: (action: () => void) => void }) {
@@ -209,7 +224,22 @@ function ForYouFeed({ handleAuthAction }: { handleAuthAction: (action: () => voi
     }, [])
 
     if (loading) {
-        return <div className="text-center py-20 text-slate-500">Loading posts...</div>
+        return (
+            <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div className="flex gap-4">
+                            <Skeleton className="h-12 w-12 rounded-full" />
+                            <div className="space-y-2 flex-1">
+                                <Skeleton className="h-4 w-[200px]" />
+                                <Skeleton className="h-3 w-[100px]" />
+                            </div>
+                        </div>
+                        <Skeleton className="h-24 w-full rounded-xl" />
+                    </div>
+                ))}
+            </div>
+        )
     }
 
     if (posts.length === 0) {
@@ -217,11 +247,16 @@ function ForYouFeed({ handleAuthAction }: { handleAuthAction: (action: () => voi
     }
 
     return (
-        <div className="space-y-4">
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+        >
             {posts.map((post) => (
                 <PostCard key={post.id} post={post} handleAuthAction={handleAuthAction} />
             ))}
-        </div>
+        </motion.div>
     )
 }
 
