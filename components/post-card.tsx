@@ -146,7 +146,13 @@ export function PostCard({ post: initialPost, handleAuthAction }: PostCardProps)
                             className={`hover:text-pink-500 gap-2 ${isLiked ? 'text-pink-500' : ''}`}
                             onClick={handleLike}
                         >
-                            <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                            <motion.div
+                                whileTap={{ scale: 0.8 }}
+                                animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                            </motion.div>
                             <span>{likesCount}</span>
                         </Button>
                         <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2">
