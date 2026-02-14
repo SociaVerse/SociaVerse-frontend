@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 interface Message {
     message: string
     sender_id: number
+    reply_to?: string
 }
 
 export function useChatWebSocket(conversationId: number | null) {
@@ -48,9 +49,9 @@ export function useChatWebSocket(conversationId: number | null) {
         }
     }, [conversationId])
 
-    const sendMessage = useCallback((text: string) => {
+    const sendMessage = useCallback((text: string, replyToId?: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ message: text }))
+            ws.current.send(JSON.stringify({ message: text, reply_to: replyToId }))
         } else {
             console.warn("WebSocket not ready. Queueing or ignoring message.")
             // Ideally queue messages here, but for now just warn

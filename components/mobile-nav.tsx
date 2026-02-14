@@ -3,23 +3,23 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, PlusSquare, MessageCircle, User, Zap, Globe } from "lucide-react"
+import { Home, Search, PlusSquare, MessageCircle, Store, Zap, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
     const pathname = usePathname()
-    const { isAuthenticated, user } = useAuth() // Assuming we can get user for profile pic
+    // const { isAuthenticated, user } = useAuth() // Not needed if profile is removed
 
-    // Hide on auth pages
-    const isAuthPage = pathname === "/login" || pathname === "/signup"
+    // Hide on auth pages or create page
+    const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/create"
     if (isAuthPage) return null
 
     const navItems = [
         { href: "/", icon: Home, label: "Home" },
-        { href: "/explore", icon: Search, label: "Explore" }, // Changed Globe to Search for Insta feel
-        { href: "/marketplace", icon: PlusSquare, label: "Create", isMain: true }, // Changed Zap to PlusSquare
+        { href: "/explore", icon: Search, label: "Explore" },
+        { href: "/create", icon: PlusSquare, label: "Create", isMain: true }, // Fixed link to /create
         { href: "/chat", icon: MessageCircle, label: "Chat" },
-        { href: "/profile", icon: User, label: "Profile" },
+        { href: "/marketplace", icon: Store, label: "Market" }, // Replaced Profile with Market
     ]
 
     return (
@@ -36,19 +36,11 @@ export function MobileNav() {
                                     className={cn(
                                         "w-[26px] h-[26px] transition-all duration-200",
                                         isActive ? "text-white" : "text-slate-500",
-                                        // Simple scale effect on tap
                                     )}
-                                    // Simulating filled state by strokewidth or logic if using filled icons
                                     strokeWidth={isActive ? 3 : 2}
                                 />
                                 {item.href === "/chat" && (
                                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-black"></span>
-                                )}
-                                {item.label === "Profile" && isActive && (
-                                    <motion.div
-                                        layoutId="profile-active"
-                                        className="absolute -bottom-2 w-1 h-1 bg-white rounded-full left-1/2 -translate-x-1/2"
-                                    />
                                 )}
                             </div>
                         </Link>

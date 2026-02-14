@@ -186,102 +186,40 @@ function SearchBar() {
     )
 }
 
+import { api, Post } from "@/services/api"
+import { PostCard } from "@/components/post-card"
+import { useEffect } from "react"
+
 function ForYouFeed({ handleAuthAction }: { handleAuthAction: (action: () => void) => void }) {
-    const posts = [
-        {
-            id: 1,
-            author: "Sarah Chen",
-            handle: "@sarah_design",
-            avatar: "SC",
-            gradient: "from-pink-500 to-rose-500",
-            time: "2h ago",
-            content: "Just finished the final prototype for the hackathon! 🚀 Can't wait to share it with everyone at the expo next week. #Design #Hackathon2025",
-            image: "https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&q=80&w=800",
-            likes: 124,
-            comments: 18,
-            shares: 5
-        },
-        {
-            id: 2,
-            author: "MIT Robotics",
-            handle: "@mit_robotics",
-            avatar: "MR",
-            gradient: "from-blue-500 to-cyan-500",
-            time: "4h ago",
-            content: "Our team just qualified for the international finals! Huge thanks to everyone who supported us. 🤖🏆",
-            image: "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?auto=format&fit=crop&q=80&w=800",
-            likes: 852,
-            comments: 45,
-            shares: 120
-        },
-        {
-            id: 3,
-            author: "Alex Rivera",
-            handle: "@arivera_dev",
-            avatar: "AR",
-            gradient: "from-green-500 to-emerald-500",
-            time: "6h ago",
-            content: "Anyone else struggling with the new React Server Components? needing some help debugging this graphQL query...",
-            likes: 45,
-            comments: 12,
-            shares: 2
+    const [posts, setPosts] = useState<Post[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const data = await api.getPosts()
+                setPosts(data)
+            } catch (error) {
+                console.error("Failed to fetch posts:", error)
+            } finally {
+                setLoading(false)
+            }
         }
-    ]
+        fetchPosts()
+    }, [])
+
+    if (loading) {
+        return <div className="text-center py-20 text-slate-500">Loading posts...</div>
+    }
+
+    if (posts.length === 0) {
+        return <div className="text-center py-20 text-slate-500">No posts yet. Be the first to post!</div>
+    }
 
     return (
         <div className="space-y-4">
-            {posts.map((post, i) => (
-                <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:bg-slate-900/80 transition-colors cursor-pointer"
-                >
-                    <div className="flex gap-4">
-                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${post.gradient} flex-shrink-0 flex items-center justify-center text-white font-bold`}>
-                            {post.avatar}
-                        </div>
-                        <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-bold text-slate-200">{post.author}</span>
-                                    {post.handle === "@mit_robotics" && <BadgeCheck className="h-4 w-4 text-blue-400" />}
-                                    <span className="text-slate-500 text-sm">{post.handle}</span>
-                                    <span className="text-slate-600 text-sm">· {post.time}</span>
-                                </div>
-                                <button className="text-slate-500 hover:text-slate-300">
-                                    <MoreHorizontal className="h-5 w-5" />
-                                </button>
-                            </div>
-
-                            <p className="text-slate-300 mb-3 whitespace-pre-wrap leading-relaxed">
-                                {post.content}
-                            </p>
-
-                            {post.image && (
-                                <div className="mb-4 rounded-xl overflow-hidden border border-slate-800">
-                                    <img src={post.image} alt="Post content" className="w-full h-auto object-cover max-h-[400px]" />
-                                </div>
-                            )}
-
-                            <div className="flex items-center justify-between text-slate-500 max-w-md">
-                                <Button variant="ghost" size="sm" className="hover:text-blue-400 gap-2 pl-0" onClick={() => handleAuthAction(() => { })}>
-                                    <MessageCircle className="h-5 w-5" />
-                                    <span>{post.comments}</span>
-                                </Button>
-                                <Button variant="ghost" size="sm" className="hover:text-pink-500 gap-2" onClick={() => handleAuthAction(() => { })}>
-                                    <Heart className="h-5 w-5" />
-                                    <span>{post.likes}</span>
-                                </Button>
-                                <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2" onClick={() => handleAuthAction(() => { })}>
-                                    <Share2 className="h-5 w-5" />
-                                    <span>{post.shares}</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
+            {posts.map((post) => (
+                <PostCard key={post.id} post={post} handleAuthAction={handleAuthAction} />
             ))}
         </div>
     )

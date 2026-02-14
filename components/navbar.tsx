@@ -48,6 +48,10 @@ export function Navbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const pathname = usePathname()
   const isChatPage = pathname === "/chat" || pathname?.startsWith("/chat/")
+  const isCreatePage = pathname === "/create"
+  const isProfilePage = pathname === "/profile" || pathname?.startsWith("/u/")
+
+
 
   const handleLogout = () => {
     setShowLogoutConfirm(false)
@@ -58,6 +62,7 @@ export function Navbar() {
     }, 2000)
   }
 
+  // Add scroll effect
   // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -72,6 +77,8 @@ export function Navbar() {
   useEffect(() => {
     setIsVisible(true)
   }, [])
+
+  if (isCreatePage) return null
 
   return (
     <>
@@ -143,7 +150,7 @@ export function Navbar() {
           scrolled
             ? "bg-slate-900/90 backdrop-blur-lg shadow-lg border border-slate-700/50 shadow-blue-500/10"
             : "bg-slate-900/70 backdrop-blur-md",
-          isChatPage ? "hidden md:block" : "" // Hide on mobile if on chat page
+          isChatPage || isProfilePage ? "hidden md:block" : "" // Hide on mobile if on chat or profile page
         )}
       >
         <div className="px-6 flex h-16 items-center justify-between">
@@ -220,6 +227,7 @@ export function Navbar() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
+            {/* ... desktop items ... */}
             <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
               <Search className="h-5 w-5" />
             </Button>
@@ -269,6 +277,32 @@ export function Navbar() {
               )}
             </motion.div>
           </motion.div>
+
+          {/* Mobile Right Side */}
+          <div className="flex md:hidden items-center gap-3">
+            {isAuthenticated ? (
+              <>
+                <NavbarNotifications />
+                <Link href="/profile" className="relative group">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
+                    <div className="w-full h-full rounded-full bg-slate-950 overflow-hidden relative">
+                      {user?.profile_picture ? (
+                        <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                          <User className="h-4 w-4 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <Button asChild size="sm" className="rounded-full bg-blue-600 text-white px-4 h-8 text-xs">
+                <Link href="/login">Login</Link>
+              </Button>
+            )}
+          </div>
 
           {/* Mobile Menu - Hidden as replaced by Bottom Nav */}
           <div className="hidden"></div>

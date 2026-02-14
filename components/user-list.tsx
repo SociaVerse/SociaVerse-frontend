@@ -67,7 +67,7 @@ export function UserList({ endpoint, emptyMessage = "No users found" }: UserList
                 >
                     <Link href={`/u/${user.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <Avatar className="h-12 w-12 border border-slate-700">
-                            <AvatarImage src={user.profile_picture || ""} objectFit="cover" />
+                            <AvatarImage src={user.profile_picture || ""} className="object-cover" />
                             <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
