@@ -19,7 +19,7 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
         >
             {/* Background Effects */}
             <div className="absolute inset-0 w-full h-full bg-zinc-900/30 overflow-hidden pointer-events-none">
-                <Meteors number={30} />
+                <Meteors number={10} />
             </div>
 
             <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/10 via-transparent to-blue-500/10 pointer-events-none" />
@@ -38,7 +38,7 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
                 className="relative z-10 flex flex-col items-center gap-4 text-center px-4"
             >
                 {/* Branding Text */}
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white via-violet-200 to-white animate-pulse drop-shadow-[0_0_25px_rgba(139,92,246,0.5)]">
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white via-violet-200 to-white animate-pulse drop-shadow-[0_0_10px_rgba(139,92,246,0.3)]">
                     Welcome to<br />SociaVerse
                 </h1>
 
@@ -73,9 +73,8 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
 export const AuthLoadingScreen = () => {
     return (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 text-white overflow-hidden">
-            {/* Background Effects */}
             <div className="absolute inset-0 w-full h-full bg-zinc-900/20 overflow-hidden pointer-events-none">
-                <Meteors number={15} />
+                <Meteors number={8} />
             </div>
 
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-900/5 to-zinc-950 pointer-events-none" />

@@ -15,8 +15,8 @@ import { MouseSpotlight } from "@/components/mouse-spotlight";
 import PageTransition from "@/components/page-transition";
 
 export const metadata: Metadata = {
-  title: "SociaVerse",
-  description: "Welcome to the Socialverse",
+  title: "SociaVerse - The Ultimate College Event & Social Platform",
+  description: "Connect, explore, and transcend with SociaVerse. The all-in-one digital campus platform for events, gaming, and student communities.",
 };
 
 export default function RootLayout({
