@@ -259,3 +259,21 @@ html {
 .animate-meteor-effect {
   animation: meteor 5s linear infinite;
 }
+
+.animate-breathing-gradient {
+  animation: breathing-gradient 10s ease infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
+}

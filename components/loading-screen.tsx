@@ -2,67 +2,58 @@
 
 import { motion } from "framer-motion";
 
-
 export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
     return (
         <motion.div
             initial={{ opacity: 1 }}
             exit={{
                 opacity: 0,
-                y: -50,
+                filter: "blur(10px)",
                 transition: { duration: 0.8, ease: "easeInOut" }
             }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 text-white overflow-hidden"
-            onAnimationComplete={() => {
-                // specific logic if needed
-            }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white overflow-hidden"
         >
-            {/* Background Effects - Optimized for Mobile */}
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-zinc-950 via-zinc-900 to-zinc-950 animate-breathing-gradient opacity-80 pointer-events-none" />
-
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+            {/* Minimalist Background Glow - Fixed Position, No JS movement */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Content Container */}
             <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{
-                    scale: 1,
-                    opacity: 1,
-                    transition: {
-                        duration: 0.8,
-                        ease: "easeOut"
-                    }
-                }}
-                className="relative z-10 flex flex-col items-center gap-4 text-center px-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="relative z-10 flex flex-col items-center gap-8"
             >
-                {/* Branding Text */}
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white via-violet-200 to-white animate-pulse drop-shadow-[0_0_10px_rgba(139,92,246,0.3)]">
-                    Welcome to<br />SociaVerse
-                </h1>
+                {/* Main Brand Text with Shimmer Effect */}
+                <div className="relative">
+                    <h1
+                        className="text-4xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 via-white to-zinc-500 animate-shimmer bg-[length:200%_100%]"
+                    >
+                        SociaVerse
+                    </h1>
+                </div>
 
-                {/* Subtitle / CTA */}
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{
-                        opacity: 1,
-                        y: 0,
-                        transition: { delay: 0.5, duration: 0.8 }
-                    }}
-                    className="text-lg md:text-2xl text-violet-200/80 font-light tracking-widest uppercase"
-                >
-                    Connect. Explore. Transcend.
-                </motion.p>
-
-                {/* Loading Bar / Visual Indicator */}
+                {/* Elegant Tagline Reveal */}
                 <motion.div
-                    initial={{ width: 0 }}
-                    animate={{
-                        width: "150px",
-                        transition: { delay: 0.2, duration: 2.5, ease: "easeInOut" }
-                    }}
-                    className="h-[2px] bg-gradient-to-r from-transparent via-violet-500 to-transparent mt-6"
-                    onAnimationComplete={onComplete}
-                />
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.8 }}
+                    className="flex flex-col items-center gap-1"
+                >
+                    <p className="text-xs md:text-base text-indigo-300/80 font-mono tracking-[0.2em] md:tracking-[0.3em] uppercase text-center">
+                        Establishing Connection
+                    </p>
+                </motion.div>
+
+                {/* Thin Premium Loading Line */}
+                <div className="w-24 md:w-32 h-[1px] bg-zinc-800 relative overflow-hidden mt-4">
+                    <motion.div
+                        initial={{ x: "-100%" }}
+                        animate={{ x: "0%" }}
+                        transition={{ duration: 2.5, ease: "circOut" }}
+                        className="absolute inset-0 bg-indigo-500"
+                        onAnimationComplete={onComplete}
+                    />
+                </div>
             </motion.div>
         </motion.div>
     );
@@ -70,36 +61,38 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
 
 export const AuthLoadingScreen = () => {
     return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 text-white overflow-hidden">
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-zinc-900 to-zinc-950 pointer-events-none" />
-
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-900/5 to-zinc-950 pointer-events-none" />
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black text-white">
+            {/* Simple glow for depth */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-600/10 rounded-full blur-[80px] pointer-events-none" />
 
             <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
                 className="relative z-10 flex flex-col items-center gap-6"
             >
-                {/* Pulsing Logo/Text */}
+                {/* Pulsing Logo Ring */}
                 <div className="relative">
-                    <div className="absolute inset-0 bg-violet-500/20 blur-xl rounded-full animate-pulse"></div>
-                    <motion.h1
-                        animate={{ opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative text-3xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-violet-200 to-white"
-                    >
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-indigo-500/30 rounded-full blur-xl"
+                    />
+                    <h1 className="relative text-3xl font-bold tracking-tight text-white">
                         SociaVerse
-                    </motion.h1>
+                    </h1>
                 </div>
 
-                {/* Loading Indicator */}
-                <div className="flex flex-col items-center gap-2">
+                {/* Minimalist Spinner */}
+                <div className="flex items-center gap-3">
                     <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full"
+                        className="w-4 h-4 border border-zinc-700 border-t-indigo-500 rounded-full"
                     />
-                    <p className="text-sm text-zinc-500 font-mono tracking-widest uppercase">Securing connection...</p>
+                    <span className="text-xs text-zinc-500 font-mono uppercase tracking-widest">
+                        Authenticating
+                    </span>
                 </div>
             </motion.div>
         </div>
