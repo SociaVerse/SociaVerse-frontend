@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Meteors } from "./ui/meteors";
+import { motion } from "framer-motion";
 
 export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
     return (
@@ -17,12 +17,10 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
                 // specific logic if needed
             }}
         >
-            {/* Background Effects */}
-            <div className="absolute inset-0 w-full h-full bg-zinc-900/30 overflow-hidden pointer-events-none">
-                <Meteors number={10} />
-            </div>
+            {/* Background Effects - Optimized for Mobile */}
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-zinc-950 via-zinc-900 to-zinc-950 animate-breathing-gradient opacity-80 pointer-events-none" />
 
-            <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/10 via-transparent to-blue-500/10 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
 
             {/* Content Container */}
             <motion.div
@@ -73,9 +71,7 @@ export const WelcomeScreen = ({ onComplete }: { onComplete: () => void }) => {
 export const AuthLoadingScreen = () => {
     return (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-zinc-950 text-white overflow-hidden">
-            <div className="absolute inset-0 w-full h-full bg-zinc-900/20 overflow-hidden pointer-events-none">
-                <Meteors number={8} />
-            </div>
+            <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-zinc-900 to-zinc-950 pointer-events-none" />
 
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-900/5 to-zinc-950 pointer-events-none" />
 
