@@ -3,21 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LoadingScreen } from "./loading-screen";
-
-const getPageName = (path: string) => {
-    if (path === "/") return "Home Base";
-    if (path.startsWith("/feed")) return "Social Grid";
-    if (path.startsWith("/games")) return "Arcade Zone";
-    if (path.startsWith("/events")) return "Event Horizon";
-    if (path.startsWith("/marketplace")) return "The Bazaar";
-    if (path.startsWith("/profile")) return "Identity Core";
-    if (path.startsWith("/socialink")) return "SociaLink Uplink";
-    if (path.startsWith("/explore")) return "Discovery Module";
-    if (path.startsWith("/community")) return "Community Nexus";
-    if (path.startsWith("/settings")) return "Control Center";
-    return "Unknown Sector";
-};
+import { WelcomeScreen, AuthLoadingScreen } from "./loading-screen";
 
 export default function PageTransition({
     children,
@@ -25,39 +11,53 @@ export default function PageTransition({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
-    const [isLoading, setIsLoading] = useState(false);
-    const [destination, setDestination] = useState("");
+    const [showWelcome, setShowWelcome] = useState(false);
+    const [showAuthLoading, setShowAuthLoading] = useState(false);
 
     useEffect(() => {
-        // When pathname changes, trigger loading
-        setIsLoading(true);
-        setDestination(getPageName(pathname));
+        // Check if user has visited before in this session
+        const hasVisited = sessionStorage.getItem("hasVisited");
 
-        // Randomize loading time slightly to make it feel organic (1.5s - 2.5s)
-        const randomDuration = Math.floor(Math.random() * (2500 - 1500 + 1)) + 1500;
+        if (!hasVisited) {
+            setShowWelcome(true);
+            sessionStorage.setItem("hasVisited", "true");
+        }
+    }, []);
 
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, randomDuration);
-
-        return () => clearTimeout(timer);
+    useEffect(() => {
+        // Trigger Auth Loading Screen for Login/Signup
+        if (pathname === "/login" || pathname === "/signup") {
+            setShowAuthLoading(true);
+            const timer = setTimeout(() => {
+                setShowAuthLoading(false);
+            }, 1000); // 1s delay for effect
+            return () => clearTimeout(timer);
+        } else {
+            setShowAuthLoading(false);
+        }
     }, [pathname]);
+
+    const handleWelcomeComplete = () => {
+        setTimeout(() => {
+            setShowWelcome(false);
+        }, 500);
+    };
 
     return (
         <>
             <AnimatePresence mode="wait">
-                {isLoading && <LoadingScreen destination={destination} key="loading-screen" />}
+                {showWelcome && <WelcomeScreen onComplete={handleWelcomeComplete} key="welcome-screen" />}
+                {!showWelcome && showAuthLoading && <AuthLoadingScreen key="auth-loading" />}
             </AnimatePresence>
 
             <motion.div
                 key={pathname}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{
-                    opacity: isLoading ? 0 : 1,
-                    y: isLoading ? 20 : 0
+                    opacity: 1,
+                    y: 0
                 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
                 className="h-full w-full"
             >
                 {children}
