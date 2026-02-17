@@ -115,7 +115,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
                     {post.author.profile_picture ? (
-                        <img src={post.author.profile_picture.startsWith('http') ? post.author.profile_picture : `http://127.0.0.1:8000${post.author.profile_picture}`} alt={post.author.username} className="w-12 h-12 rounded-full object-cover" />
+                        <img src={post.author.profile_picture.startsWith('http') ? post.author.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${post.author.profile_picture}`} alt={post.author.username} className="w-12 h-12 rounded-full object-cover" />
                     ) : (
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
                             {post.author.first_name?.[0] || post.author.username[0].toUpperCase()}
@@ -175,7 +175,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                                 'grid-cols-2 md:grid-cols-3'
                             }`}>
                             {post.images.map((imgObj, index) => {
-                                const imgUrl = imgObj.image.startsWith('http') ? imgObj.image : `http://127.0.0.1:8000${imgObj.image}`;
+                                const imgUrl = imgObj.image.startsWith('http') ? imgObj.image : `${process.env.NEXT_PUBLIC_API_URL}${imgObj.image}`;
                                 return (
                                     <div key={imgObj.id || index} className={`relative ${post.images.length === 1 ? '' : 'aspect-square'}`}>
                                         <img
@@ -389,7 +389,7 @@ function CommentItem({ comment, postId, handleAuthAction, onDelete }: CommentIte
         <div className="flex gap-3">
             <div className="flex-shrink-0">
                 {comment.author.profile_picture ? (
-                    <img src={comment.author.profile_picture.startsWith('http') ? comment.author.profile_picture : `http://127.0.0.1:8000${comment.author.profile_picture}`} alt={comment.author.username} className="w-8 h-8 rounded-full object-cover" />
+                    <img src={comment.author.profile_picture.startsWith('http') ? comment.author.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${comment.author.profile_picture}`} alt={comment.author.username} className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                     <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
                         {comment.author.first_name?.[0] || comment.author.username[0].toUpperCase()}

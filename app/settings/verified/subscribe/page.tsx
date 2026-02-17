@@ -60,7 +60,7 @@ export default function SubscribePage() {
             formData.append('is_verified', 'true')
             // In a real app, we would send the plan ID to the backend
 
-            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me/', {
                 method: 'PATCH',
                 headers: { 'Authorization': `Token ${token}` },
                 body: formData
@@ -111,8 +111,8 @@ export default function SubscribePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: plan.id === 'yearly' ? 0.1 : 0 }}
                         className={`relative p-8 rounded-3xl border transition-all duration-300 ${selectedPlan === plan.id
-                                ? 'bg-slate-900/80 border-blue-500 shadow-2xl shadow-blue-500/20 scale-[1.02]'
-                                : 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60 hover:border-slate-700'
+                            ? 'bg-slate-900/80 border-blue-500 shadow-2xl shadow-blue-500/20 scale-[1.02]'
+                            : 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60 hover:border-slate-700'
                             }`}
                         onClick={() => setSelectedPlan(plan.id as 'monthly' | 'yearly')}
                     >
@@ -156,8 +156,8 @@ export default function SubscribePage() {
                                 }}
                                 disabled={loading !== null}
                                 className={`w-full h-12 text-lg font-semibold transition-all ${plan.id === 'yearly'
-                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20'
-                                        : 'bg-slate-800 hover:bg-slate-700 text-white'
+                                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20'
+                                    : 'bg-slate-800 hover:bg-slate-700 text-white'
                                     }`}
                             >
                                 {loading === plan.id ? (

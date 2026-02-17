@@ -29,7 +29,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Meteors } from "@/components/ui/meteors"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
@@ -69,11 +69,14 @@ type Chat = {
     unread: number
     isBlocked?: boolean
     messages: Message[]
+    is_anonymous?: boolean
+    message_count?: number
 }
 
 function ChatContent() {
     const { user } = useAuth()
     const searchParams = useSearchParams()
+    const router = useRouter()
 
     const [chats, setChats] = useState<Chat[]>([])
     const [selectedChatId, setSelectedChatId] = useState<number | null>(null)
@@ -105,6 +108,9 @@ function ChatContent() {
     const [reportMessageId, setReportMessageId] = useState<string | null>(null)
     const [isRecording, setIsRecording] = useState(false)
 
+    // Confetti state
+    const [showConfetti, setShowConfetti] = useState(false)
+
     const handleReportSubmit = async (reason: string) => {
         if (!reportMessageId) return
         try {
@@ -124,6 +130,32 @@ function ChatContent() {
         return () => window.removeEventListener("resize", checkMobile)
     }, [])
 
+    // Sync selectedChatId with URL param 'cid'
+    useEffect(() => {
+        const cid = searchParams.get("cid")
+        if (cid) {
+            const id = parseInt(cid)
+            if (!isNaN(id) && id !== selectedChatId) {
+                setSelectedChatId(id)
+            }
+        } else if (selectedChatId !== null) {
+            // If No CID in URL but we have selectedChatId, it means we probably navigated back.
+            // Or we should clear selectedChatId. 
+            // Better behavior: URL is source of truth.
+            setSelectedChatId(null)
+        }
+    }, [searchParams])
+
+    // Update URL when selectedChatId changes
+    const handleChatSelect = (id: number | null) => {
+        setSelectedChatId(id)
+        if (id) {
+            router.push(`/chat?cid=${id}`)
+        } else {
+            router.push('/chat')
+        }
+    }
+
     const onEmojiClick = (emojiData: any) => {
         setInputValue((prev) => prev + emojiData.emoji)
     }
@@ -132,7 +164,33 @@ function ChatContent() {
     const lastScrolledChatId = useRef<number | null>(null)
 
     // Real-time hook
-    const { messages: realtimeMessages, sendMessage, status: wsStatus } = useChatWebSocket(selectedChatId)
+    const { messages: realtimeMessages, sendMessage, status: wsStatus, revealData } = useChatWebSocket(selectedChatId)
+
+    // Handle Reveal Event
+    useEffect(() => {
+        if (revealData && selectedChatId) {
+            setShowConfetti(true)
+            // Update the chat with new participants data
+            setChats(prev => prev.map(c => {
+                if (c.id === selectedChatId) {
+                    // Find the other user from the new participants list
+                    const other = revealData.find((p: any) => p.id !== user?.id) || revealData[0]
+                    return {
+                        ...c,
+                        name: other?.username || "Unknown",
+                        avatar: (other?.username || "U").charAt(0).toUpperCase(),
+                        profile_picture: other?.profile_picture,
+                        is_anonymous: false, // No longer anonymous
+                        message_count: 40 // Maxed out
+                    }
+                }
+                return c
+            }))
+
+            // Hide confetti after 5 seconds
+            setTimeout(() => setShowConfetti(false), 5000)
+        }
+    }, [revealData, selectedChatId, user])
 
     // Derived state
     const selectedChat = chats.find(c => c.id === selectedChatId)
@@ -143,7 +201,7 @@ function ChatContent() {
         const loadChats = async () => {
             try {
                 const data = await chatService.getConversations()
-                setChats(data.map((conv: Conversation) => {
+                setChats(data.map((conv: Conversation & { is_anonymous?: boolean, message_count?: number }) => {
                     const other = conv.participants.find((p: any) => p.id !== user?.id) || conv.participants[0]
                     return {
                         id: conv.id,
@@ -155,7 +213,9 @@ function ChatContent() {
                         color: "from-blue-500 to-cyan-500",
                         unread: 0,
                         isBlocked: other?.is_blocked,
-                        messages: []
+                        messages: [],
+                        is_anonymous: conv.is_anonymous,
+                        message_count: conv.message_count
                     }
                 }))
             } catch (err) {
@@ -241,7 +301,7 @@ function ChatContent() {
                 try {
                     const existing = chats.find(c => c.name === targetUsername)
                     if (existing) {
-                        setSelectedChatId(existing.id)
+                        handleChatSelect(existing.id)
                     } else {
                         const newConv = await chatService.startConversation(targetUsername)
                         const newChat: Chat = {
@@ -257,12 +317,12 @@ function ChatContent() {
                         }
                         setChats(prev => {
                             if (prev.some(c => c.id === newConv.id)) {
-                                setSelectedChatId(newConv.id)
+                                handleChatSelect(newConv.id)
                                 return prev
                             }
                             return [newChat, ...prev]
                         })
-                        setSelectedChatId(newConv.id)
+                        handleChatSelect(newConv.id)
                     }
                 } catch (err) {
                     console.error("Failed to start chat from url", err)
@@ -420,7 +480,7 @@ function ChatContent() {
     }
 
     return (
-        <div className="h-screen bg-slate-950 text-slate-100 pt-4 md:pt-28 pb-4 px-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
+        <div className="h-[100dvh] md:h-screen bg-slate-950 text-slate-100 md:pt-28 md:pb-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
             {/* Background Ambience */}
             <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
                 <div
@@ -441,7 +501,7 @@ function ChatContent() {
                 {(!isMobile || !selectedChatId) && (
                     <motion.div
                         className={cn(
-                            "w-full md:w-[380px] lg:w-[420px] flex flex-col bg-slate-900/40 backdrop-blur-3xl rounded-3xl border border-white/5 overflow-hidden shadow-2xl",
+                            "w-full md:w-[380px] lg:w-[420px] flex flex-col bg-slate-900/40 backdrop-blur-3xl md:rounded-3xl border-r md:border border-white/5 overflow-hidden shadow-2xl",
                             "h-full"
                         )}
                         initial={{ opacity: 0, x: -20 }}
@@ -481,7 +541,7 @@ function ChatContent() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.2, delay: idx * 0.05 }}
-                                    onClick={() => setSelectedChatId(chat.id)}
+                                    onClick={() => handleChatSelect(chat.id)}
                                     className={cn(
                                         "p-3 rounded-2xl cursor-pointer transition-all duration-300 group relative overflow-hidden",
                                         selectedChatId === chat.id
@@ -496,7 +556,7 @@ function ChatContent() {
                                         <div className="relative">
                                             {chat.profile_picture ? (
                                                 <img
-                                                    src={chat.profile_picture.startsWith('http') ? chat.profile_picture : `http://127.0.0.1:8000${chat.profile_picture}`}
+                                                    src={chat.profile_picture.startsWith('http') ? chat.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${chat.profile_picture}`}
                                                     alt={chat.name}
                                                     className="w-12 h-12 rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
                                                 />
@@ -539,26 +599,27 @@ function ChatContent() {
                 {(!isMobile || selectedChatId) && (
                     <motion.div
                         className={cn(
-                            "flex-1 bg-slate-900/40 backdrop-blur-3xl rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-2xl relative",
-                            !selectedChatId && "hidden md:flex items-center justify-center"
+                            "flex-1 bg-slate-900/40 backdrop-blur-3xl md:rounded-3xl border border-white/5 overflow-hidden flex flex-col shadow-2xl relative",
+                            !selectedChatId && "hidden md:flex items-center justify-center",
+                            isMobile && "fixed inset-0 z-[200] bg-slate-950" // High z-index to cover nav
                         )}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
+                        initial={isMobile ? { opacity: 0, x: 20 } : { opacity: 0, scale: 0.95 }}
+                        animate={isMobile ? { opacity: 1, x: 0 } : { opacity: 1, scale: 1 }}
+                        exit={isMobile ? { opacity: 0, x: 20 } : { opacity: 0, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 200, damping: 20 }}
                     >
                         {selectedChat ? (
                             <>
                                 {/* Chat Header */}
-                                <div className="p-4 px-6 border-b border-white/5 flex items-center justify-between bg-slate-900/40 backdrop-blur-xl z-20 glass-header">
-                                    <div className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowChatInfo(true)}>
+                                <div className="p-3 px-4 md:p-4 md:px-6 border-b border-white/5 flex items-center justify-between bg-slate-900 z-30 shadow-sm sticky top-0">
+                                    <div className="flex items-center gap-3 md:gap-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setShowChatInfo(true)}>
                                         <Button
                                             variant="ghost"
                                             size="icon"
                                             className="md:hidden -ml-2 text-slate-400 hover:text-white"
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                setSelectedChatId(null)
+                                                handleChatSelect(null)
                                             }}
                                         >
                                             <ArrowLeft className="h-5 w-5" />
@@ -566,7 +627,7 @@ function ChatContent() {
                                         <div className="relative block">
                                             {selectedChat.profile_picture ? (
                                                 <img
-                                                    src={selectedChat.profile_picture.startsWith('http') ? selectedChat.profile_picture : `http://127.0.0.1:8000${selectedChat.profile_picture}`}
+                                                    src={selectedChat.profile_picture.startsWith('http') ? selectedChat.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${selectedChat.profile_picture}`}
                                                     alt={selectedChat.name}
                                                     className="w-10 h-10 rounded-2xl object-cover shadow-md"
                                                 />
@@ -598,6 +659,35 @@ function ChatContent() {
                                     </div>
                                 </div>
 
+                                {selectedChat.is_anonymous && (
+                                    <div className="bg-slate-900/60 backdrop-blur-md border-b border-white/5 py-2 px-6 flex items-center justify-center gap-4 z-10 relative">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                            <AnonymousTimer />
+                                        </div>
+                                        <div className="flex-1 max-w-xs h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="h-full bg-gradient-to-r from-blue-500 to-violet-500"
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.min(((selectedChat.message_count || 0) / 40) * 100, 100)}%` }}
+                                                transition={{ duration: 0.5 }}
+                                            />
+                                        </div>
+                                        <div className="text-[10px] font-bold text-violet-400">
+                                            {selectedChat.message_count || 0}/40 to Reveal
+                                        </div>
+                                    </div>
+                                )}
+
+                                <TimeoutWarning messageCount={selectedChat.message_count || 0} isAnonymous={selectedChat.is_anonymous} />
+
+                                {/* Confetti Effect */}
+                                {showConfetti && (
+                                    <div className="absolute inset-0 pointer-events-none z-50 flex items-center justify-center">
+                                        <div className="text-4xl animate-bounce">🎉</div>
+                                    </div>
+                                )}
+
                                 <AnimatePresence>
                                     {showChatInfo && (
                                         <ChatInfo
@@ -609,7 +699,7 @@ function ChatContent() {
                                                 try {
                                                     await chatService.deleteConversation(selectedChat.id)
                                                     setChats(prev => prev.filter(c => c.id !== selectedChat.id))
-                                                    setSelectedChatId(null)
+                                                    handleChatSelect(null)
                                                     setShowChatInfo(false)
                                                 } catch (e) {
                                                     console.error("Failed to delete chat", e)
@@ -620,7 +710,7 @@ function ChatContent() {
                                 </AnimatePresence>
 
                                 {isMessagesLoading ? (
-                                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative custom-scrollbar">
+                                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 relative custom-scrollbar pb-32">
                                         {/* Header Placeholder */}
                                         <div className="flex justify-center mb-8 mt-4">
                                             <Skeleton className="h-8 w-64 rounded-xl bg-slate-800/50" />
@@ -651,7 +741,7 @@ function ChatContent() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-2 relative custom-scrollbar">
+                                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-2 relative custom-scrollbar pb-32">
                                         <div className="flex justify-center mb-8 mt-4">
                                             <div className="bg-yellow-500/5 border border-yellow-500/10 rounded-xl px-4 py-2 flex items-center gap-2 text-xs text-yellow-500/80">
                                                 <Lock className="w-3 h-3" />
@@ -687,7 +777,7 @@ function ChatContent() {
                                                                 <Link href={`/u/${selectedChat.name}`} className="block hover:scale-105 transition-transform">
                                                                     {selectedChat.profile_picture ? (
                                                                         <img
-                                                                            src={selectedChat.profile_picture.startsWith('http') ? selectedChat.profile_picture : `http://127.0.0.1:8000${selectedChat.profile_picture}`}
+                                                                            src={selectedChat.profile_picture.startsWith('http') ? selectedChat.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${selectedChat.profile_picture}`}
                                                                             alt={selectedChat.name}
                                                                             className="w-8 h-8 rounded-full object-cover shadow-md"
                                                                         />
@@ -808,9 +898,9 @@ function ChatContent() {
                                 )}
 
 
-                                {/* Floating Input Area */}
-                                <div className="absolute bottom-4 left-4 right-4 z-30">
-                                    <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 pl-4 flex items-center gap-3 shadow-2xl relative">
+                                {/* Input Area */}
+                                <div className="absolute bottom-0 left-0 right-0 z-30 bg-slate-950 border-t border-white/5 p-3 px-4 pb-safe">
+                                    <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 pl-4 flex items-center gap-3 shadow-lg relative">
 
                                         {isRecording ? (
                                             <VoiceRecorder onSend={handleVoiceUpload} onCancel={() => setIsRecording(false)} />
@@ -818,11 +908,13 @@ function ChatContent() {
                                             <>
                                                 {/* Reply Banner */}
                                                 {replyingTo && (
-                                                    <div className="absolute -top-14 left-0 right-0 mx-4 bg-slate-800/95 text-slate-300 p-2 rounded-xl text-xs flex items-center justify-between border border-white/10 backdrop-blur-md shadow-lg animate-in slide-in-from-bottom-2 z-20">
+                                                    <div className="absolute -top-16 left-0 right-0 mx-2 bg-slate-900 text-slate-300 p-2.5 rounded-xl text-xs flex items-center justify-between border border-white/10 shadow-xl animate-in slide-in-from-bottom-2 z-20">
                                                         <div className="flex items-center gap-2 truncate">
-                                                            <Reply className="w-3 h-3 text-blue-400" />
-                                                            <span className="font-medium text-blue-400">Replying to {replyingTo.sender === "me" ? "yourself" : selectedChat.name}:</span>
-                                                            <span className="truncate max-w-[200px] opacity-80">{replyingTo.text}</span>
+                                                            <div className="w-1 h-8 bg-blue-500 rounded-full"></div>
+                                                            <div className="flex flex-col truncate">
+                                                                <span className="font-bold text-blue-400 text-[10px] uppercase tracking-wider">{replyingTo.sender === "me" ? "You" : selectedChat.name}</span>
+                                                                <span className="truncate max-w-[200px] opacity-80">{replyingTo.text}</span>
+                                                            </div>
                                                         </div>
                                                         <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10 rounded-full" onClick={() => setReplyingTo(null)}>
                                                             <div className="h-3 w-3 rotate-45 border-t border-r border-slate-400" />
@@ -991,5 +1083,64 @@ export default function ChatPage() {
         <Suspense fallback={<div className="h-screen bg-slate-950 text-slate-100 flex items-center justify-center animate-pulse">Loading secure chat...</div>}>
             <ChatContent />
         </Suspense>
+    )
+}
+
+function AnonymousTimer() {
+    const [timeLeft, setTimeLeft] = useState(3600) // 1 Hour
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 0) {
+                    clearInterval(timer)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [])
+
+    const minutes = Math.floor(timeLeft / 60)
+    const seconds = timeLeft % 60
+
+    return (
+        <span className={cn("text-[10px] font-mono", timeLeft < 300 ? "text-red-400 animate-pulse" : "text-slate-400")}>
+            {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+        </span>
+    )
+}
+
+function TimeoutWarning({ messageCount, isAnonymous }: { messageCount: number, isAnonymous?: boolean }) {
+    const [visible, setVisible] = useState(false)
+
+    // Mock check for timeout (in real app, compare created_at from backend)
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (isAnonymous && messageCount < 40) {
+                setVisible(true)
+            }
+        }, 3600000) // 1 Hour in ms
+        return () => clearTimeout(timeout)
+    }, [isAnonymous, messageCount])
+
+    if (!visible) return null
+
+    return (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+            <div className="bg-slate-900 border border-red-500/30 p-6 rounded-2xl max-w-sm text-center">
+                <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Shield className="w-6 h-6 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Connection Lost</h3>
+                <p className="text-slate-400 text-sm mb-6">
+                    Time limit reached. You didn't exchange 40 messages in time to reveal the profile.
+                </p>
+                <Button onClick={() => window.location.reload()} className="w-full bg-slate-800 hover:bg-slate-700">
+                    Return to Hub
+                </Button>
+            </div>
+        </div>
     )
 }

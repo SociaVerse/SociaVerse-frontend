@@ -94,7 +94,7 @@ export function Signup() {
 
     try {
       const username = formData.email.split('@')[0] + Math.floor(Math.random() * 10000)
-      const response = await fetch("http://127.0.0.1:8000/api/users/signup/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signup/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -134,7 +134,7 @@ export function Signup() {
     setErrors({})
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/users/verify-otp/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, otp }),
@@ -156,23 +156,6 @@ export function Signup() {
       setIsLoading(false)
     }
   }
-
-  // Input Helper
-  const InputItem = ({ label, icon: Icon, error, ...props }: any) => (
-    <div className="space-y-1">
-      <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">{label}</label>
-      <div className="relative group">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-          <Icon className="h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
-        </div>
-        <Input
-          {...props}
-          className={`pl-9 h-10 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-lg ${error ? 'border-red-500/50' : ''}`}
-        />
-      </div>
-      {error && <p className="text-[10px] text-red-400 ml-1">{error}</p>}
-    </div>
-  )
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden font-sans selection:bg-blue-500/30">
@@ -343,6 +326,23 @@ export function Signup() {
     </div>
   )
 }
+
+// Input Helper
+const InputItem = ({ label, icon: Icon, error, ...props }: any) => (
+  <div className="space-y-1">
+    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">{label}</label>
+    <div className="relative group">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+        <Icon className="h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+      </div>
+      <Input
+        {...props}
+        className={`pl-9 h-10 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-lg ${error ? 'border-red-500/50' : ''}`}
+      />
+    </div>
+    {error && <p className="text-[10px] text-red-400 ml-1">{error}</p>}
+  </div>
+)
 
 function StarIcon(props: any) {
   return (

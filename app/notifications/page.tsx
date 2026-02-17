@@ -42,7 +42,7 @@ export default function NotificationsPage() {
     const fetchNotifications = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('http://127.0.0.1:8000/api/notifications/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications/', {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
             const token = localStorage.getItem('sociaverse_token')
             // Using the ManageFollowRequestView endpoint: /api/users/requests/<user_id>/<action>/
             // user_id is the SENDER of the request
-            const response = await fetch(`http://127.0.0.1:8000/api/users/requests/${senderId}/${action}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/requests/${senderId}/${action}/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
     const markAsRead = async (id: number) => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            await fetch(`http://127.0.0.1:8000/api/notifications/${id}/read/`, {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -155,7 +155,7 @@ export default function NotificationsPage() {
                                     <div className="flex items-center gap-3">
                                         <Link href={`/u/${notification.sender.username}`}>
                                             <Avatar className="w-10 h-10 border border-slate-700">
-                                                <AvatarImage src={notification.sender.profile_picture ? (notification.sender.profile_picture.startsWith('http') ? notification.sender.profile_picture : `http://127.0.0.1:8000${notification.sender.profile_picture}`) : undefined} />
+                                                <AvatarImage src={notification.sender.profile_picture ? (notification.sender.profile_picture.startsWith('http') ? notification.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${notification.sender.profile_picture}`) : undefined} />
                                                 <AvatarFallback>{notification.sender.username[0].toUpperCase()}</AvatarFallback>
                                             </Avatar>
                                         </Link>

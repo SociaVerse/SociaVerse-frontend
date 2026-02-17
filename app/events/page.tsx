@@ -62,8 +62,8 @@ export default function EventsPage() {
                 const headers = token ? { 'Authorization': `Token ${token}` } : {}
 
                 const [eventsRes, favoritesRes] = await Promise.all([
-                    fetch('http://127.0.0.1:8000/api/events/', { headers: headers as HeadersInit }),
-                    token ? fetch('http://127.0.0.1:8000/api/events/favorites/', { headers: headers as HeadersInit }) : Promise.resolve(null)
+                    fetch('${process.env.NEXT_PUBLIC_API_URL}/api/events/', { headers: headers as HeadersInit }),
+                    token ? fetch('${process.env.NEXT_PUBLIC_API_URL}/api/events/favorites/', { headers: headers as HeadersInit }) : Promise.resolve(null)
                 ])
 
                 if (eventsRes.ok) {
@@ -101,7 +101,7 @@ export default function EventsPage() {
 
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/events/${eventId}/favorite/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${eventId}/favorite/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`
@@ -159,7 +159,7 @@ export default function EventsPage() {
         const token = localStorage.getItem("sociaverse_token")
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/events/${id}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${id}/`, {
                 method: "DELETE",
                 headers: {
                     'Authorization': `Token ${token}`

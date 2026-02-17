@@ -18,7 +18,7 @@ export function VoiceMessageBubble({ audioUrl, duration, waveform = [], isMe }: 
     const audioRef = useRef<HTMLAudioElement | null>(null)
 
     // Ensure URL is absolute if coming from backend
-    const fullUrl = audioUrl?.startsWith('http') ? audioUrl : `http://127.0.0.1:8000${audioUrl}`
+    const fullUrl = audioUrl?.startsWith('http') ? audioUrl : `${process.env.NEXT_PUBLIC_API_URL}${audioUrl}`
 
     useEffect(() => {
         const audio = new Audio(fullUrl)

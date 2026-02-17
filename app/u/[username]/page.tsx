@@ -67,7 +67,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
             const headers: HeadersInit = {}
             if (token) headers['Authorization'] = `Token ${token}`
 
-            const response = await fetch(`http://127.0.0.1:8000/api/users/u/${username}/`, { headers })
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/u/${username}/`, { headers })
 
             if (response.ok) {
                 const data = await response.json()
@@ -118,7 +118,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 method = 'DELETE'
             }
 
-            const response = await fetch(`http://127.0.0.1:8000/api/users/${profile.id}/follow/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/follow/`, {
                 method: method,
                 headers: {
                     'Authorization': `Token ${token}`,
@@ -157,7 +157,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         const token = localStorage.getItem('sociaverse_token')
         try {
             const method = profile.is_blocked ? 'DELETE' : 'POST'
-            const response = await fetch(`http://127.0.0.1:8000/api/users/block/${profile.id}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/block/${profile.id}/`, {
                 method: method,
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -181,7 +181,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         const token = localStorage.getItem('sociaverse_token')
         try {
             const method = profile.is_restricted ? 'DELETE' : 'POST'
-            const response = await fetch(`http://127.0.0.1:8000/api/users/restrict/${profile.id}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/restrict/${profile.id}/`, {
                 method: method,
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -234,7 +234,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         >
                             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[6px] border-slate-950 bg-slate-900 overflow-hidden shadow-2xl relative group">
                                 <img
-                                    src={profile.avatar ? (profile.avatar.startsWith('http') ? profile.avatar : `http://127.0.0.1:8000${profile.avatar}`) : `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
+                                    src={profile.avatar ? (profile.avatar.startsWith('http') ? profile.avatar : `${process.env.NEXT_PUBLIC_API_URL}${profile.avatar}`) : `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
                                     alt={profile.name}
                                     className="w-full h-full object-cover"
                                 />
@@ -431,10 +431,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                                 >
                                     {activeTab === "Posts" && <PostsFeed username={username} currentUser={currentUser} />}
                                     {activeTab === "Followers" && (
-                                        <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
+                                        <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
                                     )}
                                     {activeTab === "Following" && (
-                                        <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
+                                        <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
                                     )}
                                     {activeTab === "About" && (
                                         <div className="text-slate-400 text-center py-10">About details coming soon...</div>
@@ -478,7 +478,7 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
             const headers: HeadersInit = {}
             if (token) headers['Authorization'] = `Token ${token}`
 
-            const response = await fetch(`http://127.0.0.1:8000/api/posts/?username=${username}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/?username=${username}`, {
                 headers
             })
             if (response.ok) {

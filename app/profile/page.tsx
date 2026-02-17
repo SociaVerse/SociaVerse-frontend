@@ -66,7 +66,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('http://127.0.0.1:8000/api/users/me/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me/', {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -292,10 +292,10 @@ export default function ProfilePage() {
                             >
                                 {activeTab === "Posts" && <PostsFeed profile={profile} currentUser={user} />}
                                 {activeTab === "Followers" && (
-                                    <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
+                                    <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
                                 )}
                                 {activeTab === "Following" && (
-                                    <UserList endpoint={`http://127.0.0.1:8000/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
+                                    <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
                                 )}
                                 {activeTab === "About" && (
                                     <div className="text-slate-400 text-center py-10">About details coming soon...</div>
@@ -340,7 +340,7 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
     const fetchPosts = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch(`http://127.0.0.1:8000/api/posts/?username=${profile.username}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/?username=${profile.username}`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -404,7 +404,7 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
 
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('http://127.0.0.1:8000/api/posts/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/posts/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`
@@ -434,7 +434,7 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
     const handleDeletePost = async (postId: number) => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch(`http://127.0.0.1:8000/api/posts/${postId}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${postId}/`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Token ${token}` }
             })

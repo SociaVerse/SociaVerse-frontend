@@ -238,6 +238,14 @@ export function Navbar() {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* SociaLink Entry Point */}
+            <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 hover:scale-110 transition-all relative group">
+              <Link href="/socialink">
+                <div className="absolute top-1 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
+                <Globe className="h-5 w-5 group-hover:animate-spin-slow" />
+              </Link>
+            </Button>
+
             <ModeToggle />
 
             <motion.div
@@ -288,6 +296,13 @@ export function Navbar() {
           <div className="flex md:hidden items-center gap-3">
             {isAuthenticated ? (
               <>
+                {/* SociaLink Entry Point - Mobile */}
+                <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 transition-all relative group">
+                  <Link href="/socialink">
+                    <div className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
+                    <Globe className="h-5 w-5" />
+                  </Link>
+                </Button>
                 <NavbarNotifications />
                 <Link href="/profile" className="relative group">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
@@ -329,7 +344,7 @@ function NavbarNotifications() {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('sociaverse_token')
-      const response = await fetch('http://127.0.0.1:8000/api/notifications/', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications/', {
         headers: { 'Authorization': `Token ${token}` }
       })
       if (response.ok) {
@@ -406,7 +421,7 @@ function NavbarNotifications() {
                         <UserPlus className="w-4 h-4" />
                       </div>
                     ) : n.sender.profile_picture ? (
-                      <img src={n.sender.profile_picture.startsWith('http') ? n.sender.profile_picture : `http://127.0.0.1:8000${n.sender.profile_picture}`} className="w-8 h-8 rounded-full object-cover" alt="" />
+                      <img src={n.sender.profile_picture.startsWith('http') ? n.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${n.sender.profile_picture}`} className="w-8 h-8 rounded-full object-cover" alt="" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
                         <User className="w-4 h-4 text-slate-300" />

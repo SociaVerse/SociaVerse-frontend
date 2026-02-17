@@ -117,7 +117,7 @@ function SearchBar() {
         setQuery(val)
         if (val.length > 1) {
             try {
-                const res = await fetch(`http://127.0.0.1:8000/api/users/search/?q=${val}`)
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/search/?q=${val}`)
                 if (res.ok) {
                     const data = await res.json()
                     setResults(data)
@@ -173,7 +173,7 @@ function SearchBar() {
                                     >
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
                                                 alt={user.username}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />

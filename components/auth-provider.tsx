@@ -33,9 +33,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const checkAuth = async () => {
         const token = localStorage.getItem("sociaverse_token")
+
+        // Don't check auth if offline
+        if (!navigator.onLine) {
+            setIsLoading(false)
+            return
+        }
+
         if (token) {
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/users/me/", {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                     headers: {
                         'Authorization': `Token ${token}`
                     }

@@ -36,8 +36,8 @@ export default function PrivacySettingsPage() {
 
         try {
             const [blockedRes, restrictedRes] = await Promise.all([
-                fetch('http://127.0.0.1:8000/api/users/blocked-users/', { headers }),
-                fetch('http://127.0.0.1:8000/api/users/restricted-users/', { headers })
+                fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/blocked-users/', { headers }),
+                fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/restricted-users/', { headers })
             ])
 
             if (blockedRes.ok) setBlockedUsers(await blockedRes.json())
@@ -53,7 +53,7 @@ export default function PrivacySettingsPage() {
     const handleUnblock = async (userId: number) => {
         const token = localStorage.getItem('sociaverse_token')
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/users/block/${userId}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/block/${userId}/`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -69,7 +69,7 @@ export default function PrivacySettingsPage() {
     const handleUnrestrict = async (userId: number) => {
         const token = localStorage.getItem('sociaverse_token')
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/users/restrict/${userId}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/restrict/${userId}/`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Token ${token}` }
             })
@@ -123,7 +123,7 @@ export default function PrivacySettingsPage() {
                                         <div key={user.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
                                                     className="w-10 h-10 rounded-full object-cover"
                                                     alt=""
                                                 />
@@ -165,7 +165,7 @@ export default function PrivacySettingsPage() {
                                         <div key={user.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
                                             <div className="flex items-center gap-3">
                                                 <img
-                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `http://127.0.0.1:8000${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
+                                                    src={user.profile_picture ? (user.profile_picture.startsWith('http') ? user.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${user.profile_picture}`) : `https://ui-avatars.com/api/?name=${user.username}`}
                                                     className="w-10 h-10 rounded-full object-cover"
                                                     alt=""
                                                 />

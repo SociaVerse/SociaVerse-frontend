@@ -1,10 +1,5 @@
 const getBaseUrl = () => {
-    if (typeof window !== 'undefined') {
-        const protocol = window.location.protocol;
-        const host = window.location.hostname;
-        return `${protocol}//${host}:8000/api/chat`;
-    }
-    return 'http://127.0.0.1:8000/api/chat';
+    return `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/chat`;
 };
 
 const API_URL = getBaseUrl();
@@ -70,7 +65,11 @@ export const chatService = {
         const response = await fetch(`${API_URL}/${conversationId}/messages/`, {
             headers: getHeaders()
         })
-        if (!response.ok) throw new Error("Failed to fetch messages")
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("Failed to fetch messages:", text);
+            throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
+        }
         return response.json()
     },
 
@@ -108,7 +107,8 @@ export const chatService = {
     },
 
     blockUser: async (userId: number): Promise<void> => {
-        const response = await fetch(`http://127.0.0.1:8000/api/users/block/${userId}/`, {
+        const baseUrl = getBaseUrl().replace('/chat', '');
+        const response = await fetch(`${baseUrl}/users/block/${userId}/`, {
             method: 'POST',
             headers: getHeaders()
         })
@@ -116,7 +116,8 @@ export const chatService = {
     },
 
     unblockUser: async (userId: number): Promise<void> => {
-        const response = await fetch(`http://127.0.0.1:8000/api/users/block/${userId}/`, {
+        const baseUrl = getBaseUrl().replace('/chat', '');
+        const response = await fetch(`${baseUrl}/users/block/${userId}/`, {
             method: 'DELETE',
             headers: getHeaders()
         })
@@ -124,7 +125,8 @@ export const chatService = {
     },
 
     reportUser: async (userId: number, reason: string): Promise<void> => {
-        const response = await fetch(`http://127.0.0.1:8000/api/users/report/${userId}/`, {
+        const baseUrl = getBaseUrl().replace('/chat', '');
+        const response = await fetch(`${baseUrl}/users/report/${userId}/`, {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify({ reason })

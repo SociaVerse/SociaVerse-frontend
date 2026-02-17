@@ -43,7 +43,7 @@ export default function ChatPage() {
         const fetchChannelDetails = async () => {
             try {
                 const token = localStorage.getItem("sociaverse_token")
-                const response = await fetch(`http://127.0.0.1:8000/api/communities/channels/${channelId}/`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/communities/channels/${channelId}/`, {
                     headers: { 'Authorization': `Token ${token}` }
                 })
                 if (response.ok) {
@@ -75,7 +75,7 @@ export default function ChatPage() {
     const fetchMessages = async () => {
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/channels/${channelId}/messages/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/communities/channels/${channelId}/messages/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -95,7 +95,7 @@ export default function ChatPage() {
 
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/channels/${channelId}/messages/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/communities/channels/${channelId}/messages/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

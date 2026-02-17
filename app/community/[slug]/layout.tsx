@@ -96,7 +96,7 @@ export default function CommunityLayout({
     const fetchCommunityDetails = async () => {
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/communities/${slug}/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -111,7 +111,7 @@ export default function CommunityLayout({
     const fetchChannels = async () => {
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/channels/`, {
+            const response = await fetch(`https://4c14e2b127bf04.lhr.life/api/communities/${slug}/channels/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -126,7 +126,7 @@ export default function CommunityLayout({
     const handleCreateChannel = async () => {
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/channels/`, {
+            const response = await fetch(`https://4c14e2b127bf04.lhr.life/api/communities/${slug}/channels/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -158,7 +158,7 @@ export default function CommunityLayout({
         setIsDeleting(true)
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/`, {
+            const response = await fetch(`https://4c14e2b127bf04.lhr.life/api/communities/${slug}/`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Token ${token}`
@@ -384,7 +384,7 @@ function ManageMembersDialog({ slug }: { slug: string }) {
         setIsLoading(true)
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/members/`, {
+            const response = await fetch(`https://4c14e2b127bf04.lhr.life/api/communities/${slug}/members/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -401,7 +401,7 @@ function ManageMembersDialog({ slug }: { slug: string }) {
     const handlePromote = async (userId: number) => {
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/promote/${userId}/`, {
+            const response = await fetch(`https://4c14e2b127bf04.lhr.life/api/communities/${slug}/promote/${userId}/`, {
                 method: 'POST',
                 headers: { 'Authorization': `Token ${token}` }
             })

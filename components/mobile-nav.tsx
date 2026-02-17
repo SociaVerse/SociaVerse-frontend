@@ -1,18 +1,21 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Home, Search, PlusSquare, MessageCircle, Store, Zap, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
     const pathname = usePathname()
+    const searchParams = useSearchParams()
     // const { isAuthenticated, user } = useAuth() // Not needed if profile is removed
 
-    // Hide on auth pages or create page
+    // Hide on auth pages or create page or when in a specific chat
     const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/create"
-    if (isAuthPage) return null
+    const isChatOpen = pathname === "/chat" && searchParams.has("cid")
+
+    if (isAuthPage || isChatOpen) return null
 
     const navItems = [
         { href: "/", icon: Home, label: "Home" },

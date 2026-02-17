@@ -90,7 +90,7 @@ export default function CommunityPage() {
         setIsLoading(true)
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch('http://127.0.0.1:8000/api/communities/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/communities/', {
                 headers: {
                     'Authorization': `Token ${token}`
                 }
@@ -150,7 +150,7 @@ export default function CommunityPage() {
                 formData.append('image', selectedImage)
             }
 
-            const response = await fetch('http://127.0.0.1:8000/api/communities/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/communities/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`
@@ -191,7 +191,7 @@ export default function CommunityPage() {
 
         try {
             const token = localStorage.getItem("sociaverse_token")
-            const response = await fetch(`http://127.0.0.1:8000/api/communities/${slug}/join/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/communities/${slug}/join/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`

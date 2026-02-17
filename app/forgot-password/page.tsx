@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
 
         setIsLoading(true)
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/users/password-reset/request/", {
+            const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/users/password-reset/request/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
         setIsLoading(true)
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/users/password-reset/verify/", {
+            const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/users/password-reset/verify/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp }),
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
         setIsLoading(true)
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/users/password-reset/confirm/", {
+            const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/users/password-reset/confirm/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp, new_password: newPassword }),

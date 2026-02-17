@@ -52,7 +52,7 @@ export function Login() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/users/login/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,19 @@ export function Login() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await response.json()
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Non-JSON response:", text);
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+        }
+      }
 
       if (response.ok) {
         if (data.token) {
@@ -68,7 +80,7 @@ export function Login() {
 
           // Fetch user details for welcome screen
           try {
-            const userResponse = await fetch("http://127.0.0.1:8000/api/users/me/", {
+            const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
               headers: {
                 'Authorization': `Token ${data.token}`
               }
@@ -130,7 +142,7 @@ export function Login() {
             className="w-32 h-32 rounded-full border-4 border-blue-500 shadow-2xl overflow-hidden mb-6 relative"
           >
             <img
-              src={userData.profile_picture || `https://ui-avatars.com/api/?name=${userData.username}`}
+              src={userData.profile_picture || `https://ui-avatars.com/?name=${userData.username}`}
               alt={userData.username}
               className="w-full h-full object-cover"
             />

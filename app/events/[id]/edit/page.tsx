@@ -77,7 +77,7 @@ export default function EditEventPage() {
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/events/${id}/`)
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${id}/`)
                 if (response.ok) {
                     const event = await response.json()
 
@@ -169,7 +169,7 @@ export default function EditEventPage() {
                 prize_others: formData.prize_others,
             }
 
-            const response = await fetch(`http://127.0.0.1:8000/api/events/${id}/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${id}/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
