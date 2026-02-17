@@ -233,12 +233,12 @@ export function Signup() {
                     <span className="relative text-[10px] text-slate-500 uppercase tracking-widest bg-slate-900 px-2 rounded-full border border-white/5">or</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
                     <InputItem label="Full Name" icon={User} placeholder="Enter name" value={formData.fullName} onChange={(e: any) => handleInputChange("fullName", e.target.value)} error={errors.fullName} />
                     <InputItem label="College" icon={School} placeholder="Enter college" value={formData.college} onChange={(e: any) => handleInputChange("college", e.target.value)} error={errors.college} />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
                     <InputItem label="Birthday" icon={Calendar} type="date" value={formData.dob} onChange={(e: any) => handleInputChange("dob", e.target.value)} error={errors.dob} />
                     <InputItem label="Email" icon={Mail} type="email" placeholder="edu@mail.com" value={formData.email} onChange={(e: any) => handleInputChange("email", e.target.value)} error={errors.email} />
                   </div>
@@ -246,15 +246,15 @@ export function Signup() {
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Password</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                        <Lock className="h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                        <Lock className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                       </div>
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="Min. 8 characters"
                         value={formData.password}
                         onChange={(e) => handleInputChange("password", e.target.value)}
-                        className={`pl-9 pr-9 h-10 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-lg ${errors.password ? 'border-red-500/50' : ''}`}
+                        className={`pl-10 pr-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.password ? 'border-red-500/50' : ''}`}
                       />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
                         {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -277,7 +277,7 @@ export function Signup() {
                   {errors.general && <div className="w-full text-center text-xs text-red-400 bg-red-500/10 p-2 rounded">{errors.general}</div>}
 
                   <div className="w-full pt-2">
-                    <Button type="submit" disabled={isLoading} className="w-full h-11 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all rounded-xl border border-white/10 group">
+                    <Button type="submit" disabled={isLoading} className="w-full h-12 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all rounded-xl border border-white/10 group">
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center">Create Account <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" /></span>}
                     </Button>
                   </div>
@@ -332,12 +332,12 @@ const InputItem = ({ label, icon: Icon, error, ...props }: any) => (
   <div className="space-y-1">
     <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">{label}</label>
     <div className="relative group">
-      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-        <Icon className="h-3.5 w-3.5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+        <Icon className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
       </div>
       <Input
         {...props}
-        className={`pl-9 h-10 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-lg ${error ? 'border-red-500/50' : ''}`}
+        className={`pl-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${error ? 'border-red-500/50' : ''}`}
       />
     </div>
     {error && <p className="text-[10px] text-red-400 ml-1">{error}</p>}
