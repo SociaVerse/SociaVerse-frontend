@@ -197,6 +197,15 @@ export function Login() {
 
             {/* Header */}
             <div className="text-center mb-10">
+              <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-transparent border shadow-blue-500/20 flex items-center justify-center">
+                <div className="w-full h-full rounded-full overflow-hidden bg-transparent flex items-center justify-center">
+                  <img
+                    src="/logo.png"
+                    alt="SociaVerse Logo"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
               <motion.h2
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

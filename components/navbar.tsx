@@ -164,11 +164,15 @@ export function Navbar() {
           >
             <Link href="/" className="flex items-center space-x-2 group">
               <motion.div
-                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md group-hover:shadow-blue-500/20 transition-all duration-300"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-transparent border  shadow-md group-hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <Globe className="h-5 w-5 text-white" />
+                <img
+                  src="/logo.png"
+                  alt="SociaVerse Logo"
+                  className="w-full h-full object-contain"
+                />
               </motion.div>
               <motion.span
                 className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400"

@@ -179,8 +179,12 @@ export function Signup() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
                 <div className="relative z-10">
-                  <div className="h-10 w-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 mb-6">
-                    <Sparkles className="w-5 h-5 text-white" />
+                  <div className="h-16 w-16 bg-black border border-slate-800 rounded-full flex items-center justify-center mb-6 overflow-hidden shadow-lg shadow-blue-500/20">
+                    <img
+                      src="/logo.png"
+                      alt="SociaVerse Logo"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <h1 className="text-3xl font-bold text-white mb-2">Join the Future</h1>
                   <p className="text-blue-100/80 text-sm leading-relaxed">

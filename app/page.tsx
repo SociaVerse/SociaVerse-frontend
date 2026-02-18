@@ -102,8 +102,8 @@ function PhoneMockup() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6 px-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center">
-              <Globe className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-full bg-black border border-slate-800 flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="SociaVerse" className="w-full h-full object-contain" />
             </div>
             <span className="font-bold text-sm tracking-tight text-white">SociaVerse</span>
           </div>
