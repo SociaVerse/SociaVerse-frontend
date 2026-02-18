@@ -62,8 +62,8 @@ export default function EventsPage() {
                 const headers = token ? { 'Authorization': `Token ${token}` } : {}
 
                 const [eventsRes, favoritesRes] = await Promise.all([
-                    fetch('${process.env.NEXT_PUBLIC_API_URL}/api/events/', { headers: headers as HeadersInit }),
-                    token ? fetch('${process.env.NEXT_PUBLIC_API_URL}/api/events/favorites/', { headers: headers as HeadersInit }) : Promise.resolve(null)
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/`, { headers: headers as HeadersInit }),
+                    token ? fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/favorites/`, { headers: headers as HeadersInit }) : Promise.resolve(null)
                 ])
 
                 if (eventsRes.ok) {

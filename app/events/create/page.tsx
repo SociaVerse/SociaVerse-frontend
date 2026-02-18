@@ -124,7 +124,7 @@ export default function CreateEventPage() {
                 webhook_url: formData.webhookUrl || null,
             }
 
-            const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/events/", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -170,7 +170,7 @@ export default function CreateEventPage() {
             const token = localStorage.getItem("sociaverse_token")
             const otpValue = otp.join("")
 
-            const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/events/verify/", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/verify/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

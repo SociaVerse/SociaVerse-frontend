@@ -61,7 +61,7 @@ export default function ProfileSettingsPage() {
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {
@@ -131,7 +131,7 @@ export default function ProfileSettingsPage() {
             // Let's stick to FormData for consistency or PATCH specific field?
             // Since existing PATCH endpoint checks for fields in request.data, it should be fine.
 
-            const response = await fetch('https://4c14e2b127bf04.lhr.life/api/users/me/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Token ${token}`
@@ -184,7 +184,7 @@ export default function ProfileSettingsPage() {
             formData.append('social_links', JSON.stringify(socialLinks))
 
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('https://4c14e2b127bf04.lhr.life/api/users/me/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Token ${token}`

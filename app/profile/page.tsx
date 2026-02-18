@@ -404,7 +404,7 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
 
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/posts/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`

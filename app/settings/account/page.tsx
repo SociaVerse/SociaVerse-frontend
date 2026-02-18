@@ -53,7 +53,7 @@ export default function AccountSettingsPage() {
             const formData = new FormData()
             formData.append('username', username)
 
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Token ${token}` },
                 body: formData
@@ -92,7 +92,7 @@ export default function AccountSettingsPage() {
         setIsLoading(true)
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/change-password/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/change-password/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ export default function AccountSettingsPage() {
         setIsDeleting(true)
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/me/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Token ${token}` }
             })
