@@ -5,7 +5,8 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/navbar"; // <-- IMPORT THE NAVBAR
+import { Navbar } from "@/components/navbar";
+import { MaintenanceBanner } from "@/components/maintenance-banner"; // <-- IMPORT THE NAVBAR
 import { MobileNav } from "@/components/mobile-nav";
 import { AuthProvider } from "@/components/auth-provider";
 import { ToastProvider } from "@/components/ui/custom-toast";
@@ -43,6 +44,7 @@ export default function RootLayout({
             <ToastProvider>
               <OfflineDetector />
               <MouseSpotlight />
+              <MaintenanceBanner />
               <Navbar />
               <Suspense fallback={null}>
                 <MobileNav />
