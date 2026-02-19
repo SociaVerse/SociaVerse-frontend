@@ -222,11 +222,11 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
             </div>
 
             {/* --- Profile Header Info --- */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24 md:-mt-32">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-20 md:-mt-32">
                 <div className="flex flex-col md:flex-row items-start justify-between gap-6">
 
                     {/* Avatar & Key Info */}
-                    <div className="flex flex-col md:flex-row items-end md:items-end gap-6 relative w-full md:w-auto">
+                    <div className="flex flex-col md:flex-row items-center md:items-end gap-6 relative w-full md:w-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -239,18 +239,48 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                                     className="w-full h-full object-cover"
                                 />
                             </div>
+                            {/* Removed online indicator for public profile unless you have real-time status */}
                         </motion.div>
 
                         <div className="mb-2 md:mb-4 pt-2 md:pt-0 text-center md:text-left flex-1">
                             <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
                                 {profile.name}
-                                {profile.is_verified && <BadgeCheck className="w-6 h-6 text-blue-500" />}
+                                {profile.role === "Verified User" && <BadgeCheck className="w-6 h-6 text-blue-500" />}
                                 {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
                             <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
-                            <div className="flex items-center justify-center md:justify-start gap-6 mt-2 text-slate-300">
-                                <div><span className="font-bold text-white">{profile.followers_count}</span> Followers</div>
-                                <div><span className="font-bold text-white">{profile.following_count}</span> Following</div>
+
+                            {/* Mobile Key Info (Visible only on small screens) */}
+                            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-3 md:hidden text-sm text-slate-400">
+                                {profile.role && (
+                                    <div className="flex items-center gap-1">
+                                        <Briefcase className="w-3.5 h-3.5" />
+                                        <span>{profile.role}</span>
+                                    </div>
+                                )}
+                                {profile.location && (
+                                    <div className="flex items-center gap-1">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        <span>{profile.location}</span>
+                                    </div>
+                                )}
+                                {profile.website && (
+                                    <div className="flex items-center gap-1">
+                                        <LinkIcon className="w-3.5 h-3.5" />
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate max-w-[150px]">
+                                            {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-center md:justify-start gap-6 mt-4 text-slate-300">
+                                <div className={`transition-colors ${!isPrivateAndHidden ? "cursor-pointer hover:text-white" : ""}`} onClick={() => !isPrivateAndHidden && setActiveTab("Followers")}>
+                                    <span className="font-bold text-white">{profile.followers_count}</span> Followers
+                                </div>
+                                <div className={`transition-colors ${!isPrivateAndHidden ? "cursor-pointer hover:text-white" : ""}`} onClick={() => !isPrivateAndHidden && setActiveTab("Following")}>
+                                    <span className="font-bold text-white">{profile.following_count}</span> Following
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -258,8 +288,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mt-4 md:mt-0 md:self-end md:mb-6 w-full md:w-auto justify-center md:justify-end">
                         {followStatus === 'self' ? (
-                            <Link href="/settings/profile">
-                                <Button className="rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
+                            <Link href="/settings/profile" className="flex-1 md:flex-none">
+                                <Button className="w-full md:w-auto rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
                                     Edit Profile
                                 </Button>
                             </Link>
@@ -267,7 +297,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             <Button
                                 onClick={handleFollow}
                                 disabled={isFollowLoading}
-                                className={`rounded-full font-semibold px-6 min-w-[120px] transition-all ${followStatus === 'accepted' || followStatus === 'pending'
+                                className={`flex-1 md:flex-none w-full md:w-auto rounded-full font-semibold px-6 min-w-[120px] transition-all ${followStatus === 'accepted' || followStatus === 'pending'
                                     ? "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
                                     : "bg-white text-slate-950 hover:bg-slate-200"
                                     }`}
@@ -283,11 +313,12 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         )}
 
                         <Link href={`/chat?user=${profile.username}`}>
-                            <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
+                            <Button variant="outline" className="flex-1 md:flex-none w-full md:w-auto rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
                                 <MessageSquare className="w-4 h-4 mr-2" />
                                 Message
                             </Button>
                         </Link>
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="icon" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
@@ -315,8 +346,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 {/* --- Main Content Grid --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
 
-                    {/* LEFT SIDEBAR (Intro & Photos) */}
-                    <div className="lg:col-span-4 space-y-6">
+                    {/* LEFT SIDEBAR (Intro & Photos) - Hidden on mobile, specific info moved to header */}
+                    <div className="hidden lg:block lg:col-span-4 space-y-6">
 
                         {/* Intro Card */}
                         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
@@ -385,13 +416,23 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             </div>
                         </div>
 
+                        {/* Photos Preview */}
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-white">Photos</h3>
+                                <Button variant="link" className="text-blue-400 p-0 h-auto text-sm">See all</Button>
+                            </div>
+                            <div className="text-center py-8 text-slate-500 text-sm">
+                                No photos yet
+                            </div>
+                        </div>
                     </div>
 
                     {/* MAIN FEED (Right Column) */}
                     <div className="lg:col-span-8">
 
                         {/* Custom Tabs */}
-                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto">
+                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
                             {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}
@@ -541,5 +582,3 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
         </div>
     )
 }
-
-

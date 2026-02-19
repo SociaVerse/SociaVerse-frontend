@@ -36,8 +36,8 @@ export default function PrivacySettingsPage() {
 
         try {
             const [blockedRes, restrictedRes] = await Promise.all([
-                fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/blocked-users/', { headers }),
-                fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/restricted-users/', { headers })
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/blocked-users/`, { headers }),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/restricted-users/`, { headers })
             ])
 
             if (blockedRes.ok) setBlockedUsers(await blockedRes.json())

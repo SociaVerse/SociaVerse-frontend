@@ -122,11 +122,11 @@ export default function ProfilePage() {
             </div>
 
             {/* --- Profile Header Info --- */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-24 md:-mt-32">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 -mt-20 md:-mt-32">
                 <div className="flex flex-col md:flex-row items-start justify-between gap-6">
 
                     {/* Avatar & Key Info */}
-                    <div className="flex flex-col md:flex-row items-end md:items-end gap-6 relative w-full md:w-auto">
+                    <div className="flex flex-col md:flex-row items-center md:items-end gap-6 relative w-full md:w-auto">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -149,7 +149,32 @@ export default function ProfilePage() {
                                 {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
                             <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
-                            <div className="flex items-center justify-center md:justify-start gap-6 mt-2 text-slate-300">
+
+                            {/* Mobile Key Info (Visible only on small screens) */}
+                            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-3 md:hidden text-sm text-slate-400">
+                                {profile.role && (
+                                    <div className="flex items-center gap-1">
+                                        <Briefcase className="w-3.5 h-3.5" />
+                                        <span>{profile.role}</span>
+                                    </div>
+                                )}
+                                {profile.location && (
+                                    <div className="flex items-center gap-1">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        <span>{profile.location}</span>
+                                    </div>
+                                )}
+                                {profile.website && (
+                                    <div className="flex items-center gap-1">
+                                        <LinkIcon className="w-3.5 h-3.5" />
+                                        <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate max-w-[150px]">
+                                            {profile.website.replace(/^https?:\/\//, '')}
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-center md:justify-start gap-6 mt-4 text-slate-300">
                                 <div className="cursor-pointer hover:text-white transition-colors" onClick={() => setActiveTab("Followers")}>
                                     <span className="font-bold text-white">{profile.followers_count}</span> Followers
                                 </div>
@@ -162,12 +187,12 @@ export default function ProfilePage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-3 mt-4 md:mt-0 md:self-end md:mb-6 w-full md:w-auto justify-center md:justify-end">
-                        <Link href="/settings/profile">
-                            <Button className="rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
+                        <Link href="/settings/profile" className="flex-1 md:flex-none">
+                            <Button className="w-full md:w-auto rounded-full bg-white text-slate-950 hover:bg-slate-200 font-semibold px-6">
                                 Edit Profile
                             </Button>
                         </Link>
-                        <Button variant="outline" className="rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
+                        <Button variant="outline" className="flex-1 md:flex-none w-full md:w-auto rounded-full border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-300">
                             <Share2 className="w-4 h-4 mr-2" />
                             Share
                         </Button>
@@ -177,8 +202,8 @@ export default function ProfilePage() {
                 {/* --- Main Content Grid --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
 
-                    {/* LEFT SIDEBAR (Intro & Photos) */}
-                    <div className="lg:col-span-4 space-y-6">
+                    {/* LEFT SIDEBAR (Intro & Photos) - Hidden on mobile, specific info moved to header */}
+                    <div className="hidden lg:block lg:col-span-4 space-y-6">
 
                         {/* Intro Card */}
                         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
@@ -263,7 +288,7 @@ export default function ProfilePage() {
                     <div className="lg:col-span-8">
 
                         {/* Custom Tabs */}
-                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto">
+                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
                             {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}

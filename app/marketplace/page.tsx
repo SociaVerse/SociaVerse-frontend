@@ -138,7 +138,7 @@ function MarketplaceContent() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 pt-24 pb-20 px-4 md:px-6 lg:px-8">
+        <div className="min-h-screen bg-slate-950 pt-10 md:pt-24 pb-20 px-4 md:px-6 lg:px-8">
 
             {/* Header Section */}
             <div className="max-w-7xl mx-auto mb-12">
@@ -148,11 +148,11 @@ function MarketplaceContent() {
                     className="flex flex-col md:flex-row md:items-end justify-between gap-6"
                 >
                     <div>
-                        <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 mb-4">
-                            Marketplace
+                        <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-rose-400 to-orange-400 mb-4 tracking-tight">
+                            The Stash 🎒
                         </h1>
                         <p className="text-slate-400 text-lg max-w-xl">
-                            Buy and sell everything from textbooks to tech with verified students on campus.
+                            Verified student exclusives. Cop the best deals on campus before they're gone.
                         </p>
                     </div>
 

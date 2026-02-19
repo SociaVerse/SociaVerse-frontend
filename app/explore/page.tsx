@@ -23,11 +23,17 @@ export default function ExplorePage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pt-20 pb-20">
+        <div className="min-h-screen bg-slate-950 text-slate-100 pt-10 md:pt-20 pb-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Mobile Search - Visible only on small screens */}
                 <div className="md:hidden mb-6">
+                    <div className="mb-4">
+                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 tracking-tight">
+                            The Pulse ⚡
+                        </h1>
+                        <p className="text-slate-400 text-sm font-medium mt-1">Live updates from across the verse.</p>
+                    </div>
                     <SearchBar />
                 </div>
 
@@ -38,6 +44,14 @@ export default function ExplorePage() {
 
                         {/* Desktop Search & Tabs - Sticky */}
                         <div className="hidden md:block sticky top-0 z-40 bg-slate-950 -mt-20 pt-24 pb-4 border-b border-slate-800/50 shadow-md">
+
+                            <div className="mb-4">
+                                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 tracking-tight">
+                                    The Pulse ⚡
+                                </h1>
+                                <p className="text-slate-400 text-sm font-medium mt-1">Live updates from across the verse.</p>
+                            </div>
+
                             <SearchBar />
                             <div className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar pb-1 snap-x snap-mandatory">
                                 {["For You", "Trending", "People", "Universities", "Events"].map((tab) => (

@@ -208,11 +208,20 @@ export default function NotificationsPage() {
                                     className={`p-4 flex items-start gap-4 hover:bg-slate-800/30 transition-colors ${!notification.is_read ? 'bg-blue-500/5' : ''}`}
                                     onClick={() => !notification.is_read && markAsRead(notification.id)}
                                 >
-                                    <div className="mt-1">
-                                        {notification.notification_type === 'new_follower' && <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500"><UserPlus className="w-4 h-4" /></div>}
-                                        {notification.notification_type === 'follow_request' && <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300"><UserPlus className="w-4 h-4" /></div>}
-                                        {/* Add icons for like/comment if needed */}
-                                    </div>
+                                    <Link href={`/u/${notification.sender.username}`} className="block relative group">
+                                        {notification.sender.profile_picture ? (
+                                            <Avatar className="w-10 h-10 border border-slate-700 group-hover:border-blue-500 transition-colors">
+                                                <AvatarImage src={notification.sender.profile_picture.startsWith('http') ? notification.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${notification.sender.profile_picture}`} className="object-cover" />
+                                                <AvatarFallback>{notification.sender.username[0].toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-800 border border-slate-700 group-hover:border-blue-500 transition-colors">
+                                                {notification.notification_type === 'new_follower' && <UserPlus className="w-5 h-5 text-blue-500" />}
+                                                {notification.notification_type === 'follow_request' && <UserPlus className="w-5 h-5 text-slate-400" />}
+                                                {/* Add icons for like/comment if needed */}
+                                            </div>
+                                        )}
+                                    </Link>
                                     <div className="flex-1">
                                         <p className="text-slate-200 text-sm">
                                             <span className="font-semibold text-white">{notification.sender.first_name || notification.sender.username}</span>

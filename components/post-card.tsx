@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
 import { Heart, MessageCircle, Share2, MoreHorizontal, BadgeCheck, Send, X, Trash2, Edit2, Reply, CornerDownRight } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Post, Comment, api } from "@/services/api"
 import { useAuth } from "@/components/auth-provider"
@@ -110,17 +111,20 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 hover:bg-slate-900/80 transition-colors"
+            className="group/post bg-slate-900/20 backdrop-blur-sm border border-slate-800/50 hover:border-slate-700/50 rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1 relative overflow-hidden"
         >
-            <div className="flex gap-4">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 opacity-0 group-hover/post:opacity-10 transition-opacity duration-500" />
+            <div className="relative z-10 flex gap-4">
                 <div className="flex-shrink-0">
-                    {post.author.profile_picture ? (
-                        <img src={post.author.profile_picture.startsWith('http') ? post.author.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${post.author.profile_picture}`} alt={post.author.username} className="w-12 h-12 rounded-full object-cover" />
-                    ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                            {post.author.first_name?.[0] || post.author.username[0].toUpperCase()}
-                        </div>
-                    )}
+                    <Link href={`/u/${post.author.username}`}>
+                        {post.author.profile_picture ? (
+                            <img src={post.author.profile_picture.startsWith('http') ? post.author.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${post.author.profile_picture}`} alt={post.author.username} className="w-12 h-12 rounded-full object-cover hover:opacity-90 transition-opacity" />
+                        ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg hover:opacity-90 transition-opacity">
+                                {post.author.first_name?.[0] || post.author.username[0].toUpperCase()}
+                            </div>
+                        )}
+                    </Link>
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
@@ -191,20 +195,22 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between text-slate-500 max-w-md pt-2">
+                    <div className="flex items-center justify-between text-slate-500 pt-2 -ml-2">
                         <Button
                             variant="ghost"
                             size="sm"
-                            className={`hover:text-blue-400 gap-2 pl-0 ${showComments ? 'text-blue-400' : ''}`}
+                            className={`rounded-full hover:bg-blue-500/10 hover:text-blue-400 gap-2 transition-all duration-300 group ${showComments ? 'text-blue-400 bg-blue-500/10' : ''}`}
                             onClick={toggleComments}
                         >
-                            <MessageCircle className="h-5 w-5" />
-                            <span>{commentsCount}</span>
+                            <div className="p-1.5 rounded-full group-hover:bg-blue-500/20 transition-colors">
+                                <MessageCircle className="h-5 w-5" />
+                            </div>
+                            <span className="font-medium">{commentsCount > 0 && commentsCount}</span>
                         </Button>
                         <Button
                             variant="ghost"
                             size="sm"
-                            className={`hover:text-pink-500 gap-2 relative ${isLiked ? 'text-pink-500' : ''}`}
+                            className={`rounded-full hover:bg-pink-500/10 hover:text-pink-500 gap-2 relative transition-all duration-300 group ${isLiked ? 'text-pink-500 bg-pink-500/10' : ''}`}
                             onClick={handleLike}
                         >
                             {/* Heart Explosion Particles */}
@@ -233,14 +239,16 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                                 whileTap={{ scale: 0.8 }}
                                 animate={isLiked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
                                 transition={{ duration: 0.3 }}
+                                className="p-1.5 rounded-full group-hover:bg-pink-500/20 transition-colors"
                             >
                                 <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                             </motion.div>
-                            <span>{likesCount}</span>
+                            <span className="font-medium">{likesCount > 0 && likesCount}</span>
                         </Button>
-                        <Button variant="ghost" size="sm" className="hover:text-green-400 gap-2">
-                            <Share2 className="h-5 w-5" />
-                            <span>Share</span>
+                        <Button variant="ghost" size="sm" className="rounded-full hover:bg-green-500/10 hover:text-green-400 gap-2 transition-all duration-300 group">
+                            <div className="p-1.5 rounded-full group-hover:bg-green-500/20 transition-colors">
+                                <Share2 className="h-5 w-5" />
+                            </div>
                         </Button>
                     </div>
 

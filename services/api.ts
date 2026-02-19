@@ -132,5 +132,11 @@ export const api = {
 
         if (!response.ok) throw new Error('Failed to create post');
         return response.json();
+    },
+
+    getUsers: async (): Promise<User[]> => {
+        const response = await fetchWithAuth('/users/');
+        if (!response.ok) throw new Error('Failed to fetch users');
+        return response.json();
     }
 };

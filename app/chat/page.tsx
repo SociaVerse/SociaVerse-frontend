@@ -332,6 +332,14 @@ function ChatContent() {
         initChat()
     }, [searchParams, user, chats.length])
 
+    // Handle initial message from URL query
+    useEffect(() => {
+        const initialMessage = searchParams.get("q")
+        if (initialMessage && !inputValue) {
+            setInputValue(initialMessage)
+        }
+    }, [searchParams])
+
     const scrollToMessage = (messageId: string) => {
         const element = document.getElementById(`msg-${messageId}`);
         if (element) {

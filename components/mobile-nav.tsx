@@ -26,29 +26,41 @@ export function MobileNav() {
     ]
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[100] md:hidden bg-black border-t border-white/10 pb-safe pt-2 px-2">
-            <div className="flex items-center justify-around w-full h-12">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
-                    const Icon = item.icon
+        <div className="fixed bottom-4 left-4 right-4 z-[100] md:hidden">
+            <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pb-safe pt-1 px-2">
+                <div className="flex items-center justify-around w-full h-14">
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
+                        const Icon = item.icon
 
-                    return (
-                        <Link key={item.href} href={item.href} className="flex-1 flex justify-center items-center h-full">
-                            <div className="relative p-2">
-                                <Icon
-                                    className={cn(
-                                        "w-[26px] h-[26px] transition-all duration-200",
-                                        isActive ? "text-white" : "text-slate-500",
+                        return (
+                            <Link key={item.href} href={item.href} className="flex-1 flex flex-col justify-center items-center h-full group">
+                                <div className="relative p-2 transition-all duration-300">
+                                    <div className={cn(
+                                        "absolute inset-0 rounded-xl transition-all duration-300 opacity-0 scale-50",
+                                        isActive ? "bg-white/10 opacity-100 scale-100" : "group-hover:bg-white/5 group-hover:opacity-50 group-hover:scale-90"
+                                    )} />
+                                    <Icon
+                                        className={cn(
+                                            "relative z-10 w-6 h-6 transition-all duration-300",
+                                            isActive ? "text-white -translate-y-0.5" : "text-slate-400 group-hover:text-slate-200",
+                                        )}
+                                        strokeWidth={isActive ? 2.5 : 2}
+                                    />
+                                    {item.href === "/chat" && (
+                                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-black z-20"></span>
                                     )}
-                                    strokeWidth={isActive ? 3 : 2}
-                                />
-                                {item.href === "/chat" && (
-                                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-black"></span>
-                                )}
-                            </div>
-                        </Link>
-                    )
-                })}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="navIndicator"
+                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full"
+                                        />
+                                    )}
+                                </div>
+                            </Link>
+                        )
+                    })}
+                </div>
             </div>
         </div>
     )
