@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, PlusSquare, MessageCircle, Store, Zap, Globe } from "lucide-react"
+import { Home, Search, PlusSquare, MessageCircle, Store, Zap, Globe, Rocket, Users } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
@@ -15,15 +15,26 @@ export function MobileNav() {
     const isAuthPage = pathname === "/login" || pathname === "/signup" || pathname === "/create"
     const isChatOpen = pathname === "/chat" && searchParams.has("cid")
 
+    const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true'
+
     if (isAuthPage || isChatOpen) return null
 
-    const navItems = [
+    const regularNavItems = [
         { href: "/", icon: Home, label: "Home" },
         { href: "/explore", icon: Search, label: "Explore" },
-        { href: "/create", icon: PlusSquare, label: "Create", isMain: true }, // Fixed link to /create
+        { href: "/create", icon: PlusSquare, label: "Create", isMain: true },
         { href: "/chat", icon: MessageCircle, label: "Chat" },
-        { href: "/marketplace", icon: Store, label: "Market" }, // Replaced Profile with Market
+        { href: "/marketplace", icon: Store, label: "Market" },
     ]
+
+    const waitlistNavItems = [
+        { href: "/", icon: Home, label: "Home" },
+        { href: "/features", icon: Zap, label: "Features", isMain: true },
+        { href: "/team", icon: Users, label: "Team" },
+        { href: "/join-waitlist", icon: Rocket, label: "Join" },
+    ]
+
+    const navItems = isWaitlistMode ? waitlistNavItems : regularNavItems
 
     return (
         <div className="fixed bottom-4 left-4 right-4 z-[100] md:hidden">
@@ -44,10 +55,11 @@ export function MobileNav() {
                                         className={cn(
                                             "relative z-10 w-6 h-6 transition-all duration-300",
                                             isActive ? "text-white -translate-y-0.5" : "text-slate-400 group-hover:text-slate-200",
+                                            item.isMain && !isActive ? "text-blue-400" : ""
                                         )}
                                         strokeWidth={isActive ? 2.5 : 2}
                                     />
-                                    {item.href === "/chat" && (
+                                    {!isWaitlistMode && item.href === "/chat" && (
                                         <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-black z-20"></span>
                                     )}
                                     {isActive && (

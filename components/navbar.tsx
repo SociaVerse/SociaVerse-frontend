@@ -3,7 +3,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Globe, Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus } from "lucide-react"
-import { ModeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -29,12 +28,18 @@ import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
-// Define links in an array for cleaner code
-const navLinks = [
+const regularNavLinks = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
   { href: "/community", label: "Community" },
+]
+
+const waitlistNavLinks = [
+  { href: "/", label: "Home" },
+  { href: "/features", label: "Features" },
+  { href: "/team", label: "Team" },
+  { href: "/join-waitlist", label: "Waitlist" },
 ]
 
 import { usePathname } from "next/navigation"
@@ -50,6 +55,8 @@ export function Navbar() {
   const isChatPage = pathname === "/chat" || pathname?.startsWith("/chat/")
   const isCreatePage = pathname === "/create"
   const isProfilePage = pathname === "/profile" || pathname?.startsWith("/u/")
+  const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+  const navLinks = isWaitlistMode ? waitlistNavLinks : regularNavLinks;
 
 
 
@@ -146,7 +153,7 @@ export function Navbar() {
           transition: { duration: 0.5, ease: "easeOut" }
         }}
         className={cn(
-          "sticky top-4 z-50 w-full mx-auto max-w-[95%] rounded-full transition-all duration-300",
+          "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[95%] rounded-full transition-all duration-300",
           scrolled
             ? "bg-slate-900/90 backdrop-blur-lg shadow-lg border border-slate-700/50 shadow-blue-500/10"
             : "bg-slate-900/70 backdrop-blur-md",
@@ -237,97 +244,123 @@ export function Navbar() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {/* ... desktop items ... */}
-            <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
-              <Search className="h-5 w-5" />
-            </Button>
+            {!isWaitlistMode && (
+              <>
+                <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
+                  <Search className="h-5 w-5" />
+                </Button>
 
-            {/* SociaLink Entry Point */}
-            <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 hover:scale-110 transition-all relative group">
-              <Link href="/socialink">
-                <div className="absolute top-1 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
-                <Globe className="h-5 w-5 group-hover:animate-spin-slow" />
-              </Link>
-            </Button>
+                {/* SociaLink Entry Point */}
+                <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 hover:scale-110 transition-all relative group">
+                  <Link href="/socialink">
+                    <div className="absolute top-1 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
+                    <Globe className="h-5 w-5 group-hover:animate-spin-slow" />
+                  </Link>
+                </Button>
+              </>
+            )}
 
-            <ModeToggle />
+            {!isWaitlistMode && (
+              <motion.div
+                className="bg-slate-800/50 backdrop-blur-sm rounded-full px-1 py-1 border border-slate-700/50 shadow-sm ml-2 flex items-center"
+                whileHover={{ scale: 1.03 }}
+              >
+                {isAuthenticated ? (
+                  <>
+                    {/* Chat Icon - Functional */}
+                    <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
+                      <Link href="/chat">
+                        <MessageCircle className="h-5 w-5" />
+                      </Link>
+                    </Button>
 
-            <motion.div
-              className="bg-slate-800/50 backdrop-blur-sm rounded-full px-1 py-1 border border-slate-700/50 shadow-sm ml-2 flex items-center"
-              whileHover={{ scale: 1.03 }}
-            >
-              {isAuthenticated ? (
-                <>
-                  {/* Chat Icon - Functional */}
-                  <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
-                    <Link href="/chat">
-                      <MessageCircle className="h-5 w-5" />
-                    </Link>
-                  </Button>
+                    {/* Notification Bell - Functional Dropdown */}
+                    <NavbarNotifications />
 
-                  {/* Notification Bell - Functional Dropdown */}
-                  <NavbarNotifications />
+                    <div className="w-px h-6 bg-slate-700 mx-1"></div>
 
-                  <div className="w-px h-6 bg-slate-700 mx-1"></div>
+                    <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-red-400 transition-all font-medium text-xs px-3" onClick={() => setShowLogoutConfirm(true)}>
+                      Logout
+                    </Button>
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 ml-1 flex items-center justify-center border-2 border-slate-800 cursor-pointer hover:scale-110 transition-transform overflow-hidden">
+                      <Link href="/profile" className="w-full h-full flex items-center justify-center">
+                        {user?.profile_picture ? (
+                          <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-4 w-4 text-white" />
+                        )}
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
+                      <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
+                      <Link href="/signup">Sign Up</Link>
+                    </Button>
+                  </>
+                )}
+              </motion.div>
+            )}
 
-                  <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-red-400 transition-all font-medium text-xs px-3" onClick={() => setShowLogoutConfirm(true)}>
-                    Logout
-                  </Button>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 ml-1 flex items-center justify-center border-2 border-slate-800 cursor-pointer hover:scale-110 transition-transform overflow-hidden">
-                    <Link href="/profile" className="w-full h-full flex items-center justify-center">
-                      {user?.profile_picture ? (
-                        <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="h-4 w-4 text-white" />
-                      )}
-                    </Link>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Button asChild variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
-                    <Link href="/login">Login</Link>
-                  </Button>
-                  <Button asChild className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
-                    <Link href="/signup">Sign Up</Link>
-                  </Button>
-                </>
-              )}
-            </motion.div>
+            {isWaitlistMode && (
+              <motion.div
+                className="ml-4"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Button asChild className="rounded-full bg-white text-black hover:bg-slate-200 shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all font-semibold">
+                  <Link href="/join-waitlist">Join Waitlist</Link>
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Mobile Right Side */}
-          <div className="flex md:hidden items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                {/* SociaLink Entry Point - Mobile */}
-                <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 transition-all relative group">
-                  <Link href="/socialink">
-                    <div className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
-                    <Globe className="h-5 w-5" />
-                  </Link>
-                </Button>
-                <NavbarNotifications />
-                <Link href="/profile" className="relative group">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-slate-950 overflow-hidden relative">
-                      {user?.profile_picture ? (
-                        <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                          <User className="h-4 w-4 text-slate-400" />
-                        </div>
-                      )}
+          {!isWaitlistMode && (
+            <div className="flex md:hidden items-center gap-3">
+              {isAuthenticated ? (
+                <>
+                  {/* SociaLink Entry Point - Mobile */}
+                  <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 transition-all relative group">
+                    <Link href="/socialink">
+                      <div className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
+                      <Globe className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <NavbarNotifications />
+                  <Link href="/profile" className="relative group">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
+                      <div className="w-full h-full rounded-full bg-slate-950 overflow-hidden relative">
+                        {user?.profile_picture ? (
+                          <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                            <User className="h-4 w-4 text-slate-400" />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </>
-            ) : (
-              <Button asChild size="sm" className="rounded-full bg-blue-600 text-white px-4 h-8 text-xs">
-                <Link href="/login">Login</Link>
+                  </Link>
+                </>
+              ) : (
+                <Button asChild size="sm" className="rounded-full bg-blue-600 text-white px-4 h-8 text-xs">
+                  <Link href="/login">Login</Link>
+                </Button>
+              )}
+            </div>
+          )}
+
+          {isWaitlistMode && (
+            <div className="flex md:hidden items-center gap-2">
+              <Button asChild size="sm" className="rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold">
+                <Link href="/join-waitlist">Join</Link>
               </Button>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Mobile Menu - Hidden as replaced by Bottom Nav */}
           <div className="hidden"></div>

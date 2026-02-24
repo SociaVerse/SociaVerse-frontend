@@ -21,7 +21,9 @@ export default function Home() {
     )
   }
 
-  if (isAuthenticated) {
+  const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+
+  if (!isWaitlistMode && isAuthenticated) {
     return <HomeFeed />
   }
 

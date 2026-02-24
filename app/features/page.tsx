@@ -4,52 +4,45 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import {
-    Users,
-    Zap,
-    Shield,
-    Globe,
-    BookOpen,
-    Calendar,
-    MessageCircle,
-    Share2
+    LayoutDashboard,
+    ShoppingBag,
+    CalendarDays,
+    Gamepad2,
+    Palette,
+    EyeOff,
+    Sparkles
 } from "lucide-react"
 
 const features = [
     {
-        icon: <Users className="h-8 w-8 text-blue-400" />,
-        title: "Student Tribes",
-        description: "Connect with students from your campus and beyond. Find your niche, whether it's coding, art, or gaming.",
+        icon: <LayoutDashboard className="h-7 w-7 text-blue-400" />,
+        title: "Dynamic Feed",
+        description: "Your personalized hub. Share updates, photos, and connect with what matters most in real-time.",
         color: "from-blue-500/20 to-indigo-500/20"
     },
     {
-        icon: <Zap className="h-8 w-8 text-yellow-400" />,
-        title: "Instant Collaboration",
-        description: "Launch projects, share notes, and brainstorm in real-time with zero friction.",
-        color: "from-yellow-500/20 to-orange-500/20"
+        icon: <ShoppingBag className="h-7 w-7 text-amber-400" />,
+        title: "Marketplace",
+        description: "A secure ecosystem to buy, sell, and trade. Find what you need directly from your peers.",
+        color: "from-amber-500/20 to-orange-500/20"
     },
     {
-        icon: <Shield className="h-8 w-8 text-green-400" />,
-        title: "Verified Community",
-        description: "A safe space for students. Verified profiles ensure you're connecting with real peers.",
-        color: "from-green-500/20 to-emerald-500/20"
-    },
-    {
-        icon: <Globe className="h-8 w-8 text-purple-400" />,
-        title: "Global Reach",
-        description: "Don't just stay local. Expand your network to universities worldwide.",
+        icon: <CalendarDays className="h-7 w-7 text-purple-400" />,
+        title: "Events Hub",
+        description: "Never miss out. Discover, host, and RSVP to virtual and real-world campus events seamlessly.",
         color: "from-purple-500/20 to-pink-500/20"
     },
     {
-        icon: <BookOpen className="h-8 w-8 text-red-400" />,
-        title: "Resource Library",
-        description: "Access a community-driven library of study materials, past papers, and guides.",
-        color: "from-red-500/20 to-rose-500/20"
+        icon: <Gamepad2 className="h-7 w-7 text-green-400" />,
+        title: "Game Center",
+        description: "Challenge friends to multiplayer games right in the app. Climb the leaderboards and earn bragging rights.",
+        color: "from-green-500/20 to-emerald-500/20"
     },
     {
-        icon: <Calendar className="h-8 w-8 text-cyan-400" />,
-        title: "Campus Events",
-        description: "Never miss a hackathon, workshop, or social mixer again. Sync with your calendar.",
-        color: "from-cyan-500/20 to-sky-500/20"
+        icon: <Palette className="h-7 w-7 text-rose-400" />,
+        title: "Custom Profiles",
+        description: "Your digital identity, designed by you. Express yourself with customizable themes and showcase your achievements.",
+        color: "from-rose-500/20 to-red-500/20"
     }
 ]
 
@@ -110,6 +103,53 @@ export default function FeaturesPage() {
                             </motion.div>
                         ))}
                     </div>
+
+                    {/* The Secret Riddle Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.8 }}
+                        className="mt-20 max-w-4xl mx-auto"
+                    >
+                        <div className="relative p-1 rounded-[2rem] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-800/50 shadow-2xl overflow-hidden group hover:border-violet-500/30 transition-colors duration-500">
+                            {/* Scanning line effect */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-500/10 to-transparent h-[20%] -translate-y-full group-hover:animate-[scan_3s_ease-in-out_infinite]" />
+
+                            <div className="bg-slate-950/80 backdrop-blur-xl rounded-[1.8rem] p-10 md:p-14 relative z-10 flex flex-col md:flex-row items-center gap-10">
+                                <div className="shrink-0 relative">
+                                    <div className="absolute inset-0 bg-violet-600 blur-[40px] opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-full" />
+                                    <div className="w-24 h-24 rounded-2xl bg-slate-900 border border-violet-500/20 flex flex-col items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+                                        <EyeOff className="w-10 h-10 text-violet-400 relative z-10 mb-1" />
+                                        <span className="text-[10px] uppercase tracking-[0.2em] text-violet-500/70 font-mono relative z-10">Classified</span>
+                                    </div>
+                                </div>
+                                <div className="text-center md:text-left">
+                                    <div className="inline-flex items-center space-x-2 text-violet-400 mb-4 font-mono text-sm">
+                                        <Sparkles className="w-4 h-4" />
+                                        <span>SYSTEM_ANOMALY_DETECTED</span>
+                                    </div>
+                                    <h3 className="text-3xl font-bold text-white mb-4 tracking-tight">
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400 group-hover:animate-pulse">Project: SociaLink</span>
+                                    </h3>
+                                    <div className="space-y-3 text-slate-400 font-mono text-sm md:text-base leading-relaxed">
+                                        <p className="border-l-2 border-violet-500/30 pl-4 py-1 italic relative">
+                                            <span className="absolute -left-[2px] top-0 h-full w-[2px] bg-violet-500 shadow-[0_0_10px_purple]"></span>
+                                            "Born in shadows, bound by time.<br />
+                                            No names, no faces—just thoughts intertwine.<br />
+                                            Speak your truth before the connection drops...<br />
+                                            Are you brave enough when the hourglass stops?"
+                                        </p>
+                                        <p className="opacity-60 text-xs mt-4 group-hover:opacity-100 transition-opacity duration-700">
+                                            &gt; STATUS: Encrypted connection protocol ready.<br />
+                                            &gt; DECRYPTION: Available at launch.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </section>
 
@@ -133,25 +173,26 @@ export default function FeaturesPage() {
                                 Thousands of students are already building their future on SociaVerse. Don't get left behind.
                             </p>
 
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <Button asChild size="lg" className="h-14 px-8 text-lg rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 transition-all hover:scale-105">
-                                    <Link href="/signup">Get Started Now</Link>
-                                </Button>
-                                <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg rounded-full border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:text-white transition-all">
-                                    <Link href="/login">Already a Member?</Link>
-                                </Button>
-                            </div>
+                            {process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true' ? (
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                    <Button asChild size="lg" className="h-14 px-8 text-lg rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 transition-all hover:scale-105">
+                                        <Link href="/join-waitlist">Join the Waitlist</Link>
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                    <Button asChild size="lg" className="h-14 px-8 text-lg rounded-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/25 transition-all hover:scale-105">
+                                        <Link href="/signup">Get Started Now</Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="lg" className="h-14 px-8 text-lg rounded-full border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:text-white transition-all">
+                                        <Link href="/login">Already a Member?</Link>
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </div>
             </section>
-
-            {/* Simple Footer (Optional, can be a component later) */}
-            <footer className="py-10 border-t border-slate-900 bg-slate-950 text-center">
-                <p className="text-slate-600 text-sm">
-                    © {new Date().getFullYear()} SociaVerse. All rights reserved.
-                </p>
-            </footer>
 
         </div>
     )

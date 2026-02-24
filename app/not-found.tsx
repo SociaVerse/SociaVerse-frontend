@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Home, Rocket, HelpCircle } from "lucide-react"
+import { Home, Rocket, HelpCircle, Sparkles } from "lucide-react"
 
 export default function NotFound() {
+    const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center relative overflow-hidden p-4">
 
@@ -74,12 +76,22 @@ export default function NotFound() {
                             Return Home
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-12 px-8 rounded-full border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
-                        <Link href="/community">
-                            <Rocket className="mr-2 h-5 w-5" />
-                            Explore Communities
-                        </Link>
-                    </Button>
+
+                    {isWaitlistMode ? (
+                        <Button asChild variant="outline" className="h-12 px-8 rounded-full border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
+                            <Link href="/join-waitlist">
+                                <Sparkles className="mr-2 h-5 w-5" />
+                                Join Waitlist
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button asChild variant="outline" className="h-12 px-8 rounded-full border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
+                            <Link href="/community">
+                                <Rocket className="mr-2 h-5 w-5" />
+                                Explore Communities
+                            </Link>
+                        </Button>
+                    )}
                 </motion.div>
             </div>
 

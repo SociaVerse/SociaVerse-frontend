@@ -177,7 +177,7 @@ export function LandingPage() {
 
 
             {/* Hero Section */}
-            <section className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 px-4 z-10 overflow-hidden">
+            <section className="relative w-full pt-36 pb-16 md:pt-40 md:pb-24 px-4 z-10 overflow-hidden">
 
                 <div className="absolute inset-0 h-full w-full pointer-events-none">
                     <Meteors number={20} />
@@ -188,23 +188,23 @@ export function LandingPage() {
                     <motion.div
                         animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
                         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-20 left-[10%] opacity-20 text-blue-500"
+                        className="absolute top-32 md:top-20 left-[5%] md:left-[10%] opacity-20 text-blue-500"
                     >
-                        <Rocket className="w-16 h-16" />
+                        <Rocket className="w-12 h-12 md:w-16 md:h-16" />
                     </motion.div>
                     <motion.div
                         animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute bottom-40 right-[15%] opacity-20 text-purple-500"
+                        className="absolute bottom-40 right-[10%] md:right-[15%] opacity-20 text-purple-500"
                     >
-                        <Laptop className="w-20 h-20" />
+                        <Laptop className="w-14 h-14 md:w-20 md:h-20" />
                     </motion.div>
                     <motion.div
                         animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
                         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                        className="absolute top-40 right-[5%] opacity-10 text-indigo-500"
+                        className="absolute top-52 md:top-40 right-[2%] md:right-[5%] opacity-10 text-indigo-500"
                     >
-                        <GraduationCap className="w-12 h-12" />
+                        <GraduationCap className="w-8 h-8 md:w-12 md:h-12" />
                     </motion.div>
                 </div>
 
@@ -234,16 +234,33 @@ export function LandingPage() {
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                                <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
-                                    <Link href="/signup">
-                                        Get Started <ArrowRight className="ml-2 w-4 h-4" />
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                                    <Link href="/explore">
-                                        Explore Features
-                                    </Link>
-                                </Button>
+                                {process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true' ? (
+                                    <>
+                                        <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
+                                            <Link href="/join-waitlist">
+                                                Join Waitlist <ArrowRight className="ml-2 w-4 h-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                                            <Link href="/features">
+                                                View Features
+                                            </Link>
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
+                                            <Link href="/signup">
+                                                Get Started <ArrowRight className="ml-2 w-4 h-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                                            <Link href="/explore">
+                                                Explore Features
+                                            </Link>
+                                        </Button>
+                                    </>
+                                )}
                             </div>
 
                             <div className="mt-8 flex items-center justify-center lg:justify-start gap-3 text-xs text-slate-500">
@@ -466,36 +483,39 @@ export function LandingPage() {
                     >
                         <div className="absolute inset-0 bg-blue-500/5 blur-3xl" />
                         <div className="relative z-10">
-                            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                                Start Your Journey
-                            </h2>
-                            <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                                Join thousands of students on SociaVerse. No fees. Just connection.
-                            </p>
-                            <Link href="/signup">
-                                <Button size="lg" className="px-10 py-6 rounded-full bg-white text-slate-950 hover:bg-slate-200 transition-colors font-bold text-base">
-                                    Join the Community
-                                </Button>
-                            </Link>
+                            {process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true' ? (
+                                <>
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+                                        Secure Your Spot
+                                    </h2>
+                                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                                        Join thousands of students on the waitlist. Be the first to experience the new SociaVerse.
+                                    </p>
+                                    <Link href="/join-waitlist">
+                                        <Button size="lg" className="px-10 py-6 rounded-full bg-white text-slate-950 hover:bg-slate-200 transition-colors font-bold text-base shadow-lg shadow-white/20">
+                                            Join Waitlist
+                                        </Button>
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+                                        Start Your Journey
+                                    </h2>
+                                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
+                                        Join thousands of students on SociaVerse. No fees. Just connection.
+                                    </p>
+                                    <Link href="/signup">
+                                        <Button size="lg" className="px-10 py-6 rounded-full bg-white text-slate-950 hover:bg-slate-200 transition-colors font-bold text-base">
+                                            Join the Community
+                                        </Button>
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="w-full py-10 bg-slate-950 border-t border-slate-900 z-10 text-sm">
-                <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-slate-500">
-                    <div className="flex items-center gap-2 mb-4 md:mb-0">
-                        <span className="font-bold text-slate-300">SociaVerse</span>
-                        <span>© 2026</span>
-                    </div>
-                    <div className="flex gap-6">
-                        <Link href="/features" className="hover:text-slate-300 transition-colors">Features</Link>
-                        <Link href="/events" className="hover:text-slate-300 transition-colors">Events</Link>
-                        <Link href="/explore" className="hover:text-slate-300 transition-colors">Explore</Link>
-                    </div>
-                </div>
-            </footer>
 
         </div>
     )

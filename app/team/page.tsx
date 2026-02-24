@@ -1,0 +1,184 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { Github, Linkedin, Twitter, Mail, ExternalLink, Sparkles } from "lucide-react"
+import Link from "next/link"
+
+const teamMembers = [
+    {
+        name: "Yashdeep",
+        role: "Chief Executive Officer",
+        shortRole: "CEO",
+        bio: "Visionary leader steering SociaVerse towards a digitalfuture, with a passion for innovation and community building.",
+        image: "/Yash.jpg",
+        color: "from-blue-500 to-indigo-600",
+        shadowColor: "shadow-blue-500/20",
+        delay: 0.1,
+        socials: {
+            twitter: "n/a",
+            linkedin: "https://www.linkedin.com/in/yashdeep-singh-01b91a257/",
+            mail: "abyash14@gmail.com"
+        }
+    },
+    {
+        name: "Waqas",
+        role: "Chief Marketing Officer",
+        shortRole: "CMO",
+        bio: "Mastermind behind SociaVerse's growth and community engagement.",
+        image: "/Waqas.jpeg",
+        color: "from-amber-500 to-orange-600",
+        shadowColor: "shadow-amber-500/20",
+        delay: 0.2,
+        socials: {
+            twitter: "#",
+            linkedin: "#",
+            mail: "#"
+        }
+    },
+    {
+        name: "Sparsh",
+        role: "Chief Technology Officer",
+        shortRole: "CTO",
+        bio: "Architecting the robust and secure infrastructure of SociaVerse.",
+        image: "",
+        color: "from-emerald-400 to-teal-600",
+        shadowColor: "shadow-emerald-400/20",
+        delay: 0.3,
+        socials: {
+            github: "#",
+            linkedin: "#",
+            mail: "#"
+        }
+    }
+]
+
+export default function TeamPage() {
+    return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 overflow-hidden relative selection:bg-blue-500/30">
+
+            {/* Optimized Background Elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-[radial-gradient(circle,rgba(59,130,246,0.05)_0%,transparent_70%)] mix-blend-screen" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[80vw] h-[80vw] rounded-full bg-[radial-gradient(circle,rgba(168,85,247,0.05)_0%,transparent_70%)] mix-blend-screen" />
+            </div>
+
+            <main className="container mx-auto px-4 pt-48 pb-32 relative z-10">
+                {/* Header Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "circOut" }}
+                    className="text-center mb-24 flex flex-col items-center"
+                >
+                    <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 border border-white/10 text-white text-xs font-bold tracking-widest mb-8 shadow-lg uppercase relative overflow-hidden group">
+                        The ArchiteXts
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tighter leading-[1.1]">
+                        Architecting <br className="hidden md:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
+                            The Future.
+                        </span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
+                        Meet the radical minds working tirelessly to forge a decentralized, connected universe for students worldwide.
+                    </p>
+                </motion.div>
+
+                {/* Team Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 max-w-7xl mx-auto mb-32">
+                    {teamMembers.map((member) => (
+                        <motion.div
+                            key={member.name}
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: member.delay, ease: "easeOut" }}
+                            className="group relative h-full rounded-[2.5rem]"
+                        >
+                            {/* Inner Content Area */}
+                            <div className="relative h-full bg-slate-900/40 border border-slate-800 rounded-[2.5rem] z-10 overflow-hidden transition-all duration-300 group-hover:bg-slate-900/80 group-hover:-translate-y-2 group-hover:shadow-2xl hover:border-slate-700">
+
+                                <div className="p-8 flex flex-col items-center text-center h-full">
+
+                                    {/* Floating Role Badge */}
+                                    <div className="absolute top-6 left-6 transition-transform duration-300 group-hover:scale-105 origin-top-left">
+                                        <div className={`px-4 py-1.5 rounded-full bg-gradient-to-r ${member.color} text-white text-xs font-black tracking-widest uppercase shadow-lg`}>
+                                            {member.shortRole}
+                                        </div>
+                                    </div>
+
+                                    {/* Avatar Container */}
+                                    <div className="relative mb-8 mt-10">
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${member.color} blur-2xl opacity-10 group-hover:opacity-30 transition-opacity duration-500 rounded-full`}></div>
+                                        <div className={`w-40 h-40 rounded-full p-1.5 bg-slate-950 relative z-10 transition-transform duration-500 group-hover:scale-105 shadow-xl ${member.shadowColor}`}>
+                                            <div className={`w-full h-full rounded-full bg-gradient-to-br ${member.color} p-[2px]`}>
+                                                <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
+                                                    <img
+                                                        src={member.image}
+                                                        alt={member.name}
+                                                        className="w-full h-full object-cover scale-110 group-hover:scale-120 transition-transform duration-500 ease-out"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Text Content */}
+                                    <h3 className="text-3xl font-bold text-white mb-2 tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-slate-300 transition-colors">
+                                        {member.name}
+                                    </h3>
+                                    <p className={`text-transparent bg-clip-text bg-gradient-to-r ${member.color} font-bold tracking-wide mb-6 uppercase text-xs md:text-sm`}>{member.role}</p>
+
+                                    <p className="text-slate-400 leading-relaxed mb-8 flex-1 text-sm font-medium">
+                                        {member.bio}
+                                    </p>
+
+                                    {/* Social Links */}
+                                    <div className="flex items-center justify-center gap-3 mt-auto w-full pt-6 border-t border-slate-800/50">
+                                        {member.socials.twitter && (
+                                            <Link href={member.socials.twitter} className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg">
+                                                <Twitter className="w-4 h-4" />
+                                            </Link>
+                                        )}
+                                        {member.socials.linkedin && (
+                                            <Link href={member.socials.linkedin} className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg">
+                                                <Linkedin className="w-4 h-4" />
+                                            </Link>
+                                        )}
+                                        {member.socials.github && (
+                                            <Link href={member.socials.github} className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg">
+                                                <Github className="w-4 h-4" />
+                                            </Link>
+                                        )}
+                                        {member.socials.mail && (
+                                            <Link href={member.socials.mail} className="w-10 h-10 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-600 transition-all hover:-translate-y-1 hover:shadow-lg">
+                                                <Mail className="w-4 h-4" />
+                                            </Link>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* Join Us CTA */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.5 }}
+                    className="text-center relative max-w-3xl mx-auto"
+                >
+                    <div className="absolute inset-x-0 -top-16 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
+                    <h2 className="text-3xl md:text-4xl font-black text-white mb-8 tracking-tight">Ready to join the SociaVerse?</h2>
+
+                    <Link href="/join-waitlist" className="relative group inline-flex items-center justify-center gap-3 px-8 py-4 bg-white text-black font-extrabold text-[15px] md:text-lg rounded-[2rem] overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all hover:-translate-y-1">
+                        <span className="relative z-10">Join the Waitlist</span>
+                        <ExternalLink className="w-4 h-4 relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Link>
+                </motion.div>
+            </main>
+        </div>
+    )
+}
