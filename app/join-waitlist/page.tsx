@@ -48,6 +48,23 @@ export default function JoinWaitlist() {
         setErrorMessage(null)
         setWaitlistStatus('idle')
 
+        const allowedDomains = [
+            "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com",
+            "msn.com", "proton.me", "protonmail.com", "pm.me", "yahoo.com", "ymail.com",
+            "rocketmail.com", "icloud.com", "me.com", "mac.com", "gmx.com", "gmx.de",
+            "web.de", "mail.com", "zoho.com", "aol.com", "fastmail.com", "tutanota.com",
+            "rediffmail.com"
+        ]
+
+        const email = formData.email.toLowerCase().trim()
+        const domain = email.split('@')[1]
+
+        if (!domain || !allowedDomains.includes(domain)) {
+            setErrorMessage("Please use a valid personal email provider (e.g., Gmail, Outlook, Yahoo) to join the waitlist.")
+            setIsSubmitting(false)
+            return
+        }
+
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
             const response = await fetch(`${apiUrl}/api/waitlist/`, {
@@ -126,7 +143,29 @@ export default function JoinWaitlist() {
                     </motion.div>
 
                     <motion.h1 variants={itemVariants} className="text-5xl md:text-6xl font-extrabold text-white mb-4 tracking-tight leading-[1.1]">
-                        Unlock the <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Future</span>
+                        {"Unlock the".split("").map((char, index) => (
+                            <motion.span
+                                key={`text1-${index}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.04 + 0.3 }}
+                                className="inline-block"
+                            >
+                                {char === " " ? "\u00A0" : char}
+                            </motion.span>
+                        ))}
+                        <br />
+                        {"Future".split("").map((char, index) => (
+                            <motion.span
+                                key={`text2-${index}`}
+                                initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+                                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                transition={{ duration: 0.5, delay: ("Unlock the".length + index) * 0.04 + 0.3 }}
+                                className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 inline-block"
+                            >
+                                {char}
+                            </motion.span>
+                        ))}
                     </motion.h1>
 
                     <motion.p variants={itemVariants} className="text-slate-400 text-[1.1rem] leading-relaxed max-w-sm mx-auto">
@@ -138,98 +177,135 @@ export default function JoinWaitlist() {
                 <div className="w-full relative perspective-1000">
                     <AnimatePresence mode="wait">
                         {waitlistStatus === 'idle' && (
-                            <motion.form
+                            <motion.div
                                 key="form"
-                                onSubmit={handleSubmit}
                                 initial={{ opacity: 0, rotateX: 10, y: 20 }}
                                 animate={{ opacity: 1, rotateX: 0, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
                                 transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-                                className="bg-slate-900/40 backdrop-blur-2xl p-8 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl relative overflow-hidden"
+                                className="relative p-[1px] md:p-[2px] rounded-[2rem] overflow-hidden shadow-2xl group/card"
                             >
-                                {/* Advanced Glowing Border Engine */}
-                                <div className="absolute inset-0 overflow-hidden rounded-[2rem] pointer-events-none border border-white/5">
-                                    <div className="absolute -top-[100px] -left-[100px] w-[200px] h-[200px] bg-blue-500/30 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
+                                {/* Rotating Conic Gradient Border */}
+                                <div className="absolute inset-[-100%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_240deg,rgba(59,130,246,1)_360deg)] pointer-events-none opacity-80" />
+                                <div className="absolute inset-[-100%] animate-[spin_8s_linear_infinite_reverse] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_240deg,rgba(168,85,247,1)_360deg)] pointer-events-none opacity-80" />
 
-                                <div className="space-y-6 relative z-10">
+                                <form
+                                    onSubmit={handleSubmit}
+                                    className="bg-slate-900/95 backdrop-blur-3xl p-8 sm:p-10 rounded-[calc(2rem-1px)] md:rounded-[calc(2rem-2px)] relative z-10 w-full h-full"
+                                >
 
-                                    {/* Name Input */}
-                                    <div className="space-y-2 relative">
-                                        <label htmlFor="name" className="text-xs font-bold tracking-wide text-slate-400 uppercase ml-1">Full Name</label>
-                                        <div className={`relative transition-all duration-300 rounded-2xl ${focusedInput === 'name' ? 'shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/50' : 'hover:bg-slate-800/50'}`}>
-                                            <input
-                                                type="text"
-                                                id="name"
-                                                required
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                onFocus={() => setFocusedInput('name')}
-                                                onBlur={() => setFocusedInput(null)}
-                                                className="w-full bg-slate-950/50 border border-slate-800/80 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none transition-all font-medium text-[15px] focus:bg-slate-900"
-                                                placeholder="Your Name"
-                                            />
+                                    <div className="space-y-6 relative z-10">
+
+                                        {/* Name Input */}
+                                        <div
+                                            className="space-y-2 relative group/input"
+                                            onMouseMove={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                                                (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                                            }}
+                                        >
+                                            <label htmlFor="name" className="text-xs font-bold tracking-wide text-slate-400 uppercase ml-1 pointer-events-none">Full Name</label>
+                                            <div className="relative p-[1px] rounded-[17px] overflow-hidden bg-slate-800/50 border border-slate-800/80 group-hover/input:border-transparent transition-colors duration-300">
+                                                {/* Spotlight effect */}
+                                                <div
+                                                    className="absolute inset-0 opacity-0 group-hover/input:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
+                                                    style={{
+                                                        background: `radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(59, 130, 246, 0.4), transparent 40%)`
+                                                    }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    id="name"
+                                                    required
+                                                    value={formData.name}
+                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    onFocus={() => setFocusedInput('name')}
+                                                    onBlur={() => setFocusedInput(null)}
+                                                    className={`w-full bg-slate-950/80 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none transition-all font-medium text-[15px] focus:bg-slate-900 relative z-10 ${focusedInput === 'name' ? 'shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/50' : ''}`}
+                                                    placeholder="Your Name"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Email Input */}
-                                    <div className="space-y-2 relative">
-                                        <label htmlFor="email" className="text-xs font-bold tracking-wide text-slate-400 uppercase ml-1">Email Address</label>
-                                        <div className={`relative transition-all duration-300 rounded-2xl ${focusedInput === 'email' ? 'shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/50' : 'hover:bg-slate-800/50'}`}>
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                required
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                onFocus={() => setFocusedInput('email')}
-                                                onBlur={() => setFocusedInput(null)}
-                                                className="w-full bg-slate-950/50 border border-slate-800/80 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none transition-all font-medium text-[15px] focus:bg-slate-900"
-                                                placeholder="Your Email"
-                                            />
+                                        {/* Email Input and Error Group */}
+                                        <div className="flex flex-col">
+                                            <div
+                                                className="space-y-2 relative group/input"
+                                                onMouseMove={(e) => {
+                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                    (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                                                    (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                                                }}
+                                            >
+                                                <label htmlFor="email" className="text-xs font-bold tracking-wide text-slate-400 uppercase ml-1 pointer-events-none">Email Address</label>
+                                                <div className="relative p-[1px] rounded-[17px] overflow-hidden bg-slate-800/50 border border-slate-800/80 group-hover/input:border-transparent transition-colors duration-300">
+                                                    {/* Spotlight effect */}
+                                                    <div
+                                                        className="absolute inset-0 opacity-0 group-hover/input:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
+                                                        style={{
+                                                            background: `radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(59, 130, 246, 0.4), transparent 40%)`
+                                                        }}
+                                                    />
+                                                    <input
+                                                        type="email"
+                                                        id="email"
+                                                        required
+                                                        value={formData.email}
+                                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                        onFocus={() => setFocusedInput('email')}
+                                                        onBlur={() => setFocusedInput(null)}
+                                                        className={`w-full bg-slate-950/80 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none transition-all font-medium text-[15px] focus:bg-slate-900 relative z-10 ${focusedInput === 'email' ? 'shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/50' : ''}`}
+                                                        placeholder="Your Email"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Error Message Display */}
+                                            <AnimatePresence>
+                                                {errorMessage && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                                                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl flex items-start sm:items-center gap-2">
+                                                            <Shield className="w-4 h-4 shrink-0 mt-0.5 sm:mt-0" />
+                                                            <p className="flex-1">{errorMessage}</p>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
+
+                                        {/* Submit Button */}
+                                        <motion.button
+                                            type="submit"
+                                            disabled={isSubmitting}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className="w-full mt-8 bg-white text-black font-bold text-[15px] tracking-wide rounded-2xl px-4 py-4 md:py-5 flex items-center justify-center space-x-2 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
+                                        >
+                                            <span className="relative z-10">{isSubmitting ? 'Securing Position...' : 'Secure My Spot'}</span>
+                                            {!isSubmitting && (
+                                                <motion.div
+                                                    initial={{ x: 0 }}
+                                                    animate={{ x: [0, 5, 0] }}
+                                                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                                    className="relative z-10 block"
+                                                >
+                                                    <ArrowRight className="w-5 h-5" />
+                                                </motion.div>
+                                            )}
+
+                                            {/* Advanced Button Shine */}
+                                            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-blue-50/50 to-transparent skew-x-12 z-0"></div>
+                                        </motion.button>
                                     </div>
-
-                                    {/* Error Message Display */}
-                                    <AnimatePresence>
-                                        {errorMessage && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10, height: 0 }}
-                                                animate={{ opacity: 1, y: 0, height: 'auto' }}
-                                                exit={{ opacity: 0, y: -10, height: 0 }}
-                                                className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl flex items-center gap-2"
-                                            >
-                                                <Shield className="w-4 h-4 shrink-0" />
-                                                <p>{errorMessage}</p>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
-                                    {/* Submit Button */}
-                                    <motion.button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="w-full mt-8 bg-white text-black font-bold text-[15px] tracking-wide rounded-2xl px-4 py-4 md:py-5 flex items-center justify-center space-x-2 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
-                                    >
-                                        <span className="relative z-10">{isSubmitting ? 'Securing Position...' : 'Secure My Spot'}</span>
-                                        {!isSubmitting && (
-                                            <motion.div
-                                                initial={{ x: 0 }}
-                                                animate={{ x: [0, 5, 0] }}
-                                                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                                                className="relative z-10 block"
-                                            >
-                                                <ArrowRight className="w-5 h-5" />
-                                            </motion.div>
-                                        )}
-
-                                        {/* Advanced Button Shine */}
-                                        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-blue-50/50 to-transparent skew-x-12 z-0"></div>
-                                    </motion.button>
-                                </div>
-                            </motion.form>
+                                </form>
+                            </motion.div>
                         )}
 
                         {waitlistStatus === 'success' && (

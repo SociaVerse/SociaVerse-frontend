@@ -40,7 +40,7 @@ const teamMembers = [
         role: "Chief Technology Officer",
         shortRole: "CTO",
         bio: "Architecting the robust and secure infrastructure of SociaVerse.",
-        image: "",
+        image: null,
         color: "from-emerald-400 to-teal-600",
         shadowColor: "shadow-emerald-400/20",
         delay: 0.3,
