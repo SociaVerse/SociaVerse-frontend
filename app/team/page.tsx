@@ -16,8 +16,8 @@ const teamMembers = [
         delay: 0.1,
         socials: {
             twitter: "n/a",
-            linkedin: "https://www.linkedin.com/in/yashdeep-singh-01b91a257/",
-            mail: "abyash14@gmail.com"
+            linkedin: "https://www.linkedin.com/in/yashdeep-chaurasia-a75309308/",
+            mail: "mailto:sociaverse78@gmail.com"
         }
     },
     {
@@ -30,9 +30,9 @@ const teamMembers = [
         glowColor: "group-hover:shadow-[0_0_30px_rgba(245,158,11,0.2)]",
         delay: 0.2,
         socials: {
-            twitter: "#",
-            linkedin: "#",
-            mail: "#"
+            twitter: "n/a",
+            linkedin: "n/a",
+            mail: "mailto:sociaverse78@gmail.com"
         }
     },
     {
@@ -45,9 +45,9 @@ const teamMembers = [
         glowColor: "group-hover:shadow-[0_0_30px_rgba(52,211,153,0.2)]",
         delay: 0.3,
         socials: {
-            github: "#",
-            linkedin: "#",
-            mail: "#"
+            github: "n/a",
+            linkedin: "n/a",
+            mail: "mailto:sociaverse78@gmail.com"
         }
     }
 ]
