@@ -93,73 +93,110 @@ function PhoneMockup() {
 
 
             {/* App Content */}
-            <div className="absolute inset-0 pt-20 px-4 bg-slate-950">
+            <div className="absolute inset-0 pt-16 px-4 bg-[#0A0E17] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6 px-1">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-black border border-slate-800 flex items-center justify-center overflow-hidden">
-                            <img src="/logo.png" alt="SociaVerse" className="w-full h-full object-contain" />
-                        </div>
-                        <span className="font-bold text-sm tracking-tight text-white">SociaVerse</span>
-                    </div>
-                    <Search className="w-5 h-5 text-slate-400" />
-                </div>
-
-                {/* Stories */}
-                <div className="flex gap-4 mb-8 overflow-hidden pl-1">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="flex flex-col items-center gap-1.5 shrink-0">
-                            <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-500">
-                                <div className="w-full h-full rounded-full bg-slate-900 border-2 border-slate-950" />
+                <div className="flex flex-col gap-3 mb-4 mt-2">
+                    <div className="flex items-center justify-between">
+                        <span className="font-bold text-[13px] tracking-tight text-white/90">Welcome to the Verse</span>
+                        <div className="relative">
+                            <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+                                <Activity className="w-3.5 h-3.5 text-slate-400" />
                             </div>
-                            <div className="w-12 h-1.5 bg-slate-800 rounded-full" />
+                            {/* Neon-purple unread alert */}
+                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-500 rounded-full border border-[#0A0E17] shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
                         </div>
-                    ))}
+                    </div>
+                    {/* Toggle */}
+                    <div className="flex gap-2 p-1 bg-slate-900/60 border border-slate-800/60 rounded-lg">
+                        <div className="flex-1 text-center py-1 bg-slate-800 rounded-md text-[11px] font-bold text-white shadow-sm border border-slate-700">Global</div>
+                        <div className="flex-1 text-center py-1 text-[11px] font-semibold text-slate-500">Campus</div>
+                    </div>
                 </div>
 
-                {/* Feed Card */}
-                <motion.div
-                    className="w-full bg-slate-900/80 backdrop-blur-md rounded-3xl p-4 mb-4 border border-white/5 relative z-10 shadow-lg"
-                    transformTemplate={({ z }) => `translateZ(${z})`}
-                    style={{ translateZ: 10 }}
-                >
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700" />
-                        <div className="flex-1 space-y-1.5">
-                            <div className="w-24 h-2.5 bg-slate-800 rounded-sm" />
-                            <div className="w-16 h-2 bg-slate-800/50 rounded-sm" />
-                        </div>
-                    </div>
-                    <div className="w-full aspect-[4/3] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl mb-3 border border-white/5 flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-blue-500/5 blur-xl" />
-                        <Zap className="w-8 h-8 text-indigo-400/50 relative z-10" />
-                    </div>
-                    <div className="flex justify-between items-center px-1">
-                        <div className="flex gap-4">
-                            <Heart className="w-5 h-5 text-slate-500 hover:text-red-500 transition-colors" />
-                            <MessageCircle className="w-5 h-5 text-slate-500 hover:text-blue-500 transition-colors" />
-                        </div>
-                        <div className="w-4 h-4 bg-slate-800 rounded-full" />
-                    </div>
-                </motion.div>
+                {/* Feed Wrapper */}
+                <div className="relative h-full flex flex-col gap-3.5 pb-20">
 
-                {/* Dynamic Notification */}
-                <motion.div
-                    style={{
-                        x: useTransform(mouseX, [-0.5, 0.5], [15, -15]),
-                        y: useTransform(mouseY, [-0.5, 0.5], [15, -15]),
-                        translateZ: 40
-                    }}
-                    className="absolute bottom-24 left-4 right-4 bg-slate-800/95 backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/10 shadow-2xl z-40 flex items-center gap-3"
-                >
-                    <div className="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 border border-green-500/20">
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                    {/* Post 1: Kavya S. (Video Thumbnail) */}
+                    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3 relative z-10 shadow-lg shrink-0">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-400 to-pink-500 p-[2px]">
+                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-[9px]">KS</div>
+                            </div>
+                            <div className="flex-1 leading-[1.1]">
+                                <p className="font-bold text-slate-100 text-[11px]">Kavya S. <span className="text-[9px] text-purple-400/80 font-normal ml-1">Global</span></p>
+                                <p className="text-[9px] text-slate-500 mt-0.5">B.Des Animation</p>
+                            </div>
+                        </div>
+                        <p className="text-slate-300 text-[10px] mb-2.5 leading-snug">
+                            Trying out some new Ghibli-style environment shading techniques in Blender for my final project. Thoughts?
+                        </p>
+
+                        {/* Video Thumbnail Mockup */}
+                        <div className="w-full aspect-[16/9] bg-slate-950 border border-slate-800 rounded-xl mb-2.5 flex items-center justify-center relative overflow-hidden shrink-0">
+                            {/* Abstract gradient placeholder for video */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-900/50 via-blue-900/30 to-purple-900/50 mix-blend-screen scale-110 blur-md"></div>
+                            <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 z-10">
+                                <PlaySquare className="w-3 h-3 text-white ml-0.5" />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center px-1 border-t border-slate-800/50 pt-2">
+                            <div className="flex gap-4">
+                                <div className="flex items-center gap-1.5 text-slate-400">
+                                    <ArrowUp className="w-3 h-3" />
+                                    <span className="text-[10px] font-semibold">540</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-slate-400">
+                                    <MessageCircle className="w-3 h-3" />
+                                    <span className="text-[10px] font-semibold">89</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-xs font-bold text-white mb-0.5">Event Starting Soon!</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Campus Hackathon • Room 304</p>
+
+                    {/* Post 2: Yash D. (Compact Resource) */}
+                    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3 relative z-10 shadow-lg shrink-0">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-500 p-[2px]">
+                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-[9px]">YD</div>
+                            </div>
+                            <div className="flex-1 leading-[1.1]">
+                                <p className="font-bold text-slate-100 text-[11px]">Yash D. <span className="text-[9px] text-emerald-400/80 font-normal ml-1">NFSU</span></p>
+                                <p className="text-[9px] text-slate-500 mt-0.5">Cybersecurity</p>
+                            </div>
+                        </div>
+                        <p className="text-slate-300 text-[10px] mb-2.5 leading-snug">
+                            Compiled an ultimate study guide on adversarial AI attacks. Good luck with midterms everyone!
+                        </p>
+
+                        {/* Glowing Border Card for Attachment */}
+                        <div className="flex items-center gap-2 bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2 mb-2.5 shadow-[0_0_8px_rgba(52,211,153,0.05)]">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
+                                <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="text-[10px] font-semibold text-slate-200 truncate">Adversarial_AI_Notes.pdf</p>
+                                <p className="text-[9px] text-slate-500 mt-0.5">Document • 3.2 MB</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center px-1 border-t border-slate-800/50 pt-2">
+                            <div className="flex gap-4">
+                                <div className="flex items-center gap-1.5 text-slate-400">
+                                    <ArrowUp className="w-3 h-3" />
+                                    <span className="text-[10px] font-semibold">312</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-slate-400">
+                                    <MessageCircle className="w-3 h-3" />
+                                    <span className="text-[10px] font-semibold">41</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </motion.div>
+                </div>
+
+                {/* Bottom Fade Mask to create infinite scroll illusion */}
+                <div className="absolute bottom-0 left-0 w-full h-32 z-30 pointer-events-none bg-gradient-to-t from-[#0A0E17] to-transparent" />
             </div>
         </motion.div>
     )
@@ -377,7 +414,7 @@ export function LandingPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                         className="text-center mb-12"
                     >
                         <h2 className="text-2xl md:text-4xl font-bold mb-4">Why We Built This</h2>
@@ -457,7 +494,7 @@ export function LandingPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                 transition={{ duration: 0.5 }}
                                 className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-blue-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
                             >
@@ -506,7 +543,7 @@ export function LandingPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                 transition={{ duration: 0.5, delay: 0.1 }}
                                 className="p-[1px] rounded-3xl bg-gradient-to-br from-emerald-500/30 to-teal-500/10 relative overflow-hidden group shadow-lg"
                             >
@@ -555,7 +592,7 @@ export function LandingPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
                                 className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-purple-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
                             >
@@ -604,7 +641,7 @@ export function LandingPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
+                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                 transition={{ duration: 0.5, delay: 0.3 }}
                                 className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-amber-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
                             >
@@ -663,7 +700,7 @@ export function LandingPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                         className="relative rounded-[2rem] bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 p-10 text-center overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-blue-500/5 blur-3xl" />

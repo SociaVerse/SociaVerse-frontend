@@ -143,7 +143,7 @@ export default function TeamPage() {
                             key={member.name}
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
+                            viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                             transition={{ duration: 0.5, delay: member.delay, ease: "easeOut" }}
                             className={`group relative h-full rounded-[2.5rem] ${member.glowColor} transition-all duration-300`}
                         >
@@ -224,7 +224,7 @@ export default function TeamPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
+                    viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                     className="text-center relative max-w-3xl mx-auto"
                 >

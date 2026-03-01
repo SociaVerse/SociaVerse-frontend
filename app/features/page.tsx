@@ -147,7 +147,7 @@ export default function FeaturesPage() {
                                 key={index}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
+                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                 transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
                                 className={`group relative p-8 rounded-3xl bg-slate-900/50 border border-slate-800 backdrop-blur-sm shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden ${feature.border}`}
                             >
@@ -173,7 +173,7 @@ export default function FeaturesPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-50px" }}
+                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="mt-20 max-w-4xl mx-auto"
                     >
@@ -213,6 +213,7 @@ export default function FeaturesPage() {
                                         <motion.div
                                             initial={{ opacity: 0 }}
                                             whileInView={{ opacity: 1 }}
+                                            viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                                             transition={{ delay: 1 }}
                                             className="pt-6"
                                         >
@@ -242,7 +243,7 @@ export default function FeaturesPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true, margin: "-50px" }}
+                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
                         className="relative rounded-[2.5rem] bg-gradient-to-b from-blue-900/40 to-slate-900/40 border border-blue-500/20 p-12 md:p-20 text-center overflow-hidden hover:border-blue-500/40 transition-colors duration-500 shadow-2xl"
                     >
