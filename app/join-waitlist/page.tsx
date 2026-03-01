@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, ArrowRight, CheckCircle2, Shield, Zap, Globe, MessageCircle, Rocket } from "lucide-react"
+import { Sparkles, ArrowRight, CheckCircle2, Shield, Zap, Globe, MessageCircle, Rocket, GraduationCap } from "lucide-react"
 
 // Floating icons component for background
 const FloatingIcons = () => {
@@ -34,10 +34,72 @@ const FloatingIcons = () => {
     )
 }
 
+const CountdownTimer = ({ itemVariants }: { itemVariants: import("framer-motion").Variants }) => {
+    const calculateTimeLeft = () => {
+        const difference = +new Date("2026-05-12T00:00:00") - +new Date()
+        if (difference > 0) {
+            return {
+                Days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                Hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                Mins: Math.floor((difference / 1000 / 60) % 60),
+                Secs: Math.floor((difference / 1000) % 60)
+            }
+        }
+        return { Days: 0, Hours: 0, Mins: 0, Secs: 0 }
+    }
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft())
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft())
+        }, 1000)
+        return () => clearInterval(timer)
+    }, [])
+
+    if (!mounted) return (
+        <motion.div variants={itemVariants} className="flex justify-center gap-3 sm:gap-4 mt-8 mb-2">
+            {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex flex-col items-center">
+                    <div className="bg-slate-900/40 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl animate-pulse"></div>
+                    <div className="w-8 h-3 bg-slate-800/50 mt-3 rounded animate-pulse"></div>
+                </div>
+            ))}
+        </motion.div>
+    )
+
+    return (
+        <motion.div variants={itemVariants} className="flex justify-center gap-3 sm:gap-4 mt-8 mb-2">
+            {Object.entries(timeLeft).map(([unit, value]) => (
+                <div key={unit} className="flex flex-col items-center">
+                    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.1)] relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none"></div>
+
+                        {/* Shimmer effect */}
+                        <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 z-0"></div>
+
+                        <span className="relative z-10 text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400">
+                            {value.toString().padStart(2, '0')}
+                        </span>
+                    </div>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-3">
+                        {unit}
+                    </span>
+                </div>
+            ))}
+        </motion.div>
+    )
+}
+
 export default function JoinWaitlist() {
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'success' | 'already_registered'>('idle')
+    const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'survey' | 'success' | 'already_registered'>('idle')
     const [formData, setFormData] = useState({ name: "", email: "" })
+    const [university, setUniversity] = useState("")
+    const [entryId, setEntryId] = useState<number | null>(null)
+    const [isSubmittingSurvey, setIsSubmittingSurvey] = useState(false)
     const [focusedInput, setFocusedInput] = useState<string | null>(null)
 
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -92,11 +154,51 @@ export default function JoinWaitlist() {
             }
 
             // Success
+            if (data.id) {
+                setEntryId(data.id)
+            }
             setIsSubmitting(false)
-            setWaitlistStatus('success')
+            setWaitlistStatus('survey')
         } catch (error) {
             setErrorMessage("Network error. Please try again later.")
             setIsSubmitting(false)
+        }
+    }
+
+    const handleSurveySubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!university.trim() || !entryId) {
+            setWaitlistStatus('success')
+            return
+        }
+
+        setIsSubmittingSurvey(true)
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+            const response = await fetch(`${apiUrl}/api/waitlist/survey/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: entryId,
+                    university: university,
+                }),
+            })
+
+            const data = await response.json()
+            console.log("Survey upload response:", data)
+
+            if (!response.ok) {
+                console.error("Failed to save university data:", data.error)
+            }
+
+            setIsSubmittingSurvey(false)
+            setWaitlistStatus('success')
+        } catch (error) {
+            console.error("Survey submission network error:", error)
+            setIsSubmittingSurvey(false)
+            setWaitlistStatus('success')
         }
     }
 
@@ -171,6 +273,8 @@ export default function JoinWaitlist() {
                     <motion.p variants={itemVariants} className="text-slate-400 text-[1.1rem] leading-relaxed max-w-sm mx-auto">
                         Reserve your spot for the next evolution in social connectivity.
                     </motion.p>
+
+                    <CountdownTimer itemVariants={itemVariants} />
                 </motion.div>
 
                 {/* Form Container */}
@@ -305,6 +409,84 @@ export default function JoinWaitlist() {
                                         </motion.button>
                                     </div>
                                 </form>
+                            </motion.div>
+                        )}
+
+                        {waitlistStatus === 'survey' && (
+                            <motion.div
+                                key="survey"
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                                transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                                className="relative p-[1px] md:p-[2px] rounded-[2rem] overflow-hidden shadow-2xl group/card max-w-md w-full mx-auto"
+                            >
+                                {/* Rotating Conic Gradient Border for Survey */}
+                                <div className="absolute inset-[-100%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_240deg,rgba(168,85,247,1)_360deg)] pointer-events-none opacity-80" />
+                                <div className="absolute inset-[-100%] animate-[spin_8s_linear_infinite_reverse] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,transparent_240deg,rgba(59,130,246,1)_360deg)] pointer-events-none opacity-80" />
+
+                                <div className="bg-slate-900/95 backdrop-blur-3xl p-8 sm:p-10 rounded-[calc(2rem-1px)] md:rounded-[calc(2rem-2px)] relative z-10 w-full h-full text-center">
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ type: "spring", damping: 15, delay: 0.2 }}
+                                        className="w-20 h-20 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30 shadow-[0_0_30px_rgba(99,102,241,0.2)] rotate-3"
+                                    >
+                                        <GraduationCap className="w-10 h-10 text-indigo-400 -rotate-3" />
+                                    </motion.div>
+
+                                    <h3 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 mb-3 tracking-tight">You're on the list!</h3>
+                                    <p className="text-slate-400 leading-relaxed max-w-[280px] mx-auto text-[15px] mb-8">
+                                        Want to bump yourself up the queue? Tell us your campus to unlock <span className="text-purple-400 font-semibold">VIP early access</span>.
+                                    </p>
+
+                                    <form onSubmit={handleSurveySubmit} className="space-y-5 text-left">
+                                        <div
+                                            className="space-y-2 relative group/input"
+                                            onMouseMove={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                                                (e.currentTarget as HTMLDivElement).style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                                            }}
+                                        >
+                                            <label htmlFor="university" className="text-xs font-bold tracking-wide text-slate-400 uppercase ml-1 pointer-events-none text-left w-full block">University / Campus (Optional)</label>
+                                            <div className="relative p-[1px] rounded-[17px] overflow-hidden bg-slate-800/50 border border-slate-800/80 group-hover/input:border-transparent transition-colors duration-300">
+                                                <div
+                                                    className="absolute inset-0 opacity-0 group-hover/input:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
+                                                    style={{ background: `radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(168, 85, 247, 0.4), transparent 40%)` }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    id="university"
+                                                    value={university}
+                                                    onChange={(e) => setUniversity(e.target.value)}
+                                                    onFocus={() => setFocusedInput('university')}
+                                                    onBlur={() => setFocusedInput(null)}
+                                                    className={`w-full bg-slate-950/80 rounded-2xl px-5 py-4 text-white placeholder-slate-600 focus:outline-none transition-all font-medium text-[15px] focus:bg-slate-900 relative z-10 ${focusedInput === 'university' ? 'shadow-[0_0_20px_rgba(168,85,247,0.15)] ring-1 ring-purple-500/50' : ''}`}
+                                                    placeholder="e.g. Stanford University"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setWaitlistStatus('success')}
+                                                className="px-4 py-4 rounded-2xl font-semibold text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all text-[15px] sm:w-1/3 w-full"
+                                            >
+                                                Skip
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={isSubmittingSurvey}
+                                                className="px-4 py-4 rounded-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white transition-all text-[15px] sm:w-2/3 w-full shadow-lg shadow-purple-900/30 disabled:opacity-70 flex justify-center items-center relative overflow-hidden group"
+                                            >
+                                                <span className="relative z-10">{isSubmittingSurvey ? 'Saving...' : 'Boost My Spot! 🚀'}</span>
+                                                <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 z-0"></div>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </motion.div>
                         )}
 

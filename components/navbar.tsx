@@ -169,26 +169,18 @@ export function Navbar() {
             animate={{ x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href="/" className="flex items-center group ml-2">
               <motion.div
-                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-transparent border  shadow-md group-hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden"
-                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="relative flex h-10 sm:h-12 w-auto items-center justify-start bg-transparent transition-all duration-300 -translate-y-[2px]"
+                whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <img
                   src="/logo.png"
                   alt="SociaVerse Logo"
-                  className="w-full h-full object-contain"
+                  className="h-full w-auto object-contain object-left scale-[1.3] sm:scale-[1.4] origin-left drop-shadow-md group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all"
                 />
               </motion.div>
-              <motion.span
-                className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                SociaVerse
-              </motion.span>
             </Link>
           </motion.div>
 

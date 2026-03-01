@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Globe, Zap, Shield, ArrowRight, Activity, Users, Star, Search, MessageCircle, Heart, Wifi, Battery, Signal, Rocket, Laptop, GraduationCap } from "lucide-react";
+import { Globe, Zap, Shield, ArrowRight, Activity, Users, Star, Search, MessageCircle, Heart, Wifi, Battery, Signal, Rocket, Laptop, GraduationCap, FileText, PlaySquare, Calendar, Download, Share2, ArrowUp, Repeat } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { LandingCarousel } from "@/components/landing-carousel";
 import { MouseSpotlight } from "@/components/mouse-spotlight";
@@ -183,8 +183,12 @@ export function LandingPage() {
                     <Meteors number={20} />
                 </div>
 
-                {/* Floating Background Icons */}
+                {/* Floating Background Icons & Elements */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {/* Ambient Glowing Orbs */}
+                    <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
+                    <div className="absolute top-[40%] right-[-10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen animate-pulse-slow delay-1000" />
+
                     <motion.div
                         animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
                         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -195,7 +199,7 @@ export function LandingPage() {
                     <motion.div
                         animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute bottom-40 right-[10%] md:right-[15%] opacity-20 text-purple-500"
+                        className="absolute bottom-40 right-[8%] md:right-[15%] opacity-20 text-purple-500"
                     >
                         <Laptop className="w-14 h-14 md:w-20 md:h-20" />
                     </motion.div>
@@ -205,6 +209,57 @@ export function LandingPage() {
                         className="absolute top-52 md:top-40 right-[2%] md:right-[5%] opacity-10 text-indigo-500"
                     >
                         <GraduationCap className="w-8 h-8 md:w-12 md:h-12" />
+                    </motion.div>
+
+                    {/* Left side floating UI Graphic */}
+                    <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                        className="hidden xl:flex absolute top-[15%] left-[2%] 2xl:left-[6%] flex-col gap-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl z-0 w-64 opacity-80 hover:opacity-100 transition-opacity"
+                    >
+                        <div className="flex items-center gap-3 mb-1">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center shrink-0 shadow-lg">
+                                <Users className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-white leading-tight">CS 101 Study Group</p>
+                                <p className="text-xs text-slate-400">12 members active</p>
+                            </div>
+                        </div>
+                        <div className="flex -space-x-2 px-1">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="w-7 h-7 rounded-full bg-slate-800 border-2 border-slate-900 overflow-hidden">
+                                    <div className={`w-full h-full bg-gradient-to-br from-slate-600 to-slate-800 opacity-${i * 20}`} />
+                                </div>
+                            ))}
+                            <div className="w-7 h-7 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[9px] text-slate-300 font-bold z-10">+8</div>
+                        </div>
+                    </motion.div>
+
+                    {/* Right side floating UI Graphic */}
+                    <motion.div
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                        className="hidden xl:flex absolute bottom-[15%] right-[2%] 2xl:right-[5%] flex-col p-5 rounded-2xl bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl z-0 w-[260px] opacity-80 hover:opacity-100 transition-opacity"
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                <span className="text-[10px] uppercase font-bold text-green-400 tracking-wider">Live Event</span>
+                            </div>
+                            <span className="text-xs text-slate-400 font-medium">Now</span>
+                        </div>
+                        <p className="text-base font-bold text-white mb-1">Campus Hackathon</p>
+                        <p className="text-xs text-slate-400 mb-4 flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-slate-400" /> Innovation Hub
+                        </p>
+                        <div className="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
+                            <span>Capacity</span>
+                            <span className="text-blue-400">54 / 100</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 w-[54%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+                        </div>
                     </motion.div>
                 </div>
 
@@ -313,8 +368,12 @@ export function LandingPage() {
             </section>
 
             {/* Value Proposition Grid */}
-            <section className="w-full py-20 bg-slate-900/20 z-10">
-                <div className="container max-w-5xl mx-auto px-4">
+            <section className="w-full py-20 bg-slate-900/20 z-10 relative overflow-hidden">
+                {/* Ambient side blurs */}
+                <div className="absolute top-[20%] left-[-20%] w-[60%] h-[60%] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
+                <div className="absolute top-[30%] right-[-20%] w-[60%] h-[60%] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
+
+                <div className="container max-w-7xl mx-auto px-4 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -327,70 +386,59 @@ export function LandingPage() {
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                         {[
                             {
-                                icon: <Globe className="h-10 w-10 text-blue-400 group-hover/card:text-white transition-colors" />,
+                                icon: <Globe className="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors" />,
                                 title: "Find Your Tribe",
                                 description: "Connect with students who actually share your interests.",
-                                gradient: "from-blue-500/20 to-cyan-500/20"
+                                gradientClass: "from-blue-500/10 via-transparent to-transparent",
+                                ringClass: "group-hover:ring-blue-500/30"
                             },
                             {
-                                icon: <Zap className="h-10 w-10 text-amber-400 group-hover/card:text-white transition-colors" />,
+                                icon: <Zap className="h-6 w-6 text-amber-400 group-hover:text-amber-300 transition-colors" />,
                                 title: "Instant Collab",
                                 description: "Real-time sharing of notes and ideas with zero friction.",
-                                gradient: "from-amber-500/20 to-orange-500/20"
+                                gradientClass: "from-amber-500/10 via-transparent to-transparent",
+                                ringClass: "group-hover:ring-amber-500/30"
                             },
                             {
-                                icon: <Shield className="h-10 w-10 text-emerald-400 group-hover/card:text-white transition-colors" />,
+                                icon: <Shield className="h-6 w-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />,
                                 title: "Verified & Safe",
                                 description: "Verified student-only spaces for authentic connection.",
-                                gradient: "from-emerald-500/20 to-green-500/20"
+                                gradientClass: "from-emerald-500/10 via-transparent to-transparent",
+                                ringClass: "group-hover:ring-emerald-500/30"
                             }
                         ].map((item, index) => (
-                            <CardContainer key={index} className="inter-var w-full h-full" containerClassName="block">
-                                <CardBody className="bg-slate-900/40 relative group/card border-slate-800 w-full h-full rounded-xl p-6 border hover:border-slate-700 transition-colors">
-                                    <CardItem
-                                        translateZ="50"
-                                        className="w-full mt-4"
-                                    >
-                                        <div className={`p-4 rounded-2xl bg-slate-950/50 w-fit border border-slate-700 mb-6 ${item.gradient}`}>
-                                            {item.icon}
-                                        </div>
-                                    </CardItem>
-                                    <CardItem
-                                        as="h3"
-                                        translateZ="60"
-                                        className="text-xl font-bold text-slate-200"
-                                    >
-                                        {item.title}
-                                    </CardItem>
-                                    <CardItem
-                                        as="p"
-                                        translateZ="40"
-                                        className="text-slate-400 text-sm max-w-sm mt-2 leading-relaxed"
-                                    >
-                                        {item.description}
-                                    </CardItem>
-                                    <div className="flex justify-between items-center mt-10">
-                                        <CardItem
-                                            translateZ={20}
-                                            as="button"
-                                            className="px-4 py-2 rounded-xl text-xs font-normal text-white"
-                                        >
-                                            Learn more →
-                                        </CardItem>
+                            <div
+                                key={index}
+                                className={`group relative w-full flex flex-col p-6 md:p-8 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all duration-300 hover:bg-slate-800/40 hover:-translate-y-1 ring-1 ring-transparent ${item.ringClass} overflow-hidden shadow-lg`}
+                            >
+                                {/* Glowing gradient background on hover */}
+                                <div className={`absolute inset-0 bg-gradient-to-br ${item.gradientClass} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+
+                                {/* Top highlight line */}
+                                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-slate-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                <div className="relative z-10 flex flex-col items-start text-left">
+                                    <div className="w-14 h-14 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                        {item.icon}
                                     </div>
-                                </CardBody>
-                            </CardContainer>
+                                    <h3 className="text-xl font-bold text-slate-100 mb-3 tracking-tight">{item.title}</h3>
+                                    <p className="text-slate-400 text-[15px] leading-relaxed font-light">{item.description}</p>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
             {/* Live Feed Section - Compact */}
-            <section className="w-full py-20 relative z-10">
-                <div className="container max-w-5xl mx-auto px-4">
+            <section className="w-full py-20 relative z-10 overflow-hidden bg-slate-950/50">
+                <div className="absolute bottom-[20%] left-[-10%] w-[40%] h-[40%] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute top-[10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+
+                <div className="container max-w-7xl mx-auto px-4 relative z-10">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-2xl md:text-3xl font-bold">
                             Campus <span className="text-blue-400">Pulse</span>
@@ -400,62 +448,199 @@ export function LandingPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {[
-                            {
-                                user: "David Chen",
-                                handle: "@david_c",
-                                content: "Just finished the final project! 🚀 Who else is awake?",
-                                likes: "2.4k",
-                                comments: "142",
-                                time: "20m ago",
-                                color: "from-blue-500 to-cyan-500"
-                            },
-                            {
-                                user: "Sarah M.",
-                                handle: "@sarah_m",
-                                content: "Library 4th floor is the best study spot. 📚✨",
-                                likes: "1.8k",
-                                comments: "89",
-                                time: "1h ago",
-                                color: "from-purple-500 to-pink-500"
-                            },
-                            {
-                                user: "Tech Club",
-                                handle: "@tech_club",
-                                content: "Hackathon starts tomorrow! Prize pool $5k 🏆",
-                                likes: "5.2k",
-                                comments: "320",
-                                time: "2h ago",
-                                color: "from-orange-500 to-red-500"
-                            }
-                        ].map((post, i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 relative z-10 max-w-5xl mx-auto">
+
+                        {/* Column 1 */}
+                        <div className="flex flex-col gap-6">
+
+                            {/* Post 1: Resource Share (Ananya) */}
                             <motion.div
-                                key={i}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                                className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 transition-colors"
+                                transition={{ duration: 0.5 }}
+                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-blue-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
                             >
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className={`w-10 h-10 rounded-full bg-gradient-to-tr ${post.color}`} />
-                                    <div className="text-left">
-                                        <p className="font-bold text-slate-200 text-sm">{post.user}</p>
-                                        <p className="text-xs text-slate-500">{post.handle} · {post.time}</p>
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <FileText className="w-24 h-24 text-blue-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-indigo-500 p-[2px]">
+                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">AV</div>
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Ananya V. <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-md font-semibold">NLSIU Bangalore</span></p>
+                                                <p className="text-xs text-slate-400">B.A. LL.B • 1h ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-slate-300 mb-4 text-left text-sm leading-relaxed">
+                                        Compiling all the landmark Supreme Court judgments we need for the upcoming Constitutional Law moot. I've highlighted the dissenting opinions too. Hope this helps everyone preparing!
+                                    </p>
+
+                                    {/* Attachment */}
+                                    <div className="flex items-center gap-4 bg-slate-950/50 border border-slate-800 rounded-2xl p-3 mb-5 hover:bg-slate-800/50 transition-colors cursor-pointer group/file">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
+                                            <FileText className="w-5 h-5 text-blue-400" />
+                                        </div>
+                                        <div className="flex-1 overflow-hidden text-left">
+                                            <p className="text-sm font-semibold text-slate-200 truncate group-hover/file:text-blue-400 transition-colors">Consti_Law_Moot_Briefs.pdf</p>
+                                            <p className="text-xs text-slate-500">Document • 4.1 MB</p>
+                                        </div>
+                                        <div className="shrink-0 text-slate-500 pr-2">
+                                            <Download className="w-4 h-4" />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
+                                        <button className="flex items-center gap-1.5 hover:text-blue-400 hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-all text-blue-400/80 bg-blue-500/5"><ArrowUp className="w-4 h-4" /> 312</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 48</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 55</button>
                                     </div>
                                 </div>
-                                <p className="text-slate-300 mb-4 text-left text-sm">{post.content}</p>
-                                <div className="flex gap-4 text-slate-500 text-xs">
-                                    <span className="flex items-center gap-1 hover:text-slate-300 cursor-pointer">
-                                        ❤️ {post.likes}
-                                    </span>
-                                    <span className="flex items-center gap-1 hover:text-slate-300 cursor-pointer">
-                                        💬 {post.comments}
-                                    </span>
+                            </motion.div>
+
+                            {/* Post 3: Event Card */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.1 }}
+                                className="p-[1px] rounded-3xl bg-gradient-to-br from-emerald-500/30 to-teal-500/10 relative overflow-hidden group shadow-lg"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent z-0"></div>
+                                <div className="bg-slate-900/90 backdrop-blur-xl p-5 md:p-6 rounded-[calc(1.5rem-1px)] relative z-10 w-full h-full border border-emerald-500/20 text-left">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.3)]">
+                                            <Calendar className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div className="bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-500/20 flex items-center gap-1">
+                                            <Activity className="w-3 h-3" /> Few Spots Left
+                                        </div>
+                                    </div>
+
+                                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Creative Collective</p>
+                                    <h3 className="text-xl font-bold text-white mb-3">Annual Campus Art & Design Mixer</h3>
+
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {["In-Person", "Networking", "Portfolio Review"].map(tag => (
+                                            <span key={tag} className="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">{tag}</span>
+                                        ))}
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <div className="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
+                                            <span>Attending</span>
+                                            <span className="text-emerald-400">{450} / {500}</span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-[90%] rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+                                        </div>
+                                    </div>
+
+                                    <button className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors decoration-none">
+                                        RSVP Now
+                                    </button>
                                 </div>
                             </motion.div>
-                        ))}
+
+                        </div>
+
+                        {/* Column 2 */}
+                        <div className="flex flex-col gap-6 md:mt-8">
+
+                            {/* Post 4: Resource Share (Kavya - Video) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-purple-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <PlaySquare className="w-24 h-24 text-purple-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-pink-500 p-[2px]">
+                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">KS</div>
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Kavya S. <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-md font-semibold">NID Ahmedabad</span></p>
+                                                <p className="text-xs text-slate-400">B.Des Animation • 5h ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-slate-300 mb-4 text-left text-sm leading-relaxed">
+                                        Just finished my final project rendering! Trying out some new Ghibli-style environment shading techniques in Blender. Would love some brutal feedback from the animation crowd here.
+                                    </p>
+
+                                    {/* Video Attachment Mockup */}
+                                    <div className="w-full aspect-video bg-slate-950 border border-slate-800 rounded-2xl mb-5 flex items-center justify-center relative overflow-hidden group/video cursor-pointer">
+                                        {/* Mock Video Thumbnail blur */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-green-900/40 via-blue-900/40 to-purple-900/40 opacity-80 mix-blend-screen scale-110 blur-xl group-hover/video:scale-125 transition-transform duration-700"></div>
+                                        <div className="absolute inset-0 bg-slate-900/40 group-hover/video:bg-slate-900/20 transition-colors"></div>
+                                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 z-10 group-hover/video:scale-110 transition-transform">
+                                            <PlaySquare className="w-5 h-5 text-white ml-1" />
+                                        </div>
+                                        <div className="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-950/60 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10">
+                                            <PlaySquare className="w-3 h-3 text-purple-400" />
+                                            <span className="text-[10px] font-medium text-slate-200">ghibli_render_v2.mp4</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
+                                        <button className="flex items-center gap-1.5 hover:text-purple-400 hover:bg-purple-500/10 px-3 py-1.5 rounded-full transition-all text-purple-400/80 bg-purple-500/5"><ArrowUp className="w-4 h-4" /> 540</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 89</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 102</button>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                            {/* Post 2: Collaboration Request (Rohan) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.3 }}
+                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-amber-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Users className="w-24 h-24 text-amber-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]">
+                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">RK</div>
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Rohan K. <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-md font-semibold">NMIMS Mumbai</span></p>
+                                                <p className="text-xs text-slate-400">BBA • 3h ago</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="inline-block px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] uppercase tracking-wider font-bold text-amber-400 mb-3">
+                                        Collaboration Needed
+                                    </div>
+
+                                    <p className="text-slate-300 mb-6 text-left text-sm leading-relaxed">
+                                        Working on a go-to-market strategy for the upcoming Hult Prize pitch. We have the business model locked down, but we urgently need a tech co-founder to help us prototype the app. Anyone interested in joining the squad?
+                                    </p>
+
+                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
+                                        <button className="flex items-center gap-1.5 hover:text-amber-400 hover:bg-amber-500/10 px-3 py-1.5 rounded-full transition-all text-amber-400/80 bg-amber-500/5"><ArrowUp className="w-4 h-4" /> 189</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 62</button>
+                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 14</button>
+                                    </div>
+                                </div>
+                            </motion.div>
+
+                        </div>
                     </div>
                 </div>
             </section>
@@ -517,6 +702,6 @@ export function LandingPage() {
                 </div>
             </section>
 
-        </div>
+        </div >
     )
 }

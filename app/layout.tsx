@@ -18,6 +18,16 @@ import PageTransition from "@/components/page-transition";
 export const metadata: Metadata = {
   title: "SociaVerse - The Ultimate College Event & Social Platform",
   description: "Connect, explore, and transcend with SociaVerse. The all-in-one digital campus platform for events, gaming, and student communities.",
+  icons: {
+    icon: [
+      { url: "/favicon.png" },
+      { url: "/favicon.png" },
+      { url: "/favicon.png" },
+    ],
+    apple: [
+      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
