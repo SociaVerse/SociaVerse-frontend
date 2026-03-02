@@ -132,7 +132,7 @@ export default function TeamPage() {
                         transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
                         className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium"
                     >
-                        Meet the radical minds working tirelessly to forge a decentralized, connected universe for students worldwide.
+                        Meet the radical minds working tirelessly to forge a connected universe for students worldwide.
                     </motion.p>
                 </motion.div>
 
