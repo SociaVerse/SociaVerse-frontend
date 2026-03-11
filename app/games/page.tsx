@@ -6,7 +6,6 @@ import { ArrowLeft, Gamepad2, Trophy, Brain, Scissors, Grid3X3, Ghost, Crown, Di
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Meteors } from "@/components/ui/meteors"
 import { TicTacToe } from "./components/tic-tac-toe"
 import { RockPaperScissors } from "./components/rock-paper-scissors"
 import { MemoryMatch } from "./components/memory-match"
@@ -79,11 +78,6 @@ export default function GameCenterPage() {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pt-20 pb-10 px-4 md:px-8 relative overflow-hidden">
-            {/* Background Effects */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <Meteors number={20} />
-            </div>
-
             <div className="max-w-6xl mx-auto relative z-10">
                 <header className="flex items-center justify-between mb-12">
                     <div className="flex items-center gap-4">

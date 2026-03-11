@@ -22,7 +22,8 @@ const STEPS = [
     { id: 1, title: "Essentials", icon: Sparkles },
     { id: 2, title: "Participation", icon: Users },
     { id: 3, title: "Details", icon: Zap },
-    { id: 4, title: "Review", icon: CheckCircle2 },
+    { id: 4, title: "Rich Info", icon: ImageIcon },
+    { id: 5, title: "Review", icon: CheckCircle2 },
 ]
 
 const EVENT_TYPES = [
@@ -74,6 +75,13 @@ export default function CreateEventPage() {
         // Step 3 (Registration Config)
         registrationFields: ["Name", "Email"], // Default fields
         webhookUrl: "",
+        requiresApproval: false,
+
+        // Step 4 (Rich Info Phase 2)
+        sponsors: [],
+        speakers: [],
+        schedule: [],
+        faqs: [],
     })
 
     const handleInputChange = (field: string, value: any) => {
@@ -122,6 +130,11 @@ export default function CreateEventPage() {
                 prize_others: formData.prize_others,
                 registration_fields: formData.registrationFields,
                 webhook_url: formData.webhookUrl || null,
+                requires_approval: formData.requiresApproval,
+                sponsors: formData.sponsors,
+                speakers: formData.speakers,
+                schedule: formData.schedule,
+                faqs: formData.faqs,
             }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/`, {
@@ -363,7 +376,10 @@ export default function CreateEventPage() {
                                 <Step3 data={formData} update={handleInputChange} />
                             )}
                             {currentStep === 4 && (
-                                <Step4 data={formData} onSubmit={handlePublish} />
+                                <Step4_RichInfo data={formData} update={handleInputChange} />
+                            )}
+                            {currentStep === 5 && (
+                                <Step5 data={formData} onSubmit={handlePublish} />
                             )}
                         </motion.div>
                     </AnimatePresence>
@@ -813,13 +829,176 @@ function Step3({ data, update }: { data: any, update: (field: string, value: any
                         />
                         <p className="text-xs text-slate-500">We'll send a JSON payload here whenever someone registers.</p>
                     </div>
+
+                    <div className="space-y-3 mt-4 p-4 border border-slate-800 rounded-xl bg-slate-900/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <Label className="text-slate-200 font-bold flex items-center gap-2">
+                                    <Lock className="w-4 h-4 text-purple-400" /> Require Approval
+                                </Label>
+                                <p className="text-xs text-slate-500 mt-1">Manually approve attendees before they receive a ticket.</p>
+                            </div>
+                            <button
+                                type="button"
+                                className={`w-12 h-6 rounded-full transition-colors relative ${data.requiresApproval ? "bg-purple-500" : "bg-slate-700"}`}
+                                onClick={() => update("requiresApproval", !data.requiresApproval)}
+                            >
+                                <motion.div
+                                    className="w-4 h-4 rounded-full bg-white absolute top-1"
+                                    animate={{ left: data.requiresApproval ? "26px" : "4px" }}
+                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
 
-function Step4({ data }: { data: any, onSubmit: () => void }) {
+function Step4_RichInfo({ data, update }: { data: any, update: (field: string, value: any) => void }) {
+
+    // Generic handlers for arrays of objects
+    const addItem = (field: string, itemTemplate: any) => {
+        update(field, [...data[field], itemTemplate])
+    }
+
+    const updateItem = (field: string, index: number, itemField: string, value: any) => {
+        const newData = [...data[field]]
+        newData[index] = { ...newData[index], [itemField]: value }
+        update(field, newData)
+    }
+
+    const removeItem = (field: string, index: number) => {
+        const newData = data[field].filter((_: any, i: number) => i !== index)
+        update(field, newData)
+    }
+
+    return (
+        <div className="space-y-10">
+            <div className="text-center md:text-left">
+                <h2 className="text-2xl font-bold text-white mb-2">Rich Information</h2>
+                <p className="text-slate-400">Add speakers, schedule, sponsors, and FAQs to make your event look professional.</p>
+            </div>
+
+            {/* Speakers Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xl font-bold text-white flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Users className="w-5 h-5 text-purple-500" /> Speakers & Guests</span>
+                    <Button type="button" onClick={() => addItem('speakers', { name: '', role: '', company: '', photoUrl: '', bio: '' })} size="sm" variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-500/20">
+                        + Add Speaker
+                    </Button>
+                </Label>
+                {data.speakers.length === 0 && <p className="text-sm text-slate-500 italic">No speakers added yet.</p>}
+
+                <div className="space-y-4">
+                    {data.speakers.map((speaker: any, index: number) => (
+                        <div key={index} className="p-4 border border-slate-800 rounded-xl bg-slate-900/50 relative group">
+                            <button onClick={() => removeItem('speakers', index)} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <CheckCircle2 className="w-5 h-5" style={{ display: 'none' }} /> {/* just to import icon later, using text for now */}
+                                <span className="text-xs bg-red-500/20 px-2 py-1 rounded">Remove</span>
+                            </button>
+                            <div className="grid md:grid-cols-2 gap-4 mt-2">
+                                <Input placeholder="Name" value={speaker.name} onChange={(e) => updateItem('speakers', index, 'name', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Role (e.g. CEO, Keynote Speaker)" value={speaker.role} onChange={(e) => updateItem('speakers', index, 'role', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Company" value={speaker.company} onChange={(e) => updateItem('speakers', index, 'company', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Photo URL" value={speaker.photoUrl} onChange={(e) => updateItem('speakers', index, 'photoUrl', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Schedule Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xl font-bold text-white flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-500" /> Itinerary / Schedule</span>
+                    <Button type="button" onClick={() => addItem('schedule', { time: '', title: '', description: '', speaker: '' })} size="sm" variant="outline" className="border-blue-500 text-blue-400 hover:bg-blue-500/20">
+                        + Add Session
+                    </Button>
+                </Label>
+                {data.schedule.length === 0 && <p className="text-sm text-slate-500 italic">No schedule added yet.</p>}
+
+                <div className="space-y-4">
+                    {data.schedule.map((item: any, index: number) => (
+                        <div key={index} className="p-4 border border-slate-800 rounded-xl bg-slate-900/50 relative group">
+                            <button onClick={() => removeItem('schedule', index)} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs bg-red-500/20 px-2 py-1 rounded">Remove</span>
+                            </button>
+                            <div className="grid md:grid-cols-2 gap-4 mt-2">
+                                <Input type="time" value={item.time} onChange={(e) => updateItem('schedule', index, 'time', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Session Title" value={item.title} onChange={(e) => updateItem('schedule', index, 'title', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Short Description" value={item.description} onChange={(e) => updateItem('schedule', index, 'description', e.target.value)} className="bg-neutral-950/50 border-slate-800 md:col-span-2" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Sponsors Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xl font-bold text-white flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-emerald-500" /> Sponsors</span>
+                    <Button type="button" onClick={() => addItem('sponsors', { name: '', logoUrl: '', website: '', tier: 'Title' })} size="sm" variant="outline" className="border-emerald-500 text-emerald-400 hover:bg-emerald-500/20">
+                        + Add Sponsor
+                    </Button>
+                </Label>
+                {data.sponsors.length === 0 && <p className="text-sm text-slate-500 italic">No sponsors added yet.</p>}
+
+                <div className="space-y-4">
+                    {data.sponsors.map((item: any, index: number) => (
+                        <div key={index} className="p-4 border border-slate-800 rounded-xl bg-slate-900/50 relative group">
+                            <button onClick={() => removeItem('sponsors', index)} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs bg-red-500/20 px-2 py-1 rounded">Remove</span>
+                            </button>
+                            <div className="grid md:grid-cols-2 gap-4 mt-2">
+                                <Input placeholder="Sponsor Name" value={item.name} onChange={(e) => updateItem('sponsors', index, 'name', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <select value={item.tier} onChange={(e) => updateItem('sponsors', index, 'tier', e.target.value)} className="bg-neutral-950/50 border-slate-800 rounded-xl px-4 text-sm text-white">
+                                    <option value="Title">Title Sponsor</option>
+                                    <option value="Platinum">Platinum Sponsor</option>
+                                    <option value="Gold">Gold Sponsor</option>
+                                    <option value="Silver">Silver Sponsor</option>
+                                    <option value="Partner">General Partner</option>
+                                </select>
+                                <Input placeholder="Logo URL" value={item.logoUrl} onChange={(e) => updateItem('sponsors', index, 'logoUrl', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                                <Input placeholder="Website URL" value={item.website} onChange={(e) => updateItem('sponsors', index, 'website', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* FAQs Section */}
+            <div className="space-y-4 pt-4 border-t border-white/5">
+                <Label className="text-xl font-bold text-white flex items-center justify-between">
+                    <span className="flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-500" /> FAQs</span>
+                    <Button type="button" onClick={() => addItem('faqs', { question: '', answer: '' })} size="sm" variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/20">
+                        + Add FAQ
+                    </Button>
+                </Label>
+                {data.faqs.length === 0 && <p className="text-sm text-slate-500 italic">No FAQs added yet.</p>}
+
+                <div className="space-y-4">
+                    {data.faqs.map((item: any, index: number) => (
+                        <div key={index} className="p-4 border border-slate-800 rounded-xl bg-slate-900/50 relative group">
+                            <button onClick={() => removeItem('faqs', index)} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-xs bg-red-500/20 px-2 py-1 rounded">Remove</span>
+                            </button>
+                            <div className="grid gap-4 mt-2">
+                                <Input placeholder="Question" value={item.question} onChange={(e) => updateItem('faqs', index, 'question', e.target.value)} className="bg-neutral-950/50 border-slate-800 font-medium" />
+                                <Textarea placeholder="Answer" value={item.answer} onChange={(e) => updateItem('faqs', index, 'answer', e.target.value)} className="bg-neutral-950/50 border-slate-800" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+        </div>
+    )
+}
+
+function Step5({ data }: { data: any, onSubmit: () => void }) {
     return (
         <div className="space-y-10">
             <div className="text-center md:text-left">

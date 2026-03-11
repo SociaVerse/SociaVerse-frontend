@@ -6,7 +6,8 @@ import {
     Search, Phone, Video, MoreVertical, Send, Paperclip,
     Smile, ArrowLeft, Check, CheckCheck, MoreHorizontal,
     Image as ImageIcon, Mic, Lock, ShieldCheck, Info, Shield, Zap,
-    Home, Globe, User, Trash2, Reply, Copy, Forward, Star, Flag, Heart, Pin
+    Home, Globe, User, Trash2, Reply, Copy, Forward, Star, Flag, Heart, Pin,
+    MessageCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,7 +31,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Meteors } from "@/components/ui/meteors"
 import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 import { chatService, Conversation } from "@/services/chat"
@@ -164,7 +164,14 @@ function ChatContent() {
     const lastScrolledChatId = useRef<number | null>(null)
 
     // Real-time hook
-    const { messages: realtimeMessages, sendMessage, status: wsStatus, revealData } = useChatWebSocket(selectedChatId)
+    const {
+        messages: realtimeMessages,
+        sendMessage,
+        sendReadAck,
+        status: wsStatus,
+        revealData,
+        statusUpdates
+    } = useChatWebSocket(selectedChatId)
 
     // Handle Reveal Event
     useEffect(() => {
@@ -227,6 +234,25 @@ function ChatContent() {
         if (user) loadChats()
     }, [user])
 
+    // Process Status Updates
+    useEffect(() => {
+        if (statusUpdates.length > 0 && selectedChatId) {
+            setChats(prev => prev.map(c => {
+                if (c.id === selectedChatId) {
+                    const updatedMessages = c.messages.map(m => {
+                        const update = statusUpdates.find(s => s.message_id === m.id)
+                        if (update) {
+                            return { ...m, status: update.status }
+                        }
+                        return m
+                    })
+                    return { ...c, messages: updatedMessages }
+                }
+                return c
+            }))
+        }
+    }, [statusUpdates, selectedChatId])
+
     // Fetch messages when chat selected
     useEffect(() => {
         const loadMessages = async () => {
@@ -240,14 +266,17 @@ function ChatContent() {
                     text: m.content,
                     sender: m.sender_id === user?.id ? "me" : "them",
                     time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    status: "read",
-                    likes: m.likes,
-                    starred_by: m.starred_by,
-                    pinned_by: m.pinned_by,
+                    status: (m.status as any) || "sent",
+                    likes: m.likes || [],
+                    starred_by: m.starred_by || [],
+                    pinned_by: m.pinned_by || [],
                     reply_to: m.reply_to,
                     audio_url: m.audio_url,
                     duration: m.duration,
-                    waveform: m.waveform
+                    waveform: m.waveform,
+                    isLiked: m.likes?.includes(user?.id || 0),
+                    isStarred: m.starred_by?.includes(user?.id || 0),
+                    isPinned: m.pinned_by?.includes(user?.id || 0),
                 }))
 
                 setChats(prev => prev.map(c =>
@@ -267,11 +296,11 @@ function ChatContent() {
         if (realtimeMessages.length > 0 && selectedChatId) {
             const lastMsg = realtimeMessages[realtimeMessages.length - 1]
             const newMessage: Message = {
-                id: Date.now().toString(), // Temp ID
+                id: lastMsg.id || Date.now().toString(),
                 text: lastMsg.message,
                 sender: lastMsg.sender_id === user?.id ? "me" : "them",
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                status: "read",
+                time: new Date(lastMsg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: lastMsg.sender_id === user?.id ? "sent" : "read",
                 reply_to: lastMsg.reply_to,
                 audio_url: lastMsg.audio_url,
                 duration: lastMsg.duration,
@@ -348,6 +377,16 @@ function ChatContent() {
             setTimeout(() => element.classList.remove('bg-blue-500/20'), 2000);
         }
     }
+
+    // Auto-ack Read when messages visible
+    useEffect(() => {
+        if (selectedChat && selectedChat.messages.length > 0) {
+            const unreadThem = selectedChat.messages.filter(m => m.sender === "them" && m.status !== "read")
+            unreadThem.forEach(m => {
+                sendReadAck(m.id)
+            })
+        }
+    }, [selectedChat?.messages.length, selectedChatId, sendReadAck])
 
     // Scroll to bottom
     useEffect(() => {
@@ -500,10 +539,6 @@ function ChatContent() {
                 />
             </div>
 
-            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 mobile-only-hide">
-                <Meteors number={10} />
-            </div>
-
             {/* Sidebar */}
             <AnimatePresence mode="popLayout">
                 {(!isMobile || !selectedChatId) && (
@@ -542,61 +577,77 @@ function ChatContent() {
 
                         {/* List */}
                         <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
-                            {filteredChats.map((chat, idx) => (
-                                <motion.div
-                                    key={chat.id}
-                                    layout
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.2, delay: idx * 0.05 }}
-                                    onClick={() => handleChatSelect(chat.id)}
-                                    className={cn(
-                                        "p-3 rounded-2xl cursor-pointer transition-all duration-300 group relative overflow-hidden",
-                                        selectedChatId === chat.id
-                                            ? "bg-white/10 border border-white/10 shadow-lg shadow-black/20"
-                                            : "hover:bg-white/5 border border-transparent hover:border-white/5"
-                                    )}
-                                >
-                                    {selectedChatId === chat.id && (
-                                        <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500 rounded-r-full" />
-                                    )}
-                                    <div className="flex items-center gap-4 pl-3">
-                                        <div className="relative">
-                                            {chat.profile_picture ? (
-                                                <img
-                                                    src={chat.profile_picture.startsWith('http') ? chat.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${chat.profile_picture}`}
-                                                    alt={chat.name}
-                                                    className="w-12 h-12 rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            ) : (
-                                                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${chat.color} flex items-center justify-center text-lg font-bold shadow-lg text-white group-hover:scale-105 transition-transform duration-300`}>
-                                                    {chat.avatar}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <h3 className={cn("font-semibold truncate tracking-tight transition-colors", selectedChatId === chat.id ? "text-white" : "text-slate-200")}>
-                                                    {chat.name}
-                                                </h3>
-                                                <span className="text-[11px] text-slate-500 font-medium">
-                                                    {chat.messages[chat.messages.length - 1]?.time}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <p className={cn(
-                                                        "text-sm truncate transition-colors",
-                                                        selectedChatId === chat.id ? "text-slate-300" : "text-slate-400 group-hover:text-slate-300"
-                                                    )}>
-                                                        {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : "Start chatting"}
-                                                    </p>
-                                                </div>
-                                            </div>
+                            {isLoading ? (
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <div key={i} className="p-3 mb-1 rounded-2xl flex items-center gap-4 border border-transparent bg-white/5 animate-pulse">
+                                        <div className="w-12 h-12 rounded-2xl bg-white/10 shrink-0" />
+                                        <div className="flex-1 space-y-2 py-1">
+                                            <div className="h-4 bg-white/10 rounded w-1/2" />
+                                            <div className="h-3 bg-white/10 rounded w-3/4" />
                                         </div>
                                     </div>
-                                </motion.div>
-                            ))}
+                                ))
+                            ) : filteredChats.length === 0 ? (
+                                <div className="text-center text-slate-500 py-10 px-4">
+                                    <MessageCircle className="w-8 h-8 mx-auto mb-3 opacity-20" />
+                                    <p className="text-sm">No conversations found.</p>
+                                </div>
+                            ) : (
+                                filteredChats.map((chat, idx) => (
+                                    <motion.div
+                                        key={chat.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.2, delay: idx * 0.05 }}
+                                        onClick={() => handleChatSelect(chat.id)}
+                                        className={cn(
+                                            "p-3 rounded-2xl cursor-pointer transition-all duration-300 group relative overflow-hidden",
+                                            selectedChatId === chat.id
+                                                ? "bg-white/10 border border-white/10 shadow-lg shadow-black/20"
+                                                : "hover:bg-white/5 border border-transparent hover:border-white/5"
+                                        )}
+                                    >
+                                        {selectedChatId === chat.id && (
+                                            <div className="absolute left-0 top-3 bottom-3 w-1 bg-blue-500 rounded-r-full" />
+                                        )}
+                                        <div className="flex items-center gap-4 pl-3">
+                                            <div className="relative">
+                                                {chat.profile_picture ? (
+                                                    <img
+                                                        src={chat.profile_picture.startsWith('http') ? chat.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${chat.profile_picture}`}
+                                                        alt={chat.name}
+                                                        className="w-12 h-12 rounded-2xl object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                ) : (
+                                                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${chat.color} flex items-center justify-center text-lg font-bold shadow-lg text-white group-hover:scale-105 transition-transform duration-300`}>
+                                                        {chat.avatar}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <h3 className={cn("font-semibold truncate tracking-tight transition-colors", selectedChatId === chat.id ? "text-white" : "text-slate-200")}>
+                                                        {chat.name}
+                                                    </h3>
+                                                    <span className="text-[11px] text-slate-500 font-medium">
+                                                        {chat.messages[chat.messages.length - 1]?.time}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <p className={cn(
+                                                            "text-sm truncate transition-colors",
+                                                            selectedChatId === chat.id ? "text-slate-300" : "text-slate-400 group-hover:text-slate-300"
+                                                        )}>
+                                                            {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text : "Start chatting"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )))}
                         </div>
                     </motion.div>
                 )}
@@ -843,6 +894,13 @@ function ChatContent() {
                                                                 isMe ? "justify-end text-blue-100/70" : "text-slate-400"
                                                             )}>
                                                                 <span className="opacity-70">{msg.time}</span>
+                                                                {isMe && (
+                                                                    <div className="flex items-center gap-0.5">
+                                                                        {msg.status === "sent" && <Check className="w-3 h-3 opacity-70" />}
+                                                                        {msg.status === "delivered" && <CheckCheck className="w-3 h-3 opacity-70" />}
+                                                                        {msg.status === "read" && <CheckCheck className="w-3 h-3 text-cyan-300 drop-shadow-[0_0_4px_rgba(34,211,238,0.5)]" />}
+                                                                    </div>
+                                                                )}
                                                                 {isStarred && <Star className="w-3 h-3 text-yellow-300 stroke-[2.5px]" />}
                                                                 {isPinned && <Pin className="w-3 h-3 text-orange-300 fill-orange-300/20" />}
                                                                 {isLiked && <Heart className="w-3 h-3 text-pink-500 fill-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />}

@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { WifiOff, Gamepad2, RefreshCw, ArrowLeft, Grid3X3, Ghost } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
-import { Meteors } from "@/components/ui/meteors";
 import { TicTacToe } from "@/app/games/components/tic-tac-toe";
 import { SnakeGame } from "@/app/games/components/snake";
 import { cn } from "@/lib/utils";
@@ -55,11 +54,6 @@ export function OfflineDetector() {
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center justify-center p-4 overflow-hidden"
                 >
-                    {/* Background Effects */}
-                    <div className="absolute inset-0 pointer-events-none">
-                        <Meteors number={20} />
-                    </div>
-
                     {/* Massive Background Branding */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
                         <h1 className="text-[15vw] font-black text-white/[0.03] rotate-[-15deg] whitespace-nowrap select-none">

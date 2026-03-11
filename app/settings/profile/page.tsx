@@ -10,7 +10,9 @@ import { useToast } from "@/components/ui/custom-toast"
 import { Switch } from "@/components/ui/switch"
 import {
     Loader2, Camera, Instagram, Twitter, Linkedin, Github, Globe, MapPin,
-    User as UserIcon, Calendar, Save, Lock
+    User as UserIcon, Calendar, Save, Lock, School, Briefcase, X,
+    Plus, Heart, Sparkles, Smile, MessageCircle,
+    BadgeCheck, UserPlus, MessageSquare, Check, Users, Zap, Music, Target
 } from "lucide-react"
 import {
     AlertDialog,
@@ -22,6 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { ImageCropper } from "@/components/ui/image-cropper"
 
 export default function ProfileSettingsPage() {
     const { isAuthenticated, isLoading } = useAuth()
@@ -35,6 +38,7 @@ export default function ProfileSettingsPage() {
     const locationRef = useRef<HTMLInputElement>(null)
     const websiteRef = useRef<HTMLInputElement>(null)
     const dobRef = useRef<HTMLInputElement>(null)
+    const collegeRef = useRef<HTMLInputElement>(null)
 
     // Social Links Refs
     const twitterRef = useRef<HTMLInputElement>(null)
@@ -51,6 +55,66 @@ export default function ProfileSettingsPage() {
     const [bannerFile, setBannerFile] = useState<File | null>(null)
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
     const [bannerPreview, setBannerPreview] = useState<string | null>(null)
+
+    // Cropper State
+    const [cropDialogOpen, setCropDialogOpen] = useState(false)
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
+    const [cropType, setCropType] = useState<'avatar' | 'banner' | null>(null)
+    const [portfolio, setPortfolio] = useState<any[]>([])
+    
+    // New Profile Enhancement State
+    const [interests, setInterests] = useState<string[]>([])
+    const [personalityType, setPersonalityType] = useState("")
+    const [mbti, setMbti] = useState("")
+    const [vibeTags, setVibeTags] = useState<string[]>([])
+    
+    // Wave 2 State
+    const [relationshipStatus, setRelationshipStatus] = useState("")
+    const [zodiacSign, setZodiacSign] = useState("")
+    const [lookingFor, setLookingFor] = useState<string[]>([])
+    const [statusEmoji, setStatusEmoji] = useState("")
+    const [statusText, setStatusText] = useState("")
+    const [languages, setLanguages] = useState<string[]>([])
+    
+    const musicRef = useRef<HTMLInputElement>(null)
+    const movieRef = useRef<HTMLInputElement>(null)
+    const bucketRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
+    const peevesRef = useRef<HTMLInputElement>(null)
+    const quoteRef = useRef<HTMLInputElement>(null)
+    const obsessionRef = useRef<HTMLInputElement>(null)
+    const skillRef = useRef<HTMLInputElement>(null)
+
+    const INTEREST_OPTIONS = [
+        "Gaming", "Coding", "Music", "Movies", "Photography", "Fitness", 
+        "Reading", "Travel", "Startups", "AI / Technology", "Art / Design", 
+        "Psychology", "Entrepreneurship", "Sports", "Anime", "Memes", "Content Creation"
+    ]
+
+    const VIBE_OPTIONS = [
+        "🚀 Builder", "🎓 Student", "💻 Developer", "🎮 Gamer", "🎨 Creator", 
+        "🤖 Tech Nerd", "🌍 Traveler", "💡 Entrepreneur", "🎬 Movie Buff", "📚 Learner"
+    ]
+
+    const MBTI_OPTIONS = [
+        "INTJ", "INTP", "ENTJ", "ENTP",
+        "INFJ", "INFP", "ENFJ", "ENFP",
+        "ISTJ", "ISFJ", "ESTJ", "ESFJ",
+        "ISTP", "ISFP", "ESTP", "ESFP",
+        "Skip"
+    ]
+
+const RELATIONSHIP_OPTIONS = [
+    "Single", "In a Relationship", "Married", "It’s Complicated", "Open to Anything"
+]
+
+const ZODIAC_OPTIONS = [
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", 
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+]
+
+const LOOKING_FOR_OPTIONS = [
+    "Networking", "New Friends", "Collaboration", "Gaming Buddies", "Hiring", "Hireaable", "Casual Chat"
+]
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -73,11 +137,36 @@ export default function ProfileSettingsPage() {
                 if (locationRef.current) locationRef.current.value = data.location || ""
                 if (websiteRef.current) websiteRef.current.value = data.website || ""
                 if (dobRef.current) dobRef.current.value = data.date_of_birth || ""
+                if (collegeRef.current) collegeRef.current.value = data.college || ""
 
                 setGender(data.gender || "")
                 setIsPrivate(data.is_private || false)
                 setAvatarPreview(data.profile_picture)
                 setBannerPreview(data.banner_image)
+                setPortfolio(data.portfolio || [])
+                
+                // New Fields
+                setInterests(data.interests || [])
+                setPersonalityType(data.personality_type || "")
+                setMbti(data.mbti || "")
+                setVibeTags(data.vibe_tags || [])
+                
+                setRelationshipStatus(data.relationship_status || "")
+                setZodiacSign(data.zodiac_sign || "")
+                setLookingFor(data.looking_for || [])
+                setStatusEmoji(data.status_emoji || "")
+                setStatusText(data.status_text || "")
+                setLanguages(data.languages_spoken || [])
+                
+                if (musicRef.current) musicRef.current.value = JSON.stringify(data.top_music || {})
+                if (movieRef.current) movieRef.current.value = (data.favorite_movies || []).join(", ")
+                data.bucket_list?.forEach((item: string, i: number) => {
+                    if (bucketRefs[i].current) bucketRefs[i].current.value = item
+                })
+                if (peevesRef.current) peevesRef.current.value = (data.pet_peeves || []).join(", ")
+                if (quoteRef.current) quoteRef.current.value = data.favorite_quote || ""
+                if (obsessionRef.current) obsessionRef.current.value = data.currently_obsessed_with || ""
+                if (skillRef.current) skillRef.current.value = data.random_skill || ""
 
                 // Social Links
                 const links = data.social_links || {}
@@ -98,14 +187,31 @@ export default function ProfileSettingsPage() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
         const file = e.target.files?.[0]
         if (file) {
-            if (type === 'avatar') {
-                setAvatarFile(file)
-                setAvatarPreview(URL.createObjectURL(file))
-            } else {
-                setBannerFile(file)
-                setBannerPreview(URL.createObjectURL(file))
-            }
+            const reader = new FileReader()
+            reader.addEventListener("load", () => {
+                setCropImageSrc(reader.result?.toString() || null)
+                setCropType(type)
+                setCropDialogOpen(true)
+            })
+            reader.readAsDataURL(file)
+
+            // Reset input so the same file can be selected again if cancelled
+            e.target.value = ''
         }
+    }
+
+    const handleCropComplete = (croppedFile: File) => {
+        const previewUrl = URL.createObjectURL(croppedFile)
+        if (cropType === 'avatar') {
+            setAvatarFile(croppedFile)
+            setAvatarPreview(previewUrl)
+        } else if (cropType === 'banner') {
+            setBannerFile(croppedFile)
+            setBannerPreview(previewUrl)
+        }
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+        setCropType(null)
     }
 
     const handlePrivacyToggle = (checked: boolean) => {
@@ -168,6 +274,7 @@ export default function ProfileSettingsPage() {
             if (locationRef.current?.value) formData.append('location', locationRef.current.value)
             if (websiteRef.current?.value) formData.append('website', websiteRef.current.value)
             if (dobRef.current?.value) formData.append('date_of_birth', dobRef.current.value)
+            if (collegeRef.current?.value) formData.append('college', collegeRef.current.value)
             if (gender) formData.append('gender', gender)
 
             // Files
@@ -182,6 +289,37 @@ export default function ProfileSettingsPage() {
                 github: githubRef.current?.value,
             }
             formData.append('social_links', JSON.stringify(socialLinks))
+            formData.append('portfolio', JSON.stringify(portfolio))
+            
+            // New Fields
+            formData.append('interests', JSON.stringify(interests))
+            formData.append('vibe_tags', JSON.stringify(vibeTags))
+            if (personalityType) formData.append('personality_type', personalityType)
+            if (mbti) formData.append('mbti', mbti)
+            if (quoteRef.current?.value !== undefined) formData.append('favorite_quote', quoteRef.current.value)
+            formData.append('currently_obsessed_with', obsessionRef.current?.value || "")
+            formData.append('random_skill', skillRef.current?.value || "")
+            
+            formData.append('relationship_status', relationshipStatus)
+            formData.append('zodiac_sign', zodiacSign)
+            formData.append('looking_for', JSON.stringify(lookingFor))
+            formData.append('status_emoji', statusEmoji)
+            formData.append('status_text', statusText)
+            formData.append('languages_spoken', JSON.stringify(languages))
+            
+            try {
+                const musicData = musicRef.current?.value ? JSON.parse(musicRef.current.value) : {}
+                formData.append('top_music', JSON.stringify(musicData))
+            } catch(e) { formData.append('top_music', JSON.stringify({})) }
+            
+            const movies = movieRef.current?.value.split(",").map(m => m.trim()).filter(Boolean) || []
+            formData.append('favorite_movies', JSON.stringify(movies))
+            
+            const bucket = bucketRefs.map(r => r.current?.value || "").filter(Boolean)
+            formData.append('bucket_list', JSON.stringify(bucket))
+            
+            const peeves = peevesRef.current?.value.split(",").map(p => p.trim()).filter(Boolean) || []
+            formData.append('pet_peeves', JSON.stringify(peeves))
 
             const token = localStorage.getItem('sociaverse_token')
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
@@ -197,9 +335,18 @@ export default function ProfileSettingsPage() {
                 // Refresh data to ensure consistency
                 fetchProfile()
             } else {
-                const data = await response.json()
-                console.error(data)
-                toast({ title: "Error", message: "Failed to update profile", type: "error" })
+                const errorData = await response.json()
+                console.error("Profile Update Error Details:", JSON.stringify(errorData, null, 2))
+                
+                // Show a more specific toast if it's a validation error
+                const errorValues = Object.values(errorData);
+                let errorMessage = "Failed to update profile";
+                if (errorValues.length > 0) {
+                    const firstError = errorValues[0];
+                    errorMessage = Array.isArray(firstError) ? firstError[0] : (typeof firstError === 'string' ? firstError : JSON.stringify(firstError));
+                }
+                
+                toast({ title: "Error", message: errorMessage, type: "error" })
             }
         } catch (error) {
             console.error(error)
@@ -343,6 +490,14 @@ export default function ProfileSettingsPage() {
                     </div>
 
                     <div className="space-y-2">
+                        <Label htmlFor="college">College</Label>
+                        <div className="relative">
+                            <School className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                            <Input id="college" ref={collegeRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Your College Name" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
                         <Label htmlFor="bio">Bio</Label>
                         <Textarea
                             id="bio"
@@ -424,7 +579,424 @@ export default function ProfileSettingsPage() {
                     </div>
                 </div>
 
+                {/* Portfolio Section */}
+                <div className="grid gap-6 p-6 bg-slate-900/30 rounded-xl border border-slate-800/50">
+                    <h3 className="text-lg font-semibold text-white flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Briefcase className="w-5 h-5 text-purple-500" /> Portfolio & Achievements
+                        </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPortfolio([...portfolio, { type: 'project', title: '', description: '', link: '', date: '' }])}
+                            className="text-xs border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                        >
+                            + Add Item
+                        </Button>
+                    </h3>
+
+                    {portfolio.length === 0 ? (
+                        <p className="text-sm text-slate-500 text-center py-4 italic">No portfolio items added yet.</p>
+                    ) : (
+                        <div className="space-y-6">
+                            {portfolio.map((item, idx) => (
+                                <div key={idx} className="relative p-4 bg-slate-950/50 border border-slate-800 rounded-lg space-y-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPortfolio(portfolio.filter((_, i) => i !== idx))}
+                                        className="absolute top-2 right-2 p-1 text-slate-500 hover:text-red-400"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Type</Label>
+                                            <select
+                                                value={item.type}
+                                                onChange={(e) => {
+                                                    const newPortfolio = [...portfolio];
+                                                    newPortfolio[idx].type = e.target.value;
+                                                    setPortfolio(newPortfolio);
+                                                }}
+                                                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-200"
+                                            >
+                                                <option value="project">Project</option>
+                                                <option value="certification">Certification</option>
+                                                <option value="badge">Badge/Award</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Date (Year/Term)</Label>
+                                            <Input
+                                                value={item.date}
+                                                onChange={(e) => {
+                                                    const newPortfolio = [...portfolio];
+                                                    newPortfolio[idx].date = e.target.value;
+                                                    setPortfolio(newPortfolio);
+                                                }}
+                                                placeholder="e.g. 2024 or Fall 2023"
+                                                className="bg-slate-900 border-slate-800"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Title</Label>
+                                        <Input
+                                            value={item.title}
+                                            onChange={(e) => {
+                                                const newPortfolio = [...portfolio];
+                                                newPortfolio[idx].title = e.target.value;
+                                                setPortfolio(newPortfolio);
+                                            }}
+                                            placeholder="Item Title"
+                                            className="bg-slate-900 border-slate-800"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Description</Label>
+                                        <Textarea
+                                            value={item.description}
+                                            onChange={(e) => {
+                                                const newPortfolio = [...portfolio];
+                                                newPortfolio[idx].description = e.target.value;
+                                                setPortfolio(newPortfolio);
+                                            }}
+                                            placeholder="Short description..."
+                                            className="bg-slate-900 border-slate-800 h-20 resize-none"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Link (URL)</Label>
+                                        <Input
+                                            value={item.link}
+                                            onChange={(e) => {
+                                                const newPortfolio = [...portfolio];
+                                                newPortfolio[idx].link = e.target.value;
+                                                setPortfolio(newPortfolio);
+                                            }}
+                                            placeholder="https://..."
+                                            className="bg-slate-900 border-slate-800"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* About Section Enhancements */}
+                <div className="grid gap-8 p-6 bg-slate-900/30 rounded-xl border border-slate-800/50">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500" /> About & Personality
+                    </h3>
+
+                    {/* Interests */}
+                    <div className="space-y-4">
+                        <Label>Interests / Hobbies (Select 3-10)</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {INTEREST_OPTIONS.map(interest => {
+                                const isSelected = interests.includes(interest);
+                                return (
+                                    <button
+                                        key={interest}
+                                        type="button"
+                                        onClick={() => {
+                                            if (isSelected) {
+                                                setInterests(interests.filter(i => i !== interest));
+                                            } else if (interests.length < 10) {
+                                                setInterests([...interests, interest]);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                            isSelected 
+                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" 
+                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                                        }`}
+                                    >
+                                        {interest}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className="text-xs text-slate-500">Selected: {interests.length}/10</p>
+                    </div>
+
+                    {/* Personality & MBTI */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="personality">Personality Type</Label>
+                            <select
+                                id="personality"
+                                value={personalityType}
+                                onChange={(e) => setPersonalityType(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200"
+                            >
+                                <option value="">Select personality</option>
+                                <option value="Introvert">Introvert</option>
+                                <option value="Extrovert">Extrovert</option>
+                                <option value="Ambivert">Ambivert</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="mbti">MBTI Personality</Label>
+                            <select
+                                id="mbti"
+                                value={mbti}
+                                onChange={(e) => setMbti(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200"
+                            >
+                                <option value="">Select MBTI (Optional)</option>
+                                {MBTI_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Vibe Tags */}
+                    <div className="space-y-4">
+                        <Label>Vibe / Identity Tags</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {VIBE_OPTIONS.map(tag => {
+                                const isSelected = vibeTags.includes(tag);
+                                return (
+                                    <button
+                                        key={tag}
+                                        type="button"
+                                        onClick={() => {
+                                            if (isSelected) {
+                                                setVibeTags(vibeTags.filter(t => t !== tag));
+                                            } else {
+                                                setVibeTags([...vibeTags, tag]);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                            isSelected 
+                                            ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20" 
+                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                                        }`}
+                                    >
+                                        {tag}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Quote, Obsession, Skill */}
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="quote">Favorite Quote</Label>
+                            <div className="relative">
+                                <MessageCircle className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                                <Input id="quote" ref={quoteRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="“Stay hungry, stay foolish.”" />
+                            </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="obsession">Currently Obsessed With</Label>
+                                <div className="relative">
+                                    <Heart className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                                    <Input id="obsession" ref={obsessionRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="AI tools, football, etc." />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="skill">Random Skill</Label>
+                                <div className="relative">
+                                    <Smile className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                                    <Input id="skill" ref={skillRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Solving Rubik’s cubes..." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Social & Lifestyle */}
+                <div className="grid gap-8 p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 mt-8">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Users className="w-5 h-5 text-blue-500" /> Social & Lifestyle
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="relationship">Relationship Status</Label>
+                            <select
+                                id="relationship"
+                                value={relationshipStatus}
+                                onChange={(e) => setRelationshipStatus(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200"
+                            >
+                                <option value="">Select status</option>
+                                {RELATIONSHIP_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="zodiac">Zodiac Sign</Label>
+                            <select
+                                id="zodiac"
+                                value={zodiacSign}
+                                onChange={(e) => setZodiacSign(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-slate-800 bg-slate-950/50 px-3 py-2 text-sm text-slate-200"
+                            >
+                                <option value="">Select sign</option>
+                                {ZODIAC_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <Label>Looking For</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {LOOKING_FOR_OPTIONS.map(opt => {
+                                const isSelected = lookingFor.includes(opt);
+                                return (
+                                    <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={() => {
+                                            if (isSelected) setLookingFor(lookingFor.filter(i => i !== opt));
+                                            else setLookingFor([...lookingFor, opt]);
+                                        }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                            isSelected 
+                                            ? "bg-emerald-600 text-white shadow-lg" 
+                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                        }`}
+                                    >
+                                        {opt}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Status & interaction */}
+                <div className="grid gap-8 p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 mt-8">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-yellow-500" /> Status & Interaction
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                            <Label>Status Emoji</Label>
+                            <Input 
+                                value={statusEmoji} 
+                                onChange={(e) => setStatusEmoji(e.target.value)}
+                                placeholder="e.g. ☕"
+                                className="bg-slate-950/50 border-slate-800"
+                            />
+                        </div>
+                        <div className="md:col-span-3 space-y-2">
+                            <Label>Status Message</Label>
+                            <Input 
+                                value={statusText} 
+                                onChange={(e) => setStatusText(e.target.value)}
+                                placeholder="What are you up to?"
+                                className="bg-slate-950/50 border-slate-800"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <Label>Bucket List (Top 3)</Label>
+                        <div className="space-y-3">
+                            {[0, 1, 2].map(i => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <span className="text-slate-500 font-bold">{i + 1}.</span>
+                                    <Input 
+                                        ref={bucketRefs[i]}
+                                        placeholder="I want to..."
+                                        className="bg-slate-950/50 border-slate-800"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Pet Peeves (Comma separated)</Label>
+                        <Input 
+                            ref={peevesRef}
+                            placeholder="Slow Wi-Fi, Cold coffee..."
+                            className="bg-slate-950/50 border-slate-800"
+                        />
+                    </div>
+                </div>
+
+                {/* Taste & Preferences */}
+                <div className="grid gap-8 p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 mt-8">
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Music className="w-5 h-5 text-purple-500" /> Taste & Preferences
+                    </h3>
+                    
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Music Taste</Label>
+                            <Input 
+                                ref={musicRef}
+                                placeholder='Artists or Genres (JSON format)'
+                                className="bg-slate-950/50 border-slate-800"
+                            />
+                            <p className="text-[10px] text-slate-500">e.g. {"{ \"Artists\": [\"Lana Del Rey\"] }"}</p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Favorite Movies / Shows (Comma separated)</Label>
+                            <Input 
+                                ref={movieRef}
+                                placeholder="Inception, Breaking Bad..."
+                                className="bg-slate-950/50 border-slate-800"
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <Label>Languages Spoken</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {["English", "Hindi", "Spanish", "French", "German", "Japanese", "Chinese"].map(lang => {
+                                    const isSelected = languages.includes(lang);
+                                    return (
+                                        <button
+                                            key={lang}
+                                            type="button"
+                                            onClick={() => {
+                                                if (isSelected) setLanguages(languages.filter(l => l !== lang));
+                                                else setLanguages([...languages, lang]);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                                isSelected 
+                                                ? "bg-slate-200 text-slate-900" 
+                                                : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                                            }`}
+                                        >
+                                            {lang}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </form>
+
+            
+            {cropImageSrc && cropType && (
+                <ImageCropper
+                    open={cropDialogOpen}
+                    imageSrc={cropImageSrc}
+                    onCropComplete={handleCropComplete}
+                    onCancel={() => {
+                        setCropDialogOpen(false)
+                        setCropImageSrc(null)
+                        setCropType(null)
+                    }}
+                    aspectRatio={cropType === 'avatar' ? 1 : 3}
+                />
+            )}
         </div>
     )
 }

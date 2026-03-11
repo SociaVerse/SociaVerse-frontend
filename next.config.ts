@@ -9,6 +9,29 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.sociaverse.in',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+      },
+      // Cloudflare R2 CDN for marketplace images
+      {
+        protocol: 'https',
+        hostname: '*.r2.cloudflarestorage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.r2.dev',
+      },
+      // Local dev server (Django serving media)
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '8000',
+      },
     ],
   },
   async headers() {

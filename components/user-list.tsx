@@ -36,7 +36,8 @@ export function UserList({ endpoint, emptyMessage = "No users found" }: UserList
                 const response = await fetch(endpoint, { headers })
                 if (response.ok) {
                     const data = await response.json()
-                    setUsers(data)
+                    const results = Array.isArray(data) ? data : data.results || []
+                    setUsers(results)
                 }
             } catch (error) {
                 console.error("Error fetching users:", error)

@@ -152,6 +152,16 @@ html {
   scroll-behavior: smooth;
 }
 
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -160,7 +170,7 @@ html {
   body {
     @apply bg-background text-foreground;
     position: relative;
-    padding-bottom: 5rem;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
     /* Space for mobile nav */
   }
 

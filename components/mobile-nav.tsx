@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, PlusSquare, MessageCircle, Store, Zap, Globe, Rocket, Users } from "lucide-react"
+import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
@@ -22,8 +22,9 @@ export function MobileNav() {
     const regularNavItems = [
         { href: "/", icon: Home, label: "Home" },
         { href: "/explore", icon: Search, label: "Explore" },
-        { href: "/create", icon: PlusSquare, label: "Create", isMain: true },
+        { href: "/community", icon: Users, label: "Communities", isMain: true },
         { href: "/chat", icon: MessageCircle, label: "Chat" },
+        { href: "/events", icon: Calendar, label: "Events" },
         { href: "/marketplace", icon: Store, label: "Market" },
     ]
 
@@ -37,8 +38,8 @@ export function MobileNav() {
     const navItems = isWaitlistMode ? waitlistNavItems : regularNavItems
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-[100] md:hidden">
-            <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pb-safe pt-1 px-2">
+        <div className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">
+            <div className="bg-slate-900/80 backdrop-blur-xl border-t border-white/10 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.5)] pb-safe pt-1">
                 <div className="flex items-center justify-around w-full h-14">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))

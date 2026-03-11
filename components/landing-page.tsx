@@ -8,7 +8,6 @@ import { LandingCarousel } from "@/components/landing-carousel";
 import { MouseSpotlight } from "@/components/mouse-spotlight";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { FloatingParticles } from "@/components/ui/floating-particles";
-import { Meteors } from "@/components/ui/meteors";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { MouseEvent } from "react";
 
@@ -215,10 +214,6 @@ export function LandingPage() {
 
             {/* Hero Section */}
             <section className="relative w-full pt-36 pb-16 md:pt-40 md:pb-24 px-4 z-10 overflow-hidden">
-
-                <div className="absolute inset-0 h-full w-full pointer-events-none">
-                    <Meteors number={20} />
-                </div>
 
                 {/* Floating Background Icons & Elements */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">

@@ -20,9 +20,10 @@ interface PostCardProps {
     handleAuthAction: (action: () => void) => void;
     onDelete?: (id: number) => void;
     onImageClick?: (src: string) => void;
+    onPostClick?: (post: Post) => void;
 }
 
-export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImageClick }: PostCardProps) {
+export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImageClick, onPostClick }: PostCardProps) {
     const [post, setPost] = useState(initialPost);
     const [isLiked, setIsLiked] = useState(initialPost.is_liked);
     const [likesCount, setLikesCount] = useState(initialPost.likes_count);
@@ -111,7 +112,8 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="group/post bg-slate-900/20 backdrop-blur-sm border border-slate-800/50 hover:border-slate-700/50 rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1 relative overflow-hidden"
+            className={`group/post bg-slate-900/20 backdrop-blur-sm border border-slate-800/50 hover:border-slate-700/50 rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/5 hover:-translate-y-1 relative overflow-hidden ${onPostClick ? 'cursor-pointer' : ''}`}
+            onClick={() => onPostClick?.(post)}
         >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-purple-500/0 to-pink-500/0 opacity-0 group-hover/post:opacity-10 transition-opacity duration-500" />
             <div className="relative z-10 flex gap-4">
@@ -135,7 +137,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                             <span className="text-slate-600 text-sm flex-shrink-0">· {formatTime(post.created_at)}</span>
                         </div>
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                 <button className="text-slate-500 hover:text-slate-300">
                                     <MoreHorizontal className="h-5 w-5" />
                                 </button>
@@ -195,7 +197,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between text-slate-500 pt-2 -ml-2">
+                    <div className="flex items-center justify-between text-slate-500 pt-2 -ml-2" onClick={(e) => e.stopPropagation()}>
                         <Button
                             variant="ghost"
                             size="sm"

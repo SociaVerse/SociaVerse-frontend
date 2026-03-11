@@ -4,9 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { motion, AnimatePresence } from "framer-motion"
-import { Mail, Lock, Eye, EyeOff, User, Calendar, School, ArrowRight, Loader2, Sparkles, Check } from "lucide-react"
-import { FcGoogle } from "react-icons/fc"
-import { FaGithub, FaTwitter } from "react-icons/fa"
+import { Mail, Lock, Eye, EyeOff, User, Calendar, School, ArrowRight, Loader2, Sparkles, Check, X } from "lucide-react"
 import Link from "next/link"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
@@ -26,6 +24,7 @@ export function Signup() {
   // Form Data
   const [formData, setFormData] = useState({
     fullName: "",
+    username: "",
     college: "",
     dob: "",
     email: "",
@@ -36,6 +35,12 @@ export function Signup() {
   const [otp, setOtp] = useState("")
   const [passwordStrength, setPasswordStrength] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+  const [collegeSuggestions, setCollegeSuggestions] = useState<string[]>([])
+  const [isSearchingCollege, setIsSearchingCollege] = useState(false)
+  const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false)
+  const [wasCollegeSelected, setWasCollegeSelected] = useState(false)
 
   // Password Strength Logic
   useEffect(() => {
@@ -55,12 +60,80 @@ export function Signup() {
     else setPasswordStrength("Strong")
   }, [formData.password])
 
+  // Username Availability Check (Debounced)
+  useEffect(() => {
+    const checkUsername = async () => {
+      const username = formData.username.trim()
+      if (username.length < 3) {
+        setUsernameAvailable(null)
+        return
+      }
+
+      setIsCheckingUsername(true)
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/check-username/?username=${username.toLowerCase()}`)
+        const data = await response.json()
+        if (response.ok) {
+          setUsernameAvailable(data.available)
+        } else {
+          setUsernameAvailable(null)
+        }
+      } catch (error) {
+        console.error("Error checking username:", error)
+        setUsernameAvailable(null)
+      } finally {
+        setIsCheckingUsername(false)
+      }
+    }
+
+    const timeoutId = setTimeout(checkUsername, 500)
+    return () => clearTimeout(timeoutId)
+  }, [formData.username])
+
+  // College Search (Debounced)
+  useEffect(() => {
+    if (wasCollegeSelected) {
+      setWasCollegeSelected(false)
+      return
+    }
+
+    const searchColleges = async () => {
+      const query = formData.college.trim()
+      if (query.length < 2) {
+        setCollegeSuggestions([])
+        setShowCollegeSuggestions(false)
+        return
+      }
+
+      setIsSearchingCollege(true)
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/colleges/search/?q=${encodeURIComponent(query)}`)
+        const data = await response.json()
+        if (response.ok) {
+          setCollegeSuggestions(data)
+          setShowCollegeSuggestions(data.length > 0)
+        }
+      } catch (error) {
+        console.error("Error searching colleges:", error)
+      } finally {
+        setIsSearchingCollege(false)
+      }
+    }
+
+    const timeoutId = setTimeout(searchColleges, 300)
+    return () => clearTimeout(timeoutId)
+  }, [formData.college])
+
   // Validation
   const validateForm = () => {
     let newErrors: Record<string, string> = {}
     let isValid = true
 
     if (!formData.fullName.trim()) { newErrors.fullName = "Name is required"; isValid = false }
+    if (!formData.username.trim()) { newErrors.username = "Username is required"; isValid = false }
+    else if (formData.username.length < 3) { newErrors.username = "Min 3 characters"; isValid = false }
+    else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) { newErrors.username = "Alphanumeric only"; isValid = false }
+    else if (usernameAvailable === false) { newErrors.username = "Username is taken"; isValid = false }
     if (!formData.college.trim()) { newErrors.college = "College is required"; isValid = false }
     if (!formData.dob) { newErrors.dob = "Date of birth is required"; isValid = false }
     try {
@@ -93,12 +166,11 @@ export function Signup() {
     setErrors({})
 
     try {
-      const username = formData.email.split('@')[0] + Math.floor(Math.random() * 10000)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/signup/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username,
+          username: formData.username.toLowerCase().trim(),
           email: formData.email,
           password: formData.password,
           full_name: formData.fullName,
@@ -158,11 +230,11 @@ export function Signup() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden font-sans selection:bg-blue-500/30 pt-20 md:pt-24">
       <BackgroundBeams className="z-0 opacity-40" />
 
       {/* Content Wrapper */}
-      <div className="relative z-10 w-full p-4 flex justify-center">
+      <div className="relative z-10 w-full p-4 pb-12 flex justify-center">
         <AnimatePresence mode="wait">
           {step === "signup" && (
             <motion.div
@@ -218,58 +290,124 @@ export function Signup() {
                 </div>
 
                 <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="w-full">
-                    <div className="flex w-full bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                      <Button type="button" variant="ghost" className="flex-1 h-12 hover:bg-white/10 hover:text-white text-slate-300 transition-all rounded-none border-r border-white/10">
-                        <FcGoogle className="w-5 h-5" />
-                      </Button>
-                      <Button type="button" variant="ghost" className="flex-1 h-12 hover:bg-white/10 hover:text-white text-slate-300 transition-all rounded-none border-r border-white/10">
-                        <FaGithub className="w-5 h-5" />
-                      </Button>
-                      <Button type="button" variant="ghost" className="flex-1 h-12 hover:bg-white/10 hover:text-white text-slate-300 transition-all rounded-none">
-                        <FaTwitter className="w-5 h-5 text-blue-400" />
-                      </Button>
-                    </div>
-                  </div>
 
-                  <div className="relative py-1 w-full flex items-center justify-center">
-                    <div className="absolute inset-x-0 h-px bg-white/10" />
-                    <span className="relative text-[10px] text-slate-500 uppercase tracking-widest bg-slate-900 px-2 rounded-full border border-white/5">or</span>
-                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
                     <InputItem label="Full Name" icon={User} placeholder="Enter name" value={formData.fullName} onChange={(e: any) => handleInputChange("fullName", e.target.value)} error={errors.fullName} />
-                    <InputItem label="College" icon={School} placeholder="Enter college" value={formData.college} onChange={(e: any) => handleInputChange("college", e.target.value)} error={errors.college} />
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Username</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <User className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                        </div>
+                        <Input
+                          placeholder="Choose username"
+                          value={formData.username}
+                          onChange={(e: any) => handleInputChange("username", e.target.value)}
+                          className={`pl-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.username ? 'border-red-500/50' : ''}`}
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          {isCheckingUsername ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500" />
+                          ) : usernameAvailable === true ? (
+                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                          ) : usernameAvailable === false ? (
+                            <X className="h-3.5 w-3.5 text-red-500" />
+                          ) : null}
+                        </div>
+                      </div>
+                      {errors.username ? (
+                        <p className="text-[10px] text-red-400 ml-1">{errors.username}</p>
+                      ) : usernameAvailable === true ? (
+                        <p className="text-[10px] text-emerald-400 ml-1">Username is available</p>
+                      ) : usernameAvailable === false ? (
+                        <p className="text-[10px] text-red-400 ml-1">Username is already taken</p>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
+                    <div className="space-y-1 relative">
+                      <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">College</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <School className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                        </div>
+                        <Input
+                          placeholder="Enter college"
+                          value={formData.college}
+                          onChange={(e: any) => {
+                            handleInputChange("college", e.target.value)
+                            setShowCollegeSuggestions(true)
+                          }}
+                          onFocus={() => collegeSuggestions.length > 0 && setShowCollegeSuggestions(true)}
+                          className={`pl-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.college ? 'border-red-500/50' : ''}`}
+                        />
+                        {isSearchingCollege && (
+                          <div className="absolute inset-y-0 right-3 flex items-center">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* College Suggestions Dropdown */}
+                      <AnimatePresence>
+                        {showCollegeSuggestions && collegeSuggestions.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute z-[100] w-full mt-1 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl"
+                          >
+                            {collegeSuggestions.map((name, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setWasCollegeSelected(true)
+                                  handleInputChange("college", name)
+                                  setCollegeSuggestions([])
+                                  setShowCollegeSuggestions(false)
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5 last:border-0"
+                              >
+                                {name}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {errors.college && <p className="text-[10px] text-red-400 ml-1">{errors.college}</p>}
+                    </div>
                     <InputItem label="Birthday" icon={Calendar} type="date" value={formData.dob} onChange={(e: any) => handleInputChange("dob", e.target.value)} error={errors.dob} />
-                    <InputItem label="Email" icon={Mail} type="email" placeholder="edu@mail.com" value={formData.email} onChange={(e: any) => handleInputChange("email", e.target.value)} error={errors.email} />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Password</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-                        <Lock className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
+                    <InputItem label="Email" icon={Mail} type="email" placeholder="edu@mail.com" value={formData.email} onChange={(e: any) => handleInputChange("email", e.target.value)} error={errors.email} />
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Password</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Lock className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                        </div>
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Min. 8 characters"
+                          value={formData.password}
+                          onChange={(e) => handleInputChange("password", e.target.value)}
+                          className={`pl-10 pr-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.password ? 'border-red-500/50' : ''}`}
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
+                          {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        </button>
                       </div>
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Min. 8 characters"
-                        value={formData.password}
-                        onChange={(e) => handleInputChange("password", e.target.value)}
-                        className={`pl-10 pr-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.password ? 'border-red-500/50' : ''}`}
-                      />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300">
-                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                      </button>
+                      <div className="flex gap-0.5 h-0.5 mt-1 px-1 opacity-50">
+                        <div className={`flex-1 rounded-full transition-colors ${['Weak', 'Medium', 'Strong'].includes(passwordStrength) ? (passwordStrength === 'Weak' ? 'bg-red-500' : 'bg-indigo-500') : 'bg-slate-800'}`} />
+                        <div className={`flex-1 rounded-full transition-colors ${['Medium', 'Strong'].includes(passwordStrength) ? 'bg-indigo-500' : 'bg-slate-800'}`} />
+                        <div className={`flex-1 rounded-full transition-colors ${['Strong'].includes(passwordStrength) ? 'bg-emerald-500' : 'bg-slate-800'}`} />
+                      </div>
+                      {errors.password && <p className="text-[10px] text-red-400 ml-1">{errors.password}</p>}
                     </div>
-                    <div className="flex gap-0.5 h-0.5 mt-1 px-1 opacity-50">
-                      <div className={`flex-1 rounded-full transition-colors ${['Weak', 'Medium', 'Strong'].includes(passwordStrength) ? (passwordStrength === 'Weak' ? 'bg-red-500' : 'bg-indigo-500') : 'bg-slate-800'}`} />
-                      <div className={`flex-1 rounded-full transition-colors ${['Medium', 'Strong'].includes(passwordStrength) ? 'bg-indigo-500' : 'bg-slate-800'}`} />
-                      <div className={`flex-1 rounded-full transition-colors ${['Strong'].includes(passwordStrength) ? 'bg-emerald-500' : 'bg-slate-800'}`} />
-                    </div>
-                    {errors.password && <p className="text-[10px] text-red-400 ml-1">{errors.password}</p>}
                   </div>
 
                   <div className="flex items-center pt-1 w-full">

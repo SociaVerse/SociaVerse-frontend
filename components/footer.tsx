@@ -1,8 +1,17 @@
+"use client"
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export function Footer() {
     const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
+    const pathname = usePathname();
+
+    // Hide footer on app-like views where we need 100vh layout without document scrolling
+    if (pathname?.startsWith('/community') || pathname?.startsWith('/chat')) {
+        return null;
+    }
 
     return (
         <footer className="w-full py-10 bg-slate-950 border-t border-slate-900 z-10 text-sm mt-auto relative">

@@ -12,32 +12,83 @@ import { api, Post } from "@/services/api"
 import { PostCard } from "@/components/post-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { Loader2 } from "lucide-react"
 
 export function HomeFeed() {
     const { user, isAuthenticated } = useAuth()
     const router = useRouter()
     const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
     const [activeTab, setActiveTab] = useState<"foryou" | "following">("foryou")
+    const [nextCursor, setNextCursor] = useState<string | null>(null)
+    const [hasMore, setHasMore] = useState(true)
 
     const handleAuthAction = (action: () => void) => {
         if (!isAuthenticated) return router.push("/login")
         action()
     }
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const data = await api.getPosts()
-                setPosts(data)
-            } catch (error) {
-                console.error("Failed to fetch posts:", error)
-            } finally {
-                setLoading(false)
-            }
+    const fetchPosts = async (isInitial = true) => {
+        if (!isInitial && (!hasMore || loadingMore)) return
+
+        if (isInitial) {
+            setLoading(true)
+        } else {
+            setLoadingMore(true)
         }
-        fetchPosts()
-    }, [])
+
+        try {
+            // StandardPagination returns { results, next }
+            // For now api.getPosts() returns just data. We need to check if it handles params.
+            // Let's assume we can pass params or it returns the full object now after backend change.
+            const token = localStorage.getItem("sociaverse_token")
+            const url = isInitial
+                ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/`
+                : nextCursor
+
+            if (!url) return
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': token ? `Token ${token}` : ''
+                }
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                const newPosts = data.results || data
+
+                if (isInitial) {
+                    setPosts(newPosts)
+                } else {
+                    setPosts(prev => [...prev, ...newPosts])
+                }
+
+                setNextCursor(data.next || null)
+                setHasMore(!!data.next)
+            }
+        } catch (error) {
+            console.error("Failed to fetch posts:", error)
+        } finally {
+            setLoading(false)
+            setLoadingMore(false)
+        }
+    }
+
+    useEffect(() => {
+        setPosts([])
+        setHasMore(true)
+        setNextCursor(null)
+        fetchPosts(true)
+    }, [activeTab])
+
+    const lastPostRef = useInfiniteScroll({
+        callback: () => fetchPosts(false),
+        isLoading: loading || loadingMore,
+        hasMore: hasMore
+    })
 
     useEffect(() => {
         // Force scroll to top on mount to fix scroll restoration issues
@@ -45,15 +96,15 @@ export function HomeFeed() {
     }, [])
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 md:pb-0 pt-6 md:pt-0">
+        <div className="min-h-screen bg-slate-950 text-slate-100 pb-20 md:pb-0 pt-16 md:pt-16">
             <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-8">
 
                     {/* Main Feed Area */}
                     <div className="lg:col-span-8 border-x border-slate-800/50 min-h-screen bg-slate-950/50">
 
-                        {/* Feed Header - Sticky */}
-                        <div className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
+                        {/* Feed Header - Sticky - adjusted top to clear navbar */}
+                        <div className="sticky top-16 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
                             <div className="flex items-center justify-between px-4 py-3">
                                 <div className="md:hidden">
                                     <Link href={`/u/${user?.username}`}>
@@ -147,6 +198,11 @@ export function HomeFeed() {
                                         {posts.map((post) => (
                                             <PostCard key={post.id} post={post} handleAuthAction={handleAuthAction} />
                                         ))}
+
+                                        {/* Sentinel for Infinite Scroll */}
+                                        <div ref={lastPostRef} className="h-10 flex items-center justify-center">
+                                            {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-blue-500" />}
+                                        </div>
                                     </motion.div>
                                 ) : (
                                     <div className="text-center py-20">

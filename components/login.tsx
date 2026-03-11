@@ -5,15 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { motion } from "framer-motion"
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
-import { FcGoogle } from "react-icons/fc"
-import { FaGithub, FaTwitter } from "react-icons/fa"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { z } from "zod"
 
 export function Login() {
-  const [showEmailLogin, setShowEmailLogin] = useState(false)
+  const [showEmailLogin, setShowEmailLogin] = useState(true)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -178,7 +176,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950 pt-20 md:pt-24 py-12 px-4 sm:px-6 lg:px-8">
 
       {/* Dynamic Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
@@ -224,87 +222,7 @@ export function Login() {
               </motion.p>
             </div>
 
-            {/* Auth Options */}
-            {!showEmailLogin ? (
-              <div className="space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Button
-                    // Explicitly styling for visibility
-                    className="w-full h-12 bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 font-bold text-base relative group overflow-hidden shadow-sm hover:shadow-md transition-all"
-                    onClick={() => {
-                      console.log("Google Login")
-                      login()
-                      router.push("/events")
-                    }}
-                  >
-                    <FcGoogle className="w-5 h-5 mr-2" />
-                    Continue with Google
-                  </Button>
-                </motion.div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300"
-                      onClick={() => {
-                        login()
-                        router.push("/events")
-                      }}
-                    >
-                      <FaGithub className="w-5 h-5" />
-                    </Button>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full h-12 bg-slate-800/50 border-slate-700 hover:bg-slate-800 hover:text-white text-slate-300"
-                      onClick={() => {
-                        login()
-                        router.push("/events")
-                      }}
-                    >
-                      <FaTwitter className="w-5 h-5 text-sky-500" />
-                    </Button>
-                  </motion.div>
-                </div>
-
-                <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-800" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-transparent px-2 text-slate-500 font-medium">Or continue with</span>
-                  </div>
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <Button
-                    className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25 transition-all"
-                    onClick={() => setShowEmailLogin(true)}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Sign in with Email
-                  </Button>
-                </motion.div>
-              </div>
-            ) : (
+            {/* Auth Options Removed */}
               <motion.form
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -371,18 +289,7 @@ export function Login() {
                   )}
                 </Button>
 
-                <div className="text-center">
-                  <Button
-                    variant="link"
-                    type="button"
-                    onClick={() => setShowEmailLogin(false)}
-                    className="text-slate-400 hover:text-slate-200 text-sm"
-                  >
-                    Back to all options
-                  </Button>
-                </div>
               </motion.form>
-            )}
 
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-slate-800 text-center">

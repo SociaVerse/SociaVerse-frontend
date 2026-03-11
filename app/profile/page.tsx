@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import {
     User, Mail, MapPin, Link as LinkIcon, Settings, Share2, Camera, LogOut, Lock,
     Calendar, Briefcase, Grid, Heart, Image as ImageIcon, MessageCircle, MoreHorizontal,
-    BadgeCheck, Loader2, X, Check, Trash2
+    Check, X, Loader2, Bookmark, Palette, Bell, Globe, LayoutGrid, ArrowRight, ExternalLink,
+    BadgeCheck, Trash2, School,
 } from "lucide-react"
 import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
 import Link from "next/link"
@@ -27,6 +28,12 @@ import {
 import { UserList } from "@/components/user-list"
 import { PostCard } from "@/components/post-card"
 import { compressImage } from "@/utils/image-compression"
+import { ImageCropper } from "@/components/ui/image-cropper"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { PostModal } from "@/components/post-modal"
+import { ProfileAboutSection } from "@/components/profile-about-section"
+import { Post } from "@/services/api"
 
 export default function ProfilePage() {
     const { isAuthenticated, user, isLoading } = useAuth()
@@ -43,6 +50,7 @@ export default function ProfilePage() {
         bio: "",
         location: "",
         website: "",
+        college: "",
         gender: "",
         social_links: {} as any,
         is_private: false,
@@ -51,9 +59,27 @@ export default function ProfilePage() {
         avatar: null as string | null,
         banner: null as string | null,
         joined: "",
-        role: "Member"
+        role: "Member",
+        portfolio: [] as any[],
+        recent_media: [] as string[],
+        interests: [] as string[],
+        personality_type: "",
+        mbti: "",
+        vibe_tags: [] as string[],
+        favorite_quote: "",
+        currently_obsessed_with: "",
+        random_skill: "",
+        relationship_status: "",
+        zodiac_sign: "",
+        looking_for: [] as string[],
+        status_emoji: "",
+        status_text: "",
+        bucket_list: [] as string[],
+        pet_peeves: [] as string[],
     })
     const [isLoadingData, setIsLoadingData] = useState(true)
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [selectedPost, setSelectedPost] = useState<Post | null>(null)
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -79,6 +105,7 @@ export default function ProfilePage() {
                     bio: data.bio || "",
                     location: data.location || "",
                     website: data.website || "",
+                    college: data.college || "",
                     gender: data.gender || "",
                     social_links: data.social_links || {},
                     is_private: data.is_private || false,
@@ -87,7 +114,23 @@ export default function ProfilePage() {
                     avatar: data.profile_picture || null,
                     banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
                     joined: "February 2026", // TODO: Add joined date to backend serializer if needed
-                    role: data.is_verified ? "Verified User" : "Member"
+                    role: data.is_verified ? "Verified User" : "Member",
+                    portfolio: data.portfolio || [],
+                    recent_media: data.recent_media || [],
+                    interests: data.interests || [],
+                    personality_type: data.personality_type || "",
+                    mbti: data.mbti || "",
+                    vibe_tags: data.vibe_tags || [],
+                    favorite_quote: data.favorite_quote || "",
+                    currently_obsessed_with: data.currently_obsessed_with || "",
+                    random_skill: data.random_skill || "",
+                    relationship_status: data.relationship_status || "",
+                    zodiac_sign: data.zodiac_sign || "",
+                    looking_for: data.looking_for || [],
+                    status_emoji: data.status_emoji || "",
+                    status_text: data.status_text || "",
+                    bucket_list: data.bucket_list || [],
+                    pet_peeves: data.pet_peeves || [],
                 })
             }
         } catch (error) {
@@ -113,12 +156,18 @@ export default function ProfilePage() {
 
             {/* --- Cover Image --- */}
             <div className="relative h-64 md:h-80 w-full overflow-hidden group">
-                <img
+                <motion.img
                     src={profile.banner!}
                     alt="Cover"
+                    initial={{ scale: 1.15 }}
+                    animate={{ scale: 1 }}
+                    transition={{
+                        duration: 3,
+                        ease: "easeOut",
+                    }}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
             </div>
 
             {/* --- Profile Header Info --- */}
@@ -143,12 +192,28 @@ export default function ProfilePage() {
                         </motion.div>
 
                         <div className="mb-2 md:mb-4 pt-2 md:pt-0 text-center md:text-left flex-1">
-                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
-                                {profile.name}
+                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3 flex-wrap">
+                                <span>{profile.name}</span>
+                                {profile.status_emoji && (
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 rounded-full border border-slate-700/50 shadow-xl backdrop-blur-md">
+                                        <span className="text-lg leading-none">{profile.status_emoji}</span>
+                                        {profile.status_text && <span className="text-xs text-slate-300 font-semibold whitespace-nowrap">{profile.status_text}</span>}
+                                    </div>
+                                )}
                                 {profile.role === "Verified User" && <BadgeCheck className="w-6 h-6 text-blue-500" />}
                                 {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
                             <p className="text-slate-400 font-medium text-lg">@{profile.username}</p>
+
+                            {/* College Badge */}
+                            {profile.college && (
+                                <div className="mt-2 flex items-center justify-center md:justify-start">
+                                    <div className="flex flex-wrap items-center gap-1.5 px-3 py-1 bg-slate-800/60 border border-slate-700/50 rounded-full text-xs font-semibold text-slate-300">
+                                        <School className="w-3.5 h-3.5 text-blue-400" />
+                                        <span>{profile.college}</span>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Mobile Key Info (Visible only on small screens) */}
                             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-3 md:hidden text-sm text-slate-400">
@@ -210,7 +275,9 @@ export default function ProfilePage() {
                             <h3 className="text-lg font-bold text-white mb-4">Intro</h3>
                             <div className="space-y-4 text-sm text-slate-400">
                                 {profile.bio && (
-                                    <p className="text-slate-300 leading-relaxed text-base">{profile.bio}</p>
+                                    <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{profile.bio}</ReactMarkdown>
+                                    </div>
                                 )}
                                 <div className="flex items-center gap-3">
                                     <Briefcase className="w-5 h-5 text-slate-500" />
@@ -220,6 +287,12 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-3">
                                         <MapPin className="w-5 h-5 text-slate-500" />
                                         <span>{profile.location}</span>
+                                    </div>
+                                )}
+                                {profile.college && (
+                                    <div className="flex items-center gap-3">
+                                        <School className="w-5 h-5 text-slate-500" />
+                                        <span>{profile.college}</span>
                                     </div>
                                 )}
                                 {profile.website && (
@@ -287,9 +360,9 @@ export default function ProfilePage() {
                     {/* MAIN FEED (Right Column) */}
                     <div className="lg:col-span-8">
 
-                        {/* Custom Tabs */}
-                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
-                            {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
+                        {/* Custom Tabs - adjusted top on desktop to clear navbar */}
+                        <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 md:top-16 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
+                            {["Posts", "About", "Followers", "Following", "Portfolio", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
@@ -315,24 +388,62 @@ export default function ProfilePage() {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {activeTab === "Posts" && <PostsFeed profile={profile} currentUser={user} />}
+                                {activeTab === "Posts" && <PostsFeed profile={profile} currentUser={user} onImageClick={setSelectedImage} onPostClick={setSelectedPost} />}
+                                {activeTab === "About" && <ProfileAboutSection profile={profile} />}
                                 {activeTab === "Followers" && (
                                     <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
                                 )}
                                 {activeTab === "Following" && (
                                     <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
                                 )}
-                                {activeTab === "About" && (
-                                    <div className="text-slate-400 text-center py-10">About details coming soon...</div>
+                                {activeTab === "Portfolio" && (
+                                    <PortfolioSection portfolio={profile.portfolio} />
                                 )}
                                 {activeTab === "Media" && (
+                                    <MediaGallery media={profile.recent_media} onImageClick={setSelectedImage} />
+                                )}
+                                {activeTab === "Likes" && (
                                     <div className="text-center py-12 text-slate-500">
-                                        No media yet
+                                        Liked posts coming soon...
                                     </div>
                                 )}
                             </motion.div>
                         </AnimatePresence>
 
+                        {/* Lightbox */}
+                        <AnimatePresence>
+                            {selectedImage && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setSelectedImage(null)}
+                                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 cursor-pointer"
+                                >
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full z-[10000]"
+                                        onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+                                    >
+                                        <X className="w-8 h-8" />
+                                    </Button>
+                                    <motion.img
+                                        layoutId={selectedImage}
+                                        src={selectedImage}
+                                        alt="Full screen"
+                                        className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <PostModal
+                            post={selectedPost}
+                            isOpen={!!selectedPost}
+                            onClose={() => setSelectedPost(null)}
+                        />
                     </div>
                 </div>
             </div>
@@ -345,18 +456,27 @@ export default function ProfilePage() {
 
 // --- Sub-components for Feed ---
 
-// --- Sub-components for Feed ---
-
-function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any }) {
+function PostsFeed({ profile, currentUser, onImageClick, onPostClick }: {
+    profile: any,
+    currentUser: any,
+    onImageClick: (src: string) => void,
+    onPostClick: (post: Post) => void
+}) {
     const [content, setContent] = useState("")
     const [images, setImages] = useState<File[]>([])
     const [posts, setPosts] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
     const { toast } = useToast()
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    // Cropper State
+    const [pendingCropFiles, setPendingCropFiles] = useState<File[]>([])
+    const [currentCropIndex, setCurrentCropIndex] = useState(0)
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
+    const [cropDialogOpen, setCropDialogOpen] = useState(false)
+    const [tempCroppedImages, setTempCroppedImages] = useState<File[]>([])
 
     useEffect(() => {
         fetchPosts()
@@ -370,7 +490,8 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
             })
             if (response.ok) {
                 const data = await response.json()
-                setPosts(data)
+                const results = Array.isArray(data) ? data : data.results || []
+                setPosts(results)
             }
         } catch (error) {
             console.error("Error fetching posts:", error)
@@ -379,24 +500,62 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
 
     const [isCompressing, setIsCompressing] = useState(false);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
             const selectedFiles = Array.from(e.target.files)
             if (images.length + selectedFiles.length > 10) {
                 toast({ title: "Limit Exceeded", message: "You can only upload up to 10 images.", type: "error" })
                 return
             }
 
-            setIsCompressing(true);
+            setPendingCropFiles(selectedFiles)
+            setTempCroppedImages([])
+            setCurrentCropIndex(0)
+            startCropForIndex(selectedFiles, 0)
+
+            // Allow selecting same files again if cancelled
+            e.target.value = ''
+        }
+    }
+
+    const startCropForIndex = (files: File[], index: number) => {
+        const file = files[index]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.addEventListener("load", () => {
+            setCropImageSrc(reader.result?.toString() || null)
+            setCropDialogOpen(true)
+        })
+        reader.readAsDataURL(file)
+    }
+
+    const handleCropComplete = async (croppedFile: File) => {
+        const newTempImages = [...tempCroppedImages]
+        newTempImages[currentCropIndex] = croppedFile
+        setTempCroppedImages(newTempImages)
+
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+
+        const nextIndex = currentCropIndex + 1
+        if (nextIndex < pendingCropFiles.length) {
+            // Slight delay to allow dialog closing animation
+            setTimeout(() => {
+                setCurrentCropIndex(nextIndex)
+                startCropForIndex(pendingCropFiles, nextIndex)
+            }, 100)
+        } else {
+            // Done with all crops, now compress them all
+            setIsCompressing(true)
             try {
                 const compressedFiles = await Promise.all(
-                    selectedFiles.map(async (file) => {
+                    newTempImages.map(async (f) => {
                         try {
-                            const compressed = await compressImage(file);
-                            return compressed;
+                            return await compressImage(f);
                         } catch (err) {
-                            console.error("Failed to compress", file.name, err);
-                            return file; // Fallback to original
+                            console.error("Failed to compress", f.name, err);
+                            return f;
                         }
                     })
                 );
@@ -404,9 +563,63 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
             } catch (error) {
                 console.error("Error processing images", error);
             } finally {
-                setIsCompressing(false);
+                setIsCompressing(false)
+                setPendingCropFiles([])
+                setTempCroppedImages([])
             }
         }
+    }
+
+    const handleCropCancel = () => {
+        // Cancel the entire batch upload
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+        setPendingCropFiles([])
+        setTempCroppedImages([])
+        setCurrentCropIndex(0)
+    }
+
+    const handleCropBack = () => {
+        if (currentCropIndex > 0) {
+            setCropDialogOpen(false)
+            setCropImageSrc(null)
+
+            setTimeout(() => {
+                const prevIndex = currentCropIndex - 1
+                setCurrentCropIndex(prevIndex)
+                startCropForIndex(pendingCropFiles, prevIndex)
+            }, 100)
+        }
+    }
+
+    const handleCropRemove = () => {
+        const newPending = [...pendingCropFiles]
+        const newTemp = [...tempCroppedImages]
+
+        newPending.splice(currentCropIndex, 1)
+        if (newTemp.length > currentCropIndex) {
+            newTemp.splice(currentCropIndex, 1)
+        }
+
+        setPendingCropFiles(newPending)
+        setTempCroppedImages(newTemp)
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+
+        if (newPending.length === 0) {
+            // Cancelled all
+            setCurrentCropIndex(0)
+            return
+        }
+
+        // Determine which image to show next
+        // If we removed the last one, go back one. Otherwise stay at current index which now points to next
+        const nextIndex = currentCropIndex >= newPending.length ? newPending.length - 1 : currentCropIndex
+
+        setTimeout(() => {
+            setCurrentCropIndex(nextIndex)
+            startCropForIndex(newPending, nextIndex)
+        }, 100)
     }
 
     const removeImage = (index: number) => {
@@ -514,34 +727,6 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
                 )}
             </AnimatePresence>
 
-            {/* Lightbox */}
-            <AnimatePresence>
-                {selectedImage && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedImage(null)}
-                        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 cursor-pointer"
-                    >
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-4 right-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full z-[10000]"
-                            onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
-                        >
-                            <X className="w-8 h-8" />
-                        </Button>
-                        <motion.img
-                            layoutId={selectedImage}
-                            src={selectedImage}
-                            alt="Full screen"
-                            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
             {/* Confirmation Dialog */}
             <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
@@ -645,11 +830,104 @@ function PostsFeed({ profile, currentUser }: { profile: any, currentUser: any })
                             post={post}
                             handleAuthAction={handleAuthAction}
                             onDelete={handleDeletePost}
-                            onImageClick={setSelectedImage}
+                            onImageClick={onImageClick}
                         />
                     ))}
                 </div>
             )}
+
+            {/* Post Image Cropper Dialog */}
+            {cropImageSrc && (
+                <ImageCropper
+                    open={cropDialogOpen}
+                    imageSrc={cropImageSrc}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                    aspectRatio={1} // 1:1 Square aspect ratio for feed uniformity
+                    currentStep={currentCropIndex + 1}
+                    totalSteps={pendingCropFiles.length}
+                    onBack={currentCropIndex > 0 ? handleCropBack : undefined}
+                    onRemove={handleCropRemove}
+                />
+            )}
+        </div>
+    )
+}
+
+function MediaGallery({ media, onImageClick }: { media: string[], onImageClick: (src: string) => void }) {
+    if (!media || media.length === 0) {
+        return (
+            <div className="text-center py-20 text-slate-500">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No media found in your posts.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {media.map((src, idx) => (
+                <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group"
+                    onClick={() => onImageClick(src)}
+                >
+                    <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ExternalLink className="w-5 h-5 text-white" />
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    )
+}
+
+function PortfolioSection({ portfolio }: { portfolio: any[] }) {
+    if (!portfolio || portfolio.length === 0) {
+        return (
+            <div className="text-center py-20 text-slate-500">
+                <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No projects or achievements added yet.</p>
+                <Link href="/settings/profile" className="mt-4 inline-block">
+                    <Button variant="link" className="text-blue-400">Add highlighting projects</Button>
+                </Link>
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {portfolio.map((item, idx) => (
+                <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl hover:border-blue-500/30 transition-colors group"
+                >
+                    <div className="flex items-start justify-between mb-3">
+                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                            {item.type === 'certification' ? <BadgeCheck className="w-5 h-5" /> : <LayoutGrid className="w-5 h-5" />}
+                        </div>
+                        {item.date && <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">{item.date}</span>}
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{item.title}</h4>
+                    <p className="text-sm text-slate-400 line-clamp-2 mb-4">{item.description}</p>
+                    {item.link && (
+                        <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                            View Project <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                    )}
+                </motion.div>
+            ))}
         </div>
     )
 }

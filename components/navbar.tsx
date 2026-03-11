@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Globe, Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus } from "lucide-react"
+import { Globe, Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus, Tag } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -153,14 +153,14 @@ export function Navbar() {
           transition: { duration: 0.5, ease: "easeOut" }
         }}
         className={cn(
-          "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[95%] rounded-full transition-all duration-300",
+          "fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 pt-safe rounded-b-2xl border-b border-slate-700/50",
           scrolled
-            ? "bg-slate-900/90 backdrop-blur-lg shadow-lg border border-slate-700/50 shadow-blue-500/10"
-            : "bg-slate-900/70 backdrop-blur-md",
-          isChatPage || isProfilePage ? "hidden md:block" : "" // Hide on mobile if on chat or profile page
+            ? "bg-slate-900/90 backdrop-blur-lg border-slate-700/50 shadow-lg shadow-blue-500/10"
+            : "bg-slate-900/50 backdrop-blur-md border-white/5",
+          isChatPage || isProfilePage ? "hidden md:block" : ""
         )}
       >
-        <div className="px-6 flex h-16 items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 flex h-16 items-center justify-between">
 
           {/* Brand/Logo */}
           <motion.div
@@ -168,17 +168,18 @@ export function Navbar() {
             initial={{ x: -20 }}
             animate={{ x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+
           >
             <Link href="/" className="flex items-center group ml-2">
               <motion.div
-                className="relative flex h-10 sm:h-12 w-auto items-center justify-start bg-transparent transition-all duration-300 -translate-y-[2px]"
+                className="relative flex h-10 sm:h-12 w-auto items-center  justify-start bg-transparent transition-all duration-300 -translate-y-[2px]"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <img
                   src="/logo.png"
                   alt="SociaVerse Logo"
-                  className="h-full w-auto object-contain object-left scale-[1.3] sm:scale-[1.4] origin-left drop-shadow-md group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all"
+                  className="h-full w-auto object-contain object-left scale-[1.1] sm:scale-[1.4] origin-left drop-shadow-md group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all"
                 />
               </motion.div>
             </Link>
@@ -238,10 +239,6 @@ export function Navbar() {
           >
             {!isWaitlistMode && (
               <>
-                <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:scale-110 transition-all">
-                  <Search className="h-5 w-5" />
-                </Button>
-
                 {/* SociaLink Entry Point */}
                 <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 hover:scale-110 transition-all relative group">
                   <Link href="/socialink">
@@ -373,7 +370,7 @@ function NavbarNotifications() {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('sociaverse_token')
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/`, {
         headers: { 'Authorization': `Token ${token}` }
       })
       if (response.ok) {
@@ -383,6 +380,21 @@ function NavbarNotifications() {
       }
     } catch (error) {
       console.error("Failed to fetch notifications", error)
+    }
+  }
+
+  const markAsRead = async (id: number) => {
+    try {
+      const token = localStorage.getItem('sociaverse_token')
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Token ${token}` }
+      })
+      // Optimistically update UI
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error("Failed to mark as read", error)
     }
   }
 
@@ -441,36 +453,58 @@ function NavbarNotifications() {
               No notifications yet.
             </div>
           ) : (
-            notifications.map((n) => (
-              <Link href={n.notification_type === 'follow_request' ? '/notifications' : `/u/${n.sender.username}`} key={n.id} onClick={() => setIsOpen(false)}>
-                <div className={`p-3 border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex gap-3 ${!n.is_read ? 'bg-slate-800/20' : ''}`}>
-                  <div className="shrink-0 mt-1">
-                    {n.notification_type === 'follow_request' ? (
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center">
-                        <UserPlus className="w-4 h-4" />
-                      </div>
-                    ) : n.sender.profile_picture ? (
-                      <img src={n.sender.profile_picture.startsWith('http') ? n.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${n.sender.profile_picture}`} className="w-8 h-8 rounded-full object-cover" alt="" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
-                        <User className="w-4 h-4 text-slate-300" />
-                      </div>
-                    )}
+            notifications.map((n) => {
+              // Determine the right link destination
+              let linkHref = `/u/${n.sender?.username || 'user'}`
+              if (n.notification_type === 'follow_request') linkHref = '/notifications'
+              else if (n.notification_type === 'marketplace_contact') linkHref = '/chat'
+              else if (n.post) linkHref = `/post/${n.post}` // If it's a comment/like on a post
+
+              return (
+                <Link
+                  href={linkHref}
+                  key={n.id}
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (!n.is_read) markAsRead(n.id);
+                  }}
+                >
+                  <div className={`p-3 border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex gap-3 ${!n.is_read ? 'bg-slate-800/20' : ''}`}>
+                    <div className="shrink-0 mt-1">
+                      {n.notification_type === 'follow_request' ? (
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center">
+                          <UserPlus className="w-4 h-4" />
+                        </div>
+                      ) : n.notification_type === 'marketplace_contact' ? (
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                          <Tag className="w-4 h-4" />
+                        </div>
+                      ) : n.sender?.profile_picture ? (
+                        <img src={n.sender.profile_picture.startsWith('http') ? n.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${n.sender.profile_picture}`} className="w-8 h-8 rounded-full object-cover" alt="" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+                          <User className="w-4 h-4 text-slate-300" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-slate-300 leading-snug">
+                        <span className="font-semibold text-white">{n.sender?.username || 'A user'}</span>
+                        {" "}
+                        {n.notification_type === 'follow_request' && 'requested to follow you.'}
+                        {n.notification_type === 'new_follower' && 'started following you.'}
+                        {n.notification_type === 'like' && 'liked your post.'}
+                        {n.notification_type === 'comment' && 'commented on your post.'}
+                        {n.notification_type === 'reply' && 'replied to your comment.'}
+                        {n.notification_type === 'marketplace_contact' && 'wants to buy your item.'}
+                      </p>
+                      <span className="text-xs text-slate-500 mt-1 block">{formatDate(n.created_at)}</span>
+                    </div>
+                    {!n.is_read && <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-300 leading-snug">
-                      <span className="font-semibold text-white">{n.sender.username}</span>
-                      {" "}
-                      {n.notification_type === 'follow_request' && 'requested to follow you.'}
-                      {n.notification_type === 'new_follower' && 'started following you.'}
-                      {n.notification_type === 'like' && 'liked your post.'}
-                    </p>
-                    <p className="text-[10px] text-slate-500 mt-1">{formatDate(n.created_at)}</p>
-                  </div>
-                  {!n.is_read && <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>}
-                </div>
-              </Link>
-            ))
+                </Link>
+              )
+            })
           )}
         </div>
 

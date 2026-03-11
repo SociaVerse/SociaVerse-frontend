@@ -42,7 +42,7 @@ export default function NotificationsPage() {
     const fetchNotifications = async () => {
         try {
             const token = localStorage.getItem('sociaverse_token')
-            const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/notifications/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/`, {
                 headers: { 'Authorization': `Token ${token}` }
             })
             if (response.ok) {

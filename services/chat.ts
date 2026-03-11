@@ -25,6 +25,9 @@ export interface Message {
     sender_id: number
     content: string
     timestamp: string
+    read_by?: number[]
+    delivered_to?: number[]
+    status?: 'sent' | 'delivered' | 'read'
     likes?: number[]
     starred_by?: number[]
     pinned_by?: number[]

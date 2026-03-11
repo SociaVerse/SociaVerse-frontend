@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import {
     User, MapPin, Link as LinkIcon, Share2, Lock,
     Calendar, Briefcase, Heart, MessageCircle, MoreHorizontal,
-    BadgeCheck, Loader2, X, UserPlus, MessageSquare, Check
+    BadgeCheck, Loader2, X, UserPlus, MessageSquare, Check, Zap
 } from "lucide-react"
 import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
 import { useToast } from "@/components/ui/custom-toast"
@@ -21,7 +21,31 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Ban, EyeOff, Flag } from "lucide-react"
+import { Ban, EyeOff, Flag, LayoutGrid, ArrowRight, ExternalLink, Image as ImageIcon, Grid } from "lucide-react"
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { ProfileAboutSection } from "@/components/profile-about-section"
+import { getZodiacCompatibility } from "@/utils/zodiac-helper"
+
+const ZodiacBadge = ({ userSign, profileSign }: { userSign: string, profileSign: string }) => {
+    const { isCompatible, message, level } = getZodiacCompatibility(userSign, profileSign);
+    if (!isCompatible) return null;
+    
+    return (
+        <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] uppercase font-bold tracking-wider ${
+                level === 'Perfect' 
+                ? "bg-rose-500/10 border-rose-500/20 text-rose-400" 
+                : "bg-blue-500/10 border-blue-500/20 text-blue-400"
+            }`}
+        >
+            <Zap className="w-3 h-3" />
+            {message}
+        </motion.div>
+    );
+};
 
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
     const { username } = use(params)
@@ -29,6 +53,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
     const router = useRouter()
     const [activeTab, setActiveTab] = useState("Posts")
     const { toast } = useToast()
+    const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
     // State
     const [profile, setProfile] = useState({
@@ -41,7 +66,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         gender: "",
         social_links: {} as any,
         is_private: false,
-        followers_count: 0,
+        follower_count: 0,
         following_count: 0,
         avatar: null as string | null,
         banner: null as string | null,
@@ -50,6 +75,22 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         is_verified: false,
         is_blocked: false,
         is_restricted: false,
+        portfolio: [] as any[],
+        recent_media: [] as string[],
+        interests: [] as string[],
+        personality_type: "",
+        mbti: "",
+        vibe_tags: [] as string[],
+        favorite_quote: "",
+        currently_obsessed_with: "",
+        random_skill: "",
+        relationship_status: "",
+        zodiac_sign: "",
+        looking_for: [] as string[],
+        status_emoji: "",
+        status_text: "",
+        bucket_list: [] as string[],
+        pet_peeves: [] as string[],
     })
     const [isLoadingData, setIsLoadingData] = useState(true)
     const [followStatus, setFollowStatus] = useState<'none' | 'pending' | 'accepted' | 'self'>('none')
@@ -81,7 +122,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                     gender: data.gender || "",
                     social_links: data.social_links || {},
                     is_private: data.is_private || false,
-                    followers_count: data.followers_count || 0,
+                    follower_count: data.followers_count || 0,
                     following_count: data.following_count || 0,
                     avatar: data.profile_picture || null,
                     banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
@@ -90,6 +131,22 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                     is_verified: data.is_verified,
                     is_blocked: data.is_blocked || false,
                     is_restricted: data.is_restricted || false,
+                    portfolio: data.portfolio || [],
+                    recent_media: data.recent_media || [],
+                    interests: data.interests || [],
+                    personality_type: data.personality_type || "",
+                    mbti: data.mbti || "",
+                    vibe_tags: data.vibe_tags || [],
+                    favorite_quote: data.favorite_quote || "",
+                    currently_obsessed_with: data.currently_obsessed_with || "",
+                    random_skill: data.random_skill || "",
+                    relationship_status: data.relationship_status || "",
+                    zodiac_sign: data.zodiac_sign || "",
+                    looking_for: data.looking_for || [],
+                    status_emoji: data.status_emoji || "",
+                    status_text: data.status_text || "",
+                    bucket_list: data.bucket_list || [],
+                    pet_peeves: data.pet_peeves || [],
                 })
                 setFollowStatus(data.follow_status || 'none')
             } else {
@@ -130,13 +187,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                 const data = await response.json()
                 if (data.status === 'following') {
                     setFollowStatus('accepted')
-                    setProfile(prev => ({ ...prev, followers_count: prev.followers_count + 1 }))
+                    setProfile(prev => ({ ...prev, follower_count: prev.follower_count + 1 }))
                 } else if (data.status === 'requested') {
                     setFollowStatus('pending')
                     toast({ title: "Requested", message: "Follow request sent.", type: "success" })
                 } else if (data.status === 'unfollowed') {
                     if (followStatus === 'accepted') {
-                        setProfile(prev => ({ ...prev, followers_count: Math.max(0, prev.followers_count - 1) }))
+                        setProfile(prev => ({ ...prev, follower_count: Math.max(0, prev.follower_count - 1) }))
                     }
                     setFollowStatus('none')
                 }
@@ -243,8 +300,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                         </motion.div>
 
                         <div className="mb-2 md:mb-4 pt-2 md:pt-0 text-center md:text-left flex-1">
-                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
-                                {profile.name}
+                            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center justify-center md:justify-start gap-3 flex-wrap">
+                                <span>{profile.name}</span>
+                                {profile.status_emoji && (
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900/80 rounded-full border border-slate-700/50 shadow-xl backdrop-blur-md">
+                                        <span className="text-lg leading-none">{profile.status_emoji}</span>
+                                        {profile.status_text && <span className="text-xs text-slate-300 font-semibold whitespace-nowrap">{profile.status_text}</span>}
+                                    </div>
+                                )}
+                                {currentUser?.zodiac_sign && profile.zodiac_sign && (
+                                    <ZodiacBadge userSign={currentUser.zodiac_sign} profileSign={profile.zodiac_sign} />
+                                )}
                                 {profile.role === "Verified User" && <BadgeCheck className="w-6 h-6 text-blue-500" />}
                                 {profile.is_private && <Lock className="w-5 h-5 text-slate-400" />}
                             </h1>
@@ -276,7 +342,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                             <div className="flex items-center justify-center md:justify-start gap-6 mt-4 text-slate-300">
                                 <div className={`transition-colors ${!isPrivateAndHidden ? "cursor-pointer hover:text-white" : ""}`} onClick={() => !isPrivateAndHidden && setActiveTab("Followers")}>
-                                    <span className="font-bold text-white">{profile.followers_count}</span> Followers
+                                    <span className="font-bold text-white">{profile.follower_count}</span> Followers
                                 </div>
                                 <div className={`transition-colors ${!isPrivateAndHidden ? "cursor-pointer hover:text-white" : ""}`} onClick={() => !isPrivateAndHidden && setActiveTab("Following")}>
                                     <span className="font-bold text-white">{profile.following_count}</span> Following
@@ -354,7 +420,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             <h3 className="text-lg font-bold text-white mb-4">Intro</h3>
                             <div className="space-y-4 text-sm text-slate-400">
                                 {profile.bio && (
-                                    <p className="text-slate-300 leading-relaxed text-base">{profile.bio}</p>
+                                    <div className="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{profile.bio}</ReactMarkdown>
+                                    </div>
                                 )}
                                 <div className="flex items-center gap-3">
                                     <Briefcase className="w-5 h-5 text-slate-500" />
@@ -433,7 +501,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                         {/* Custom Tabs */}
                         <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
-                            {["Posts", "Followers", "Following", "About", "Media", "Likes"].map((tab) => (
+                            {["Posts", "About", "Followers", "Following", "Portfolio", "Media", "Likes"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
@@ -471,18 +539,22 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                                     transition={{ duration: 0.2 }}
                                 >
                                     {activeTab === "Posts" && <PostsFeed username={username} currentUser={currentUser} />}
+                                    {activeTab === "About" && <ProfileAboutSection profile={profile} />}
                                     {activeTab === "Followers" && (
                                         <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
                                     )}
                                     {activeTab === "Following" && (
                                         <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/following/`} emptyMessage="Not following anyone yet" />
                                     )}
-                                    {activeTab === "About" && (
-                                        <div className="text-slate-400 text-center py-10">About details coming soon...</div>
+                                    {activeTab === "Portfolio" && (
+                                        <PortfolioSection portfolio={profile.portfolio} />
                                     )}
                                     {activeTab === "Media" && (
+                                        <MediaGallery media={profile.recent_media} onImageClick={setSelectedImage} />
+                                    )}
+                                    {activeTab === "Likes" && (
                                         <div className="text-center py-12 text-slate-500">
-                                            No media yet
+                                            Liked posts coming soon...
                                         </div>
                                     )}
                                 </motion.div>
@@ -524,7 +596,8 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
             })
             if (response.ok) {
                 const data = await response.json()
-                setPosts(data)
+                const results = Array.isArray(data) ? data : data.results || []
+                setPosts(results)
             }
         } catch (error) {
             console.error("Error fetching posts:", error)
@@ -579,6 +652,81 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
                     ))}
                 </div>
             )}
+        </div>
+    )
+}
+
+function MediaGallery({ media, onImageClick }: { media: string[], onImageClick: (src: string) => void }) {
+    if (!media || media.length === 0) {
+        return (
+            <div className="text-center py-20 text-slate-500">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No media found in their posts.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {media.map((src, idx) => (
+                <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group"
+                    onClick={() => onImageClick(src)}
+                >
+                    <img src={src} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ExternalLink className="w-5 h-5 text-white" />
+                    </div>
+                </motion.div>
+            ))}
+        </div>
+    )
+}
+
+function PortfolioSection({ portfolio }: { portfolio: any[] }) {
+    if (!portfolio || portfolio.length === 0) {
+        return (
+            <div className="text-center py-20 text-slate-500">
+                <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                <p>No projects or achievements shared yet.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {portfolio.map((item, idx) => (
+                <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl hover:border-blue-500/30 transition-colors group"
+                >
+                    <div className="flex items-start justify-between mb-3">
+                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                            {item.type === 'certification' ? <BadgeCheck className="w-5 h-5" /> : <LayoutGrid className="w-5 h-5" />}
+                        </div>
+                        {item.date && <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">{item.date}</span>}
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{item.title}</h4>
+                    <p className="text-sm text-slate-400 line-clamp-2 mb-4">{item.description}</p>
+                    {item.link && (
+                        <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                            View Project <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                    )}
+                </motion.div>
+            ))}
         </div>
     )
 }

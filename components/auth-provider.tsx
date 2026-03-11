@@ -7,11 +7,14 @@ interface User {
     id: number
     username: string
     email: string
+    zodiac_sign?: string
     first_name: string
     last_name: string
     college: string
     profile_picture: string | null
     is_verified: boolean
+    default_upi_id: string | null
+    upi_qr_code?: string | null
 }
 
 interface AuthContextType {

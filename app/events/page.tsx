@@ -8,13 +8,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/ta
 import {
     Calendar, MapPin, Clock, Users, ArrowRight, Music, Code, Trophy, Star, Lock,
     Search, SlidersHorizontal, Filter, Globe, Sparkles, DollarSign, Tag, X, ChevronDown,
-    Edit, Trash2
+    Edit, Trash2, Loader2
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet"
 import { useToast } from "@/components/ui/custom-toast"
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
+import { useCallback } from "react"
 
 // Interface for Event
 interface Event {
@@ -53,36 +55,58 @@ export default function EventsPage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [events, setEvents] = useState<Event[]>([])
     const [isFetching, setIsFetching] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [nextUrl, setNextUrl] = useState<string | null>(null)
+    const [hasMore, setHasMore] = useState(true)
     const [favorites, setFavorites] = useState<Set<number>>(new Set())
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem("sociaverse_token")
-                const headers = token ? { 'Authorization': `Token ${token}` } : {}
+    const fetchEvents = useCallback(async (isInitial = true) => {
+        if (!isInitial && (!hasMore || loadingMore)) return
 
-                const [eventsRes, favoritesRes] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/`, { headers: headers as HeadersInit }),
-                    token ? fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/favorites/`, { headers: headers as HeadersInit }) : Promise.resolve(null)
-                ])
+        if (isInitial) setIsFetching(true)
+        else setLoadingMore(true)
 
-                if (eventsRes.ok) {
-                    const data = await eventsRes.json()
-                    setEvents(data)
-                }
+        try {
+            const token = localStorage.getItem("sociaverse_token")
+            const headers = token ? { 'Authorization': `Token ${token}` } : {}
 
-                if (favoritesRes && favoritesRes.ok) {
+            const url = isInitial ? `${process.env.NEXT_PUBLIC_API_URL}/api/events/` : nextUrl
+            if (!url) return
+
+            const eventsRes = await fetch(url, { headers: headers as HeadersInit })
+
+            if (eventsRes.ok) {
+                const data = await eventsRes.json()
+                const results = data.results || data
+                setEvents(prev => isInitial ? results : [...prev, ...results])
+                setNextUrl(data.next || null)
+                setHasMore(!!data.next)
+            }
+
+            if (isInitial && token) {
+                const favoritesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/favorites/`, { headers: headers as HeadersInit })
+                if (favoritesRes.ok) {
                     const favs = await favoritesRes.json()
                     setFavorites(new Set(favs))
                 }
-            } catch (error) {
-                console.error("Failed to fetch data:", error)
-            } finally {
-                setIsFetching(false)
             }
+        } catch (error) {
+            console.error("Failed to fetch data:", error)
+        } finally {
+            setIsFetching(false)
+            setLoadingMore(false)
         }
-        fetchData()
-    }, [isAuthenticated])
+    }, [hasMore, loadingMore, nextUrl])
+
+    useEffect(() => {
+        fetchEvents(true)
+    }, [isAuthenticated, fetchEvents])
+
+    const lastEventRef = useInfiniteScroll({
+        callback: () => fetchEvents(false),
+        isLoading: isFetching || loadingMore,
+        hasMore: hasMore
+    })
 
     const toggleFavorite = async (e: React.MouseEvent, eventId: number) => {
         e.stopPropagation()
@@ -190,7 +214,7 @@ export default function EventsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-purple-500/30 font-sans">
+        <div className="min-h-[100dvh] bg-slate-950 text-slate-100 selection:bg-purple-500/30 font-sans overflow-x-hidden">
             {/* Background Atmosphere */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] opacity-30 animate-pulse" style={{ animationDuration: '8s' }} />
@@ -198,10 +222,10 @@ export default function EventsPage() {
                 <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-emerald-500/5 rounded-full blur-[100px]" />
             </div>
 
-            <main className="relative z-10 max-w-7xl mx-auto space-y-8 pb-20">
+            <main className="relative z-10 max-w-7xl mx-auto space-y-8 pb-[calc(6rem+max(env(safe-area-inset-bottom),16px))] md:pb-20">
 
                 {/* Hero / Header Section */}
-                <div className="pt-32 px-4 md:px-8 pb-10">
+                <div className="pt-[5.5rem] px-4 md:px-8 pb-10">
                     <div className="flex flex-col md:flex-row justify-between items-end gap-8">
                         <div className="space-y-6 max-w-3xl">
                             <motion.div
@@ -248,7 +272,7 @@ export default function EventsPage() {
                 </div>
 
                 {/* Sticky Controls Container */}
-                <div className="sticky top-20 z-40 px-4 md:px-8 -mx-4 md:-mx-8">
+                <div className="sticky top-[4.5rem] z-40 px-4 md:px-8 -mx-4 md:-mx-8">
                     <div className="bg-neutral-950/80 backdrop-blur-2xl border-b border-white/5 pb-4 pt-2 md:py-4 shadow-lg shadow-black/20 transition-all">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-3 md:gap-4 justify-between items-center">
 
@@ -374,6 +398,12 @@ export default function EventsPage() {
                             onToggleFavorite={(e) => toggleFavorite(e, event.id)}
                         />
                     ))}
+
+                    {/* Sentinel */}
+                    <div ref={lastEventRef} className="col-span-full h-10 flex items-center justify-center text-blue-500">
+                        {loadingMore && <Loader2 className="w-6 h-6 animate-spin" />}
+                    </div>
+
                     {filteredEvents.length === 0 && (
                         <div className="col-span-full py-20 text-center bg-white/5 rounded-[3rem] border border-white/5">
                             <div className="w-24 h-24 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-slate-800 shadow-xl">
@@ -406,10 +436,10 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={handleCardClick}
-            className="group relative bg-neutral-900 border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col cursor-pointer"
+            className="group relative bg-neutral-900 border border-white/5 rounded-3xl sm:rounded-[2.5rem] overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(120,40,255,0.15)] flex flex-col cursor-pointer"
         >
             {/* Image Section */}
-            <div className="relative h-64 overflow-hidden shrink-0">
+            <div className="relative h-48 sm:h-64 overflow-hidden shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent z-10 opacity-80" />
                 <div className="absolute inset-0 bg-blue-500/10 mix-blend-overlay z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -454,12 +484,12 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
             </div>
 
             {/* Content Section */}
-            <div className="p-8 flex flex-col flex-1 relative z-20 -mt-10">
+            <div className="p-5 sm:p-8 flex flex-col flex-1 relative z-20 -mt-6 sm:-mt-10">
                 {/* Date Badge float */}
                 <div className="self-end mb-2">
-                    <div className="bg-neutral-800/80 backdrop-blur-md rounded-2xl px-4 py-2 text-center border border-white/10 shadow-lg group-hover:bg-blue-600 group-hover:border-blue-500 transition-colors duration-300">
-                        <span className="block text-xs text-slate-400 group-hover:text-blue-100 uppercase font-black tracking-widest">{new Date(event.start_date).toLocaleString('default', { month: 'short' })}</span>
-                        <span className="block text-xl font-black text-white">{new Date(event.start_date).getDate()}</span>
+                    <div className="bg-neutral-800/80 backdrop-blur-md rounded-xl sm:rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 text-center border border-white/10 shadow-lg group-hover:bg-blue-600 group-hover:border-blue-500 transition-colors duration-300">
+                        <span className="block text-[10px] sm:text-xs text-slate-400 group-hover:text-blue-100 uppercase font-black tracking-widest">{new Date(event.start_date).toLocaleString('default', { month: 'short' })}</span>
+                        <span className="block text-lg sm:text-xl font-black text-white">{new Date(event.start_date).getDate()}</span>
                     </div>
                 </div>
 
@@ -475,7 +505,7 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
                         )}
                     </div>
 
-                    <h3 className="text-2xl font-bold text-slate-100 mb-3 leading-tight group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-100 mb-2 sm:mb-3 leading-tight group-hover:text-blue-400 transition-colors">
                         {event.title}
                     </h3>
 

@@ -11,6 +11,7 @@ export interface User {
     last_name: string;
     profile_picture?: string;
     is_verified?: boolean;
+    default_upi_id?: string | null;
 }
 
 export interface Comment {
@@ -137,6 +138,18 @@ export const api = {
     getUsers: async (): Promise<User[]> => {
         const response = await fetchWithAuth('/users/');
         if (!response.ok) throw new Error('Failed to fetch users');
+        return response.json();
+    },
+
+    updateProfile: async (data: Partial<User>): Promise<User> => {
+        const response = await fetchWithAuth('/users/profile/', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed to update profile');
+        }
         return response.json();
     }
 };
