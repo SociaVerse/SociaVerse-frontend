@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useRef, Suspense } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-    Search, Phone, Video, MoreVertical, Send, Paperclip,
+    Search, MoreVertical, Send, Paperclip,
     Smile, ArrowLeft, Check, CheckCheck, MoreHorizontal,
-    Image as ImageIcon, Mic, Lock, ShieldCheck, Info, Shield, Zap,
+    Image as ImageIcon, Lock, ShieldCheck, Info, Shield, Zap,
     Home, Globe, User, Trash2, Reply, Copy, Forward, Star, Flag, Heart, Pin,
     MessageCircle
 } from "lucide-react"
@@ -36,7 +36,6 @@ import { useAuth } from "@/components/auth-provider"
 import { chatService, Conversation } from "@/services/chat"
 import { useChatWebSocket } from "@/hooks/use-chat-websocket"
 import { ChatInfo } from "./components/ChatInfo"
-import { VoiceRecorder } from "./components/VoiceRecorder"
 import { VoiceMessageBubble } from "./components/VoiceMessage"
 import EmojiPicker, { Theme } from "emoji-picker-react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -86,14 +85,6 @@ function ChatContent() {
     const [isLoading, setIsLoading] = useState(true)
     const [isMessagesLoading, setIsMessagesLoading] = useState(false)
 
-    // Call State (Mock for now)
-    const [callStatus, setCallStatus] = useState<"idle" | "dialing" | "ringing" | "connected">("idle")
-    const [callType, setCallType] = useState<"audio" | "video">("audio")
-    const [callDuration, setCallDuration] = useState(0)
-    const [isMuted, setIsMuted] = useState(false)
-    const [isCameraOff, setIsCameraOff] = useState(false)
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null)
-    const videoRef = useRef<HTMLVideoElement>(null)
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null)
@@ -106,7 +97,6 @@ function ChatContent() {
     const [showChatInfo, setShowChatInfo] = useState(false)
     const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
     const [reportMessageId, setReportMessageId] = useState<string | null>(null)
-    const [isRecording, setIsRecording] = useState(false)
 
     // Confetti state
     const [showConfetti, setShowConfetti] = useState(false)
@@ -485,47 +475,6 @@ function ChatContent() {
         setForwardingMessage(null)
     }
 
-    const handleStartCall = async (type: "audio" | "video") => {
-        setCallType(type)
-        setCallStatus("dialing")
-        // Mock
-    }
-
-    const handleVoiceUpload = async (audioBlob: Blob, duration: number, waveform: number[]) => {
-        setIsRecording(false)
-        if (!selectedChatId) return
-
-        try {
-            // Upload first
-            const { url } = await chatService.uploadVoiceNote(audioBlob)
-
-            // Send message with audio data
-            // We need to update sendMessage signature or pass extra data. 
-            // The existing sendMessage hook likely sends a JSON string.
-            // Let's check useChatWebSocket hook. 
-            // Assuming sendMessage takes (text, replyTo, extraData?) or we assume text is empty/fallback for audio.
-            // Actually, best to modify useChatWebSocket or send a structured message.
-            // For now, let's send a special text marker or handle it in the hook.
-            // Wait, I can't easily modify the hook without viewing it. 
-            // Let's assume I can call the websocket send directly or modify the hook later.
-            // Let's modify the hook to accept extra fields.
-
-            // Checking use-chat-websocket.ts... I haven't viewed it yet. I should have.
-            // But I can send a "Voice Message" text and pass extra fields if the hook allows.
-            // If strictly text, I might need to send JSON string as text and parse on backend? No, backend expects 'message' field in JSON.
-            // The consumer expects 'audio_url', 'duration', 'waveform' at top level of JSON.
-
-            // I need to update the hook. For now, I'll add a TODO and call a hypothetical method.
-            // Actually, I can use the `sendMessage` from the hook if I update it to accept an object or extra params.
-            // Let's assume I will update the hook to: sendMessage(text, replyTo, extraFields)
-
-            sendMessage("🎤 Voice Message", replyingTo?.id, { audio_url: url, duration, waveform })
-
-        } catch (err) {
-            console.error("Failed to send voice note", err)
-        }
-    }
-
     return (
         <div className="h-[100dvh] md:h-screen bg-slate-950 text-slate-100 md:pt-28 md:pb-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
             {/* Background Ambience */}
@@ -712,9 +661,8 @@ function ChatContent() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleStartCall("audio")} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl"><Phone className="h-5 w-5" /></Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleStartCall("video")} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl"><Video className="h-5 w-5" /></Button>
+                                    <div className="flex items-center">
+                                        <Button variant="ghost" size="icon" onClick={() => setShowChatInfo(true)} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl" aria-label="Chat info"><Info className="h-5 w-5" /></Button>
                                     </div>
                                 </div>
 
@@ -968,10 +916,7 @@ function ChatContent() {
                                 <div className="absolute bottom-0 left-0 right-0 z-30 bg-slate-950 border-t border-white/5 p-3 px-4 pb-safe">
                                     <div className="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 pl-4 flex items-center gap-3 shadow-lg relative">
 
-                                        {isRecording ? (
-                                            <VoiceRecorder onSend={handleVoiceUpload} onCancel={() => setIsRecording(false)} />
-                                        ) : (
-                                            <>
+                                        <>
                                                 {/* Reply Banner */}
                                                 {replyingTo && (
                                                     <div className="absolute -top-16 left-0 right-0 mx-2 bg-slate-900 text-slate-300 p-2.5 rounded-xl text-xs flex items-center justify-between border border-white/10 shadow-xl animate-in slide-in-from-bottom-2 z-20">
@@ -1019,22 +964,13 @@ function ChatContent() {
                                                     onClick={() => setShowEmojiPicker(false)}
                                                 />
                                                 <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className={`text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors ${inputValue.trim() ? "hidden" : ""}`}
-                                                    onClick={() => setIsRecording(true)}
-                                                >
-                                                    <Mic className="h-5 w-5" />
-                                                </Button>
-                                                <Button
                                                     onClick={() => handleSendMessage()}
                                                     size="icon"
                                                     className={`bg-blue-600 hover:bg-blue-500 text-white rounded-full h-10 w-10 shadow-lg shadow-blue-600/30 shrink-0 ${!inputValue.trim() ? "hidden" : ""}`}
                                                 >
                                                     <Send className="h-5 w-5 ml-0.5" />
                                                 </Button>
-                                            </>
-                                        )}
+                                        </>
                                     </div>
                                 </div>
                             </>

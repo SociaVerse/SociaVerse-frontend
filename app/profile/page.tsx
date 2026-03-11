@@ -90,6 +90,16 @@ export default function ProfilePage() {
     }, [isLoading, isAuthenticated, router])
 
     const fetchProfile = async () => {
+        // Safely parse a value that may be an array or a JSON-encoded array string
+        const toArray = (v: any): string[] => {
+            if (!v) return []
+            if (Array.isArray(v)) return v
+            if (typeof v === 'string') {
+                try { const parsed = JSON.parse(v); return Array.isArray(parsed) ? parsed : [] } catch { return [] }
+            }
+            return []
+        }
+
         try {
             const token = localStorage.getItem('sociaverse_token')
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
@@ -113,24 +123,24 @@ export default function ProfilePage() {
                     following_count: data.following_count || 0,
                     avatar: data.profile_picture || null,
                     banner: data.banner_image || "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&q=80&w=2000",
-                    joined: "February 2026", // TODO: Add joined date to backend serializer if needed
+                    joined: data.date_joined ? new Date(data.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "Recently",
                     role: data.is_verified ? "Verified User" : "Member",
-                    portfolio: data.portfolio || [],
-                    recent_media: data.recent_media || [],
-                    interests: data.interests || [],
+                    portfolio: toArray(data.portfolio),
+                    recent_media: toArray(data.recent_media),
+                    interests: toArray(data.interests),
                     personality_type: data.personality_type || "",
                     mbti: data.mbti || "",
-                    vibe_tags: data.vibe_tags || [],
+                    vibe_tags: toArray(data.vibe_tags),
                     favorite_quote: data.favorite_quote || "",
                     currently_obsessed_with: data.currently_obsessed_with || "",
                     random_skill: data.random_skill || "",
                     relationship_status: data.relationship_status || "",
                     zodiac_sign: data.zodiac_sign || "",
-                    looking_for: data.looking_for || [],
+                    looking_for: toArray(data.looking_for),
                     status_emoji: data.status_emoji || "",
                     status_text: data.status_text || "",
-                    bucket_list: data.bucket_list || [],
-                    pet_peeves: data.pet_peeves || [],
+                    bucket_list: toArray(data.bucket_list),
+                    pet_peeves: toArray(data.pet_peeves),
                 })
             }
         } catch (error) {

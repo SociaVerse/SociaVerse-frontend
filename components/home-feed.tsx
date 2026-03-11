@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell } from "lucide-react"
+import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -150,8 +150,8 @@ export function HomeFeed() {
                                 <p className="text-slate-400 text-sm font-medium mt-1">See what's happening in your verse ✨</p>
                             </div>
 
-                            {/* Ask SociaVerse AI Widget */}
-                            <AskAIWidget />
+                            {/* Discover Widget */}
+                            <DiscoverWidget />
 
                             {/* Compose Box Trigger */}
                             <div
@@ -286,71 +286,96 @@ export function HomeFeed() {
     )
 }
 
-import { Sparkles, ArrowRight } from "lucide-react"
-
-function AskAIWidget() {
+function DiscoverWidget() {
     const router = useRouter()
-    const [prompt, setPrompt] = useState("")
 
-    const handleAsk = (e?: React.FormEvent) => {
-        e?.preventDefault()
-        if (!prompt.trim()) return
-        router.push(`/chat?user=SociaVerseAI&q=${encodeURIComponent(prompt)}`)
-    }
+    const tiles = [
+        {
+            icon: Compass,
+            label: "Explore",
+            sub: "Trending now",
+            href: "/explore",
+            gradient: "from-blue-600 to-sky-500",
+            glow: "shadow-blue-500/30",
+        },
+        {
+            icon: CalendarDays,
+            label: "Events",
+            sub: "What's on",
+            href: "/events",
+            gradient: "from-violet-600 to-purple-500",
+            glow: "shadow-violet-500/30",
+        },
+        {
+            icon: Users,
+            label: "Community",
+            sub: "Find your crew",
+            href: "/community",
+            gradient: "from-emerald-600 to-teal-500",
+            glow: "shadow-emerald-500/30",
+        },
+        {
+            icon: ShoppingBag,
+            label: "Marketplace",
+            sub: "Buy & sell",
+            href: "/marketplace",
+            gradient: "from-orange-500 to-amber-400",
+            glow: "shadow-orange-500/30",
+        },
+    ]
 
     return (
-        <div className="relative group overflow-hidden rounded-3xl p-[1px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-500" />
-            <div className="relative bg-slate-950/90 backdrop-blur-xl rounded-[23px] p-6 flex flex-col gap-4 overflow-hidden">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-900/30 p-5 backdrop-blur-sm"
+        >
+            {/* Ambient glow */}
+            <div className="pointer-events-none absolute -top-10 right-0 h-40 w-40 rounded-full bg-blue-600/5 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-10 left-0 h-32 w-32 rounded-full bg-purple-600/5 blur-3xl" />
 
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-                <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Sparkles className="h-6 w-6 text-white" />
-                    </div>
+            <div className="relative z-10">
+                <div className="mb-5 flex items-center justify-between">
                     <div>
-                        <h3 className="text-lg font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-purple-200 to-white">
-                            How are you feeling today?
-                        </h3>
-                        <p className="text-slate-400 text-xs">
-                            Tell SociaVerse AI and get inspired.
-                        </p>
+                        <h3 className="text-base font-bold text-white">Explore Your Verse</h3>
+                        <p className="mt-0.5 text-xs text-slate-500">Jump into the action</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        {[0, 150, 300].map((delay) => (
+                            <span
+                                key={delay}
+                                className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-blue-500"
+                                style={{ animationDelay: `${delay}ms` }}
+                            />
+                        ))}
                     </div>
                 </div>
 
-                <form onSubmit={handleAsk} className="relative z-10 flex gap-2">
-                    <div className="relative flex-1">
-                        <Input
-                            value={prompt}
-                            onChange={(e) => setPrompt(e.target.value)}
-                            placeholder="I'm feeling adventurous..."
-                            className="bg-slate-900/50 border-slate-700/50 focus:border-purple-500/50 rounded-xl pr-10 text-slate-200 placeholder:text-slate-600"
-                        />
-                        <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors">
-                            <ArrowRight className="h-4 w-4" />
-                        </button>
-                    </div>
-                </form>
-
-                <div className="flex flex-wrap gap-2 relative z-10">
-                    {["Creative 🎨", "Study Tips 📚", "Movie Night 🍿", "Motivation 💪"].map((mood) => (
-                        <button
-                            key={mood}
-                            onClick={() => {
-                                setPrompt(mood)
-                                // Optional: Auto-submit on click? Use router.push directly?
-                                // keeping it simple, populate input
-                            }}
-                            className="text-xs px-3 py-1.5 rounded-full bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors border border-slate-700/30"
+                <div className="grid grid-cols-4 gap-3">
+                    {tiles.map((tile, i) => (
+                        <motion.button
+                            key={tile.href}
+                            initial={{ opacity: 0, scale: 0.85 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.06 * i, duration: 0.3 }}
+                            whileHover={{ scale: 1.07 }}
+                            whileTap={{ scale: 0.93 }}
+                            onClick={() => router.push(tile.href)}
+                            className="flex flex-col items-center gap-2 group focus:outline-none"
                         >
-                            {mood}
-                        </button>
+                            <div
+                                className={`relative flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-br ${tile.gradient} shadow-lg ${tile.glow} transition-all duration-300 group-hover:shadow-xl`}
+                            >
+                                <tile.icon className="h-6 w-6 text-white drop-shadow" />
+                            </div>
+                            <span className="text-[11px] font-semibold text-slate-400 group-hover:text-white transition-colors leading-tight text-center">
+                                {tile.label}
+                            </span>
+                        </motion.button>
                     ))}
                 </div>
             </div>
-        </div>
+        </motion.div>
     )
 }
