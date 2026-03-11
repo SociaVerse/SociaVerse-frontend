@@ -761,62 +761,7 @@ function PeopleFeed({ handleAuthAction, currentUserId, isAuthenticated }: {
         </div>
     )
 }
-            </div>
-        )
-    }
 
-    if (people.length === 0) {
-        return (
-            <div className="text-center py-20 text-slate-500">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                <p>No users found.</p>
-            </div>
-        )
-    }
-
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {people.map((person, i) => (
-                <motion.div
-                    key={person.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 flex flex-col items-center text-center transition-colors"
-                >
-                    <Link href={`/u/${person.username}`} className="flex flex-col items-center mb-4 group">
-                        <div className="w-16 h-16 rounded-full overflow-hidden mb-3 ring-2 ring-slate-700 group-hover:ring-blue-500 transition-all">
-                            <img
-                                src={person.profile_picture ? (person.profile_picture.startsWith('http') ? person.profile_picture : `${API}${person.profile_picture}`) : `https://ui-avatars.com/api/?name=${person.username}&background=random`}
-                                alt={person.username}
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <div className="flex items-center gap-1 mb-1">
-                            <h3 className="font-bold text-base text-slate-200 group-hover:text-white transition-colors">
-                                {person.first_name ? `${person.first_name} ${person.last_name || ""}`.trim() : person.username}
-                            </h3>
-                            {person.is_verified && <BadgeCheck className="w-4 h-4 text-blue-500 shrink-0" />}
-                        </div>
-                        <p className="text-xs text-slate-500">@{person.username}</p>
-                        {person.college && <p className="text-xs text-slate-600 mt-0.5">{person.college}</p>}
-                    </Link>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className={`w-full rounded-full text-xs transition-all ${following[person.id]
-                            ? "border-slate-600 text-slate-400 bg-slate-800"
-                            : "border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600"
-                            }`}
-                        disabled={pending[person.id]}
-                        onClick={() => handleFollow(person.id)}
-                    >
-                        {pending[person.id] ? "..." : following[person.id] ? "Following" : "Follow"}
-                    </Button>
-                </motion.div>
-            ))}
-
-            {/* Sentinel */}
 // ── Communities Feed ──────────────────────────────────────────────────────────
 
 function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
