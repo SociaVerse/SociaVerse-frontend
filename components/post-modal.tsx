@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Post, Comment, api } from "@/services/api"
 import { useAuth } from "@/components/auth-provider"
+import { useToast } from "@/components/ui/custom-toast"
 import Link from "next/link"
 
 interface PostModalProps {
@@ -25,12 +26,17 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [comments, setComments] = useState<Comment[]>([])
     const [isLoadingComments, setIsLoadingComments] = useState(false)
+    const [isLikedLocally, setIsLikedLocally] = useState(false)
+    const [localLikeCount, setLocalLikeCount] = useState(0)
     const { user } = useAuth()
+    const { toast } = useToast()
     const scrollContainerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (isOpen && post) {
             setCurrentImageIndex(0)
+            setIsLikedLocally(!!post.is_liked)
+            setLocalLikeCount(post.likes_count || 0)
             fetchComments()
         }
     }, [isOpen, post])
@@ -60,6 +66,35 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
         e?.stopPropagation()
         if (!post?.images) return
         setCurrentImageIndex((prev) => (prev - 1 + post.images.length) % post.images.length)
+    }
+
+    const handleToggleLike = async () => {
+        if (!post) return
+        
+        // Optimistic UI update
+        const newVal = !isLikedLocally
+        setIsLikedLocally(newVal)
+        setLocalLikeCount(prev => newVal ? prev + 1 : Math.max(0, prev - 1))
+        
+        try {
+            await api.toggleLike(post.id)
+        } catch (error) {
+            // Revert on failure
+            setIsLikedLocally(!newVal)
+            setLocalLikeCount(prev => !newVal ? prev + 1 : Math.max(0, prev - 1))
+        }
+    }
+
+    const handleShare = () => {
+        if (!post) return
+        const url = `${window.location.origin}/post/${post.id}`
+        navigator.clipboard?.writeText(url)
+        toast({
+            type: "success",
+            title: "Link Copied!",
+            message: "Post link has been copied to your clipboard.",
+            duration: 3000
+        })
     }
 
     if (!post) return null
@@ -212,24 +247,23 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
                                 <div className="flex items-center justify-between py-2 border-y border-white/5">
                                     <div className="flex items-center gap-6">
                                         <motion.button
-                                            whileTap={{ scale: 0.9 }}
-                                            className="flex items-center gap-2 group"
-                                        >
-                                            <div className={`p-2 rounded-full transition-colors ${post.is_liked ? 'bg-rose-500/10' : 'bg-white/5 group-hover:bg-rose-500/10'}`}>
-                                                <Heart className={`w-5 h-5 transition-all ${post.is_liked ? 'fill-rose-500 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]' : 'text-slate-400'}`} />
+                                                onClick={handleToggleLike}
+                                                whileTap={{ scale: 0.9 }}
+                                                className="flex items-center gap-2 group"
+                                            >
+                                                <div className={`p-2 rounded-full transition-colors ${isLikedLocally ? 'bg-rose-500/10' : 'bg-white/5 group-hover:bg-rose-500/10'}`}>
+                                                    <Heart className={`w-5 h-5 transition-all ${isLikedLocally ? 'fill-rose-500 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]' : 'text-slate-400'}`} />
+                                                </div>
+                                                <span className={`text-xs font-bold ${isLikedLocally ? 'text-rose-500' : 'text-slate-400'}`}>{localLikeCount}</span>
+                                            </motion.button>
+                                            <div className="flex items-center gap-2 group">
+                                                <div className="p-2 rounded-full bg-white/5 group-hover:bg-blue-500/10 transition-colors">
+                                                    <MessageCircle className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                                                </div>
+                                                <span className="text-xs font-bold text-slate-400 group-hover:text-blue-400 transition-colors">{post.comments_count}</span>
                                             </div>
-                                            <span className={`text-xs font-bold ${post.is_liked ? 'text-rose-500' : 'text-slate-400'}`}>{post.likes_count}</span>
-                                        </motion.button>
-                                        <div className="flex items-center gap-2 group">
-                                            <div className="p-2 rounded-full bg-white/5 group-hover:bg-blue-500/10 transition-colors">
-                                                <MessageCircle className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
-                                            </div>
-                                            <span className="text-xs font-bold text-slate-400 group-hover:text-blue-400 transition-colors">{post.comments_count}</span>
                                         </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="w-10 h-10 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
-                                        <Share2 className="w-5 h-5" />
-                                    </Button>
+                                        <Button onClick={handleShare} variant="ghost" size="icon" className="w-10 h-10 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
                                 </div>
 
                                 {/* Comments List */}

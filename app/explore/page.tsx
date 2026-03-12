@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { PostModal } from "@/components/post-modal"
+import { useToast } from "@/components/ui/custom-toast"
 
 const API = process.env.NEXT_PUBLIC_API_URL
 
@@ -108,12 +109,13 @@ function MasonryCard({ glowColor, onClick, children, overlay }: MasonryCardProps
 
 // ── Action Overlay ────────────────────────────────────────────────────────────
 
-function ActionOverlay({ onLike, onComment, onShare, onSave, liked = false, likeCount = 0, commentCount = 0 }: {
+function ActionOverlay({ onLike, onComment, onShare, onSave, liked = false, saved = false, likeCount = 0, commentCount = 0 }: {
     onLike?: (e: React.MouseEvent) => void
     onComment?: (e: React.MouseEvent) => void
     onShare?: (e: React.MouseEvent) => void
     onSave?: (e: React.MouseEvent) => void
     liked?: boolean
+    saved?: boolean
     likeCount?: number
     commentCount?: number
 }) {
@@ -135,8 +137,8 @@ function ActionOverlay({ onLike, onComment, onShare, onSave, liked = false, like
                     <Link2 className="w-3.5 h-3.5" />
                 </button>
                 <button onClick={onSave}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800/70 border border-white/10 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-300 transition-all backdrop-blur-sm">
-                    <Bookmark className="w-3.5 h-3.5" />
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all ${saved ? "bg-amber-500/30 border-amber-400/50 text-amber-300" : "bg-slate-800/70 border-white/10 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-300"}`}>
+                    <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-amber-400" : ""}`} />
                 </button>
             </div>
         </div>
@@ -334,6 +336,9 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
     const [nextUrl, setNextUrl] = useState<string | null>(null)
     const [hasMore, setHasMore] = useState(true)
     const [liked, setLiked] = useState<Record<number, boolean>>({})
+    const [saved, setSaved] = useState<Record<number, boolean>>({})
+    const [likeCounts, setLikeCounts] = useState<Record<number, number>>({})
+    const { toast } = useToast()
 
     const fetchPosts = useCallback(async (isInitial = true) => {
         if (!isInitial && (!hasMore || loadingMore)) return
@@ -358,20 +363,63 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
     useEffect(() => { fetchPosts(true) }, [fetchPosts])
     const lastPostRef = useInfiniteScroll({ callback: () => fetchPosts(false), isLoading: loading || loadingMore, hasMore })
 
-    const handleLike = async (e: React.MouseEvent, postId: number) => {
+    const handleLike = async (e: React.MouseEvent, post: Post) => {
         e.stopPropagation()
         handleAuthAction(async () => {
+            const isCurrentlyLiked = liked[post.id] ?? !!(post as any).is_liked
+            const currentCount = likeCounts[post.id] ?? ((post as any).like_count || (post as any).likes_count || 0)
+            
+            // Optimistic update
+            setLiked(l => ({ ...l, [post.id]: !isCurrentlyLiked }))
+            setLikeCounts(c => ({ ...c, [post.id]: isCurrentlyLiked ? Math.max(0, currentCount - 1) : currentCount + 1 }))
+            
             try {
                 const token = localStorage.getItem("sociaverse_token")
-                await fetch(`${API}/api/posts/${postId}/like/`, { method: "POST", headers: { Authorization: `Token ${token}` } })
-                setLiked(l => ({ ...l, [postId]: !l[postId] }))
-            } catch(e) { console.error(e) }
+                await fetch(`${API}/api/posts/${post.id}/like/`, { method: "POST", headers: { Authorization: `Token ${token}` } })
+            } catch(e) { 
+                console.error(e) 
+                // Revert on error
+                setLiked(l => ({ ...l, [post.id]: isCurrentlyLiked }))
+                setLikeCounts(c => ({ ...c, [post.id]: currentCount }))
+            }
         })
     }
 
     const handleShare = (e: React.MouseEvent, postId: number) => {
         e.stopPropagation()
-        navigator.clipboard?.writeText(`${window.location.origin}/post/${postId}`)
+        const url = `${window.location.origin}/post/${postId}`
+        navigator.clipboard?.writeText(url)
+        toast({
+            type: "success",
+            title: "Link Copied!",
+            message: "Post link has been copied to your clipboard.",
+            duration: 3000
+        })
+    }
+
+    const handleSave = (e: React.MouseEvent, postId: number) => {
+        e.stopPropagation()
+        handleAuthAction(() => {
+            setSaved(s => {
+                const isCurrentlySaved = s[postId]
+                if (!isCurrentlySaved) {
+                    toast({
+                        type: "success",
+                        title: "Saved to Bookmarks",
+                        message: "This post has been saved to your collection.",
+                        duration: 3000
+                    })
+                } else {
+                    toast({
+                        type: "info",
+                        title: "Removed",
+                        message: "Post removed from bookmarks.",
+                        duration: 3000
+                    })
+                }
+                return { ...s, [postId]: !isCurrentlySaved }
+            })
+        })
     }
 
     const HEIGHTS = ["h-72", "h-56", "h-64", "h-48", "h-80", "h-52"]
@@ -405,16 +453,19 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
                     const actualImgUrl = imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`) : ""
                     const authorName = (post as any).author_name || (post as any).author?.username || "Unknown"
                     const authorAvatar = (post as any).author_avatar || (post as any).author?.profile_picture
-                    const likeCount = (post as any).like_count || (post as any).likes_count || 0
-                    const commentCount = (post as any).comment_count || (post as any).comments_count || 0
                     const isLiked = liked[post.id] ?? !!(post as any).is_liked
+                    const isSaved = saved[post.id] ?? false
+                    const likeCount = likeCounts[post.id] ?? ((post as any).like_count || (post as any).likes_count || 0)
+                    const commentCount = (post as any).comment_count || (post as any).comments_count || 0
+                    
                     return (
                         <motion.div key={post.id} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}>
                             <MasonryCard glowColor="rgba(16,185,129,0.35)" onClick={() => onOpenPost(post)}
-                                overlay={<ActionOverlay liked={isLiked} likeCount={likeCount} commentCount={commentCount}
-                                    onLike={e => handleLike(e, post.id)}
+                                overlay={<ActionOverlay liked={isLiked} saved={isSaved} likeCount={likeCount} commentCount={commentCount}
+                                    onLike={e => handleLike(e, post)}
                                     onComment={e => { e.stopPropagation(); onOpenPost(post) }}
-                                    onShare={e => handleShare(e, post.id)} />}>
+                                    onShare={e => handleShare(e, post.id)}
+                                    onSave={e => handleSave(e, post.id)} />}>
                                 {hasImage && (
                                     <div className="w-full relative bg-slate-900/40">
                                         <img src={actualImgUrl}
