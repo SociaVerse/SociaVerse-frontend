@@ -8,16 +8,6 @@ interface UseInfiniteScrollProps {
     threshold?: number;
 }
 
-/**
- * A custom hook for implementing infinite scroll using Intersection Observer.
- * 
- * @param callback - Function to call when the sentinel element becomes visible.
- * @param isLoading - Current loading state to prevent multiple concurrent fetches.
- * @param hasMore - Whether there is more data to fetch.
- * @param rootMargin - Intersection Observer root margin.
- * @param threshold - Intersection Observer threshold.
- * @returns A ref function to be attached to the sentinel element.
- */
 export function useInfiniteScroll({
     callback,
     isLoading,
@@ -27,28 +17,40 @@ export function useInfiniteScroll({
 }: UseInfiniteScrollProps) {
     const observer = useRef<IntersectionObserver | null>(null);
 
+    const callbackRef = useRef(callback);
+    const isLoadingRef = useRef(isLoading);
+    const hasMoreRef = useRef(hasMore);
+
+    useEffect(() => {
+        callbackRef.current = callback;
+        isLoadingRef.current = isLoading;
+        hasMoreRef.current = hasMore;
+    }, [callback, isLoading, hasMore]);
+
     const lastElementRef = useCallback(
         (node: HTMLElement | null) => {
-            if (isLoading) return;
-
             if (observer.current) {
                 observer.current.disconnect();
             }
 
+            if (!node) return;
+
             observer.current = new IntersectionObserver(
                 (entries) => {
-                    if (entries[0].isIntersecting && hasMore) {
-                        callback();
+                    if (
+                        entries[0].isIntersecting && 
+                        hasMoreRef.current && 
+                        !isLoadingRef.current
+                    ) {
+                        callbackRef.current();
                     }
                 },
                 { rootMargin, threshold }
             );
 
-            if (node) {
-                observer.current.observe(node);
-            }
+            observer.current.observe(node);
         },
-        [isLoading, hasMore, callback, rootMargin, threshold]
+        [rootMargin, threshold] 
     );
 
     return lastElementRef;
