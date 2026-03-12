@@ -377,9 +377,9 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
     const HEIGHTS = ["h-72", "h-56", "h-64", "h-48", "h-80", "h-52"]
 
     if (loading) return (
-        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
-            {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
+            {Array.from({ length: 14 }).map((_, i) => (
+                <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${HEIGHTS[i % HEIGHTS.length]}`} />
                     <div className="p-3 space-y-2"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div>
                 </div>
@@ -397,7 +397,7 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
 
     return (
         <div>
-            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
                 {posts.map((post, i) => {
                     const hasImage = !!(post as any).image || !!(post as any).media_url
                     const imageUrl = (post as any).image || (post as any).media_url
@@ -413,15 +413,17 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
                                     onLike={e => handleLike(e, post.id)}
                                     onComment={e => { e.stopPropagation(); onOpenPost(post) }}
                                     onShare={e => handleShare(e, post.id)} />}>
-                                {hasImage && (
-                                    <div className={`w-full overflow-hidden ${HEIGHTS[i % HEIGHTS.length]}`}>
+                                {hasImage ? (
+                                    <div className="w-full relative bg-slate-900/40">
                                         <img src={imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`}
-                                            alt="post" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                                            alt="post" className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                     </div>
+                                ) : (
+                                    <div className={`w-full ${HEIGHTS[i % HEIGHTS.length]} bg-slate-900/40`} />
                                 )}
-                                <div className="p-3.5">
+                                <div className="p-3.5 bg-slate-900/80">
                                     {(post as any).content && (
-                                        <p className={`text-slate-100 text-[15px] leading-relaxed mb-3 ${hasImage ? "line-clamp-3" : "line-clamp-8"}`}>
+                                        <p className={`text-slate-100 text-[14px] leading-snug mb-3 ${hasImage ? "line-clamp-3" : "line-clamp-6"}`}>
                                             {(post as any).content}
                                         </p>
                                     )}
@@ -496,9 +498,9 @@ function EventsFeed() {
             <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
                 {EVENT_CATEGORIES.map((_, i) => <Skeleton key={i} className="h-9 w-20 rounded-full shrink-0" />)}
             </div>
-            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                         <Skeleton className={`w-full ${EHEIGHTS[i % EHEIGHTS.length]}`} />
                         <div className="p-3 space-y-2"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div>
                     </div>
@@ -525,7 +527,7 @@ function EventsFeed() {
                 </div>
             ) : (
                 <div>
-                    <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+                    <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
                         {events.map((event, i) => {
                             const imageUrl = event.cover_image || event.image || event.banner
                             const title = event.title || event.name
@@ -542,10 +544,10 @@ function EventsFeed() {
                                             </div>
                                         }>
                                         {imageUrl ? (
-                                            <div className={`relative w-full overflow-hidden ${EHEIGHTS[i % EHEIGHTS.length]}`}>
+                                            <div className="relative w-full bg-slate-900/40">
                                                 <img src={imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`}
-                                                    alt={title} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent" />
+                                                    alt={title} className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                                                <div className="absolute inset-0 bg-linear-to-t from-slate-950/50 via-transparent to-transparent pointer-events-none" />
                                                 {dateStr && <div className="absolute top-2.5 right-2.5 bg-orange-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg">{dateStr}</div>}
                                             </div>
                                         ) : (
@@ -554,7 +556,7 @@ function EventsFeed() {
                                                 {dateStr && <div className="absolute top-2.5 right-2.5 bg-orange-500/20 border border-orange-500/30 text-orange-300 text-[10px] font-bold px-2 py-1 rounded-lg">{dateStr}</div>}
                                             </div>
                                         )}
-                                        <div className="p-3">
+                                        <div className="p-3 bg-slate-900/80">
                                             <h3 className="font-bold text-sm text-slate-200 line-clamp-2 mb-1">{title}</h3>
                                             {event.location && <p className="text-[11px] text-slate-500 flex items-center gap-1"><MapPin className="w-2.5 h-2.5 shrink-0" /><span className="truncate">{event.location}</span></p>}
                                             {event.category && <span className="mt-1.5 inline-block text-[10px] font-semibold text-orange-300 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">{event.category}</span>}
@@ -628,9 +630,9 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
     const PHEIGHTS = ["h-64", "h-48", "h-56", "h-52", "h-72"]
 
     if (loading) return (
-        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
+                <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${PHEIGHTS[i % PHEIGHTS.length]}`} />
                     <div className="p-3 space-y-2 text-center">
                         <Skeleton className="h-3 w-2/3 mx-auto" /><Skeleton className="h-2.5 w-1/2 mx-auto" /><Skeleton className="h-7 w-full rounded-full mt-1" />
@@ -649,7 +651,7 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
 
     return (
         <div>
-            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
                 {people.map((person, i) => {
                     const isFollowing = following[person.id]
                     const isPending = pending[person.id]
@@ -737,9 +739,9 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
     const CHEIGHTS = ["h-56", "h-44", "h-64", "h-52", "h-60", "h-48"]
 
     if (loading) return (
-        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
+                <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${CHEIGHTS[i % CHEIGHTS.length]}`} />
                     <div className="p-3 space-y-2"><Skeleton className="h-3 w-2/3" /><Skeleton className="h-2.5 w-1/2" /></div>
                 </div>
@@ -759,7 +761,7 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
 
     return (
         <div>
-            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
+            <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
                 {communities.map((comm, i) => (
                     <motion.div key={comm.id || comm.slug} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}>
                         <MasonryCard glowColor="rgba(59,130,246,0.35)" onClick={() => router.push(`/community/${comm.slug}`)}
