@@ -458,6 +458,11 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
                             <Trophy className="w-3 h-3" /> {event.prize}
                         </span>
                     )}
+                    {event.is_ended && (
+                        <span className="px-3 py-1.5 rounded-full bg-red-500/20 backdrop-blur-md border border-red-500/30 text-xs font-bold text-red-400 flex items-center gap-1.5 shadow-lg">
+                            <Clock className="w-3 h-3" /> Ended
+                        </span>
+                    )}
                 </div>
 
                 <div className="absolute top-4 right-4 z-20 flex gap-2">

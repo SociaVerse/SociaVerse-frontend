@@ -231,6 +231,11 @@ export default function EventDetailsPage() {
                                             <Sparkles className="w-3 h-3" /> Promoted
                                         </span>
                                     )}
+                                    {event.is_ended && (
+                                        <span className="px-3 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center gap-1.5">
+                                            <Clock className="w-3 h-3" /> Event Ended
+                                        </span>
+                                    )}
                                 </div>
 
                                 <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
@@ -477,9 +482,11 @@ export default function EventDetailsPage() {
                                                     : event.registration_status === 'approved'
                                                         ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
                                                         : "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-800 cursor-default"
-                                            : "bg-white text-neutral-950 hover:bg-neutral-200"
+                                            : event.is_ended
+                                                ? "bg-neutral-800 text-neutral-500 border border-neutral-700 cursor-not-allowed"
+                                                : "bg-white text-neutral-950 hover:bg-neutral-200"
                                         }`}
-                                    disabled={event.is_registered && event.registration_status !== 'approved'}
+                                    disabled={(event.is_registered && event.registration_status !== 'approved') || event.is_ended}
                                     onClick={() => {
                                         if (event.organizer === user?.id) {
                                             router.push(`/events/${id}/manage`)
@@ -503,6 +510,8 @@ export default function EventDetailsPage() {
                                         ) : (
                                             <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> You are already registered</span>
                                         )
+                                    ) : event.is_ended ? (
+                                        "Event Ended"
                                     ) : (
                                         "Register Now"
                                     )}
