@@ -853,7 +853,6 @@ function PostsFeed({ profile, currentUser, onImageClick, onPostClick }: {
                     imageSrc={cropImageSrc}
                     onCropComplete={handleCropComplete}
                     onCancel={handleCropCancel}
-                    aspectRatio={1} // 1:1 Square aspect ratio for feed uniformity
                     currentStep={currentCropIndex + 1}
                     totalSteps={pendingCropFiles.length}
                     onBack={currentCropIndex > 0 ? handleCropBack : undefined}

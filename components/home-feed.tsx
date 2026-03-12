@@ -193,14 +193,14 @@ export function HomeFeed() {
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="space-y-6 pb-20"
+                                        className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 pb-20"
                                     >
                                         {posts.map((post) => (
                                             <PostCard key={post.id} post={post} handleAuthAction={handleAuthAction} />
                                         ))}
 
                                         {/* Sentinel for Infinite Scroll */}
-                                        <div ref={lastPostRef} className="h-10 flex items-center justify-center">
+                                        <div ref={lastPostRef} className="h-10 flex items-center justify-center break-inside-avoid w-full col-span-full">
                                             {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-blue-500" />}
                                         </div>
                                     </motion.div>

@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
-import { Heart, MessageCircle, Share2, MoreHorizontal, BadgeCheck, Send, X, Trash2, Edit2, Reply, CornerDownRight } from "lucide-react"
+import { Heart, MessageCircle, Share2, MoreHorizontal, BadgeCheck, Send, X, Trash2, Edit2, Reply, CornerDownRight, Bookmark } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Post, Comment, api } from "@/services/api"
 import { useAuth } from "@/components/auth-provider"
@@ -183,12 +184,12 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                             {post.images.map((imgObj, index) => {
                                 const imgUrl = imgObj.image.startsWith('http') ? imgObj.image : `${process.env.NEXT_PUBLIC_API_URL}${imgObj.image}`;
                                 return (
-                                    <div key={imgObj.id || index} className={`relative ${post.images.length === 1 ? '' : 'aspect-square'}`}>
+                                    <div key={imgObj.id || index} className={`relative ${post.images.length === 1 ? 'w-full h-auto' : 'aspect-square'}`}>
                                         <img
                                             src={imgUrl}
                                             alt={`Post content ${index + 1}`}
-                                            className={`w-full h-full object-cover ${onImageClick ? 'cursor-pointer hover:scale-105 transition-transform duration-500' : ''}`}
-                                            style={{ maxHeight: post.images.length === 1 ? '500px' : 'none' }}
+                                            className={`w-full h-full ${post.images.length === 1 ? 'object-contain' : 'object-cover'} ${onImageClick ? 'cursor-pointer hover:scale-105 transition-transform duration-500' : ''}`}
+                                            style={{ maxHeight: post.images.length === 1 ? '600px' : 'none' }}
                                             onClick={() => onImageClick?.(imgUrl)}
                                         />
                                     </div>

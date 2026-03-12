@@ -14,7 +14,7 @@ interface ImageCropperProps {
     imageSrc: string
     onCropComplete: (croppedFile: File) => void
     onCancel: () => void
-    aspectRatio: number
+    aspectRatio?: number
     currentStep?: number
     totalSteps?: number
     onBack?: () => void
@@ -77,6 +77,7 @@ export function ImageCropper({
 }: ImageCropperProps) {
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
+    const [aspect, setAspect] = useState<number | undefined>(aspectRatio)
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
     const [isCropping, setIsCropping] = useState(false)
     const [showCancelWarning, setShowCancelWarning] = useState(false)
@@ -111,6 +112,14 @@ export function ImageCropper({
         onCancel()
     }
 
+    const aspectRatios = [
+        { label: "Original", value: undefined },
+        { label: "1:1", value: 1 },
+        { label: "4:5", value: 4 / 5 },
+        { label: "16:9", value: 16 / 9 },
+        { label: "9:16", value: 9 / 16 },
+    ]
+
     return (
         <>
             <AlertDialog open={open} onOpenChange={(open) => !open && handleCancelClick()}>
@@ -126,12 +135,12 @@ export function ImageCropper({
                         </AlertDialogTitle>
                     </AlertDialogHeader>
 
-                    <div className="relative w-full h-[50vh] sm:h-[60vh] bg-black/50 rounded-lg overflow-hidden my-4 sm:my-6">
+                    <div className="relative w-full h-[45vh] sm:h-[55vh] bg-black/50 rounded-lg overflow-hidden my-4 sm:my-6">
                         <Cropper
                             image={imageSrc}
                             crop={crop}
                             zoom={zoom}
-                            aspect={aspectRatio}
+                            aspect={aspect}
                             onCropChange={setCrop}
                             onCropComplete={handleCropComplete}
                             onZoomChange={setZoom}
@@ -140,38 +149,81 @@ export function ImageCropper({
                     </div>
 
                     <div className="px-4 pb-4 sm:p-0">
-                        <div className="flex flex-col gap-2 mb-4">
-                            <label className="text-xs text-slate-400 font-medium">Zoom</label>
-                            <input
-                                type="range"
-                                value={zoom}
-                                min={1}
-                                max={3}
-                                step={0.1}
-                                onChange={(e) => setZoom(Number(e.target.value))}
-                                className="w-full accent-blue-500"
-                            />
+                        <div className="space-y-4 mb-6">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-slate-400 font-medium">Aspect Ratio</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {aspectRatios.map((ratio) => (
+                                        <Button
+                                            key={ratio.label}
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setAspect(ratio.value)}
+                                            className={`text-xs h-8 rounded-full border-slate-700 hover:bg-slate-700 transition-all ${
+                                                aspect === ratio.value 
+                                                ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-500" 
+                                                : "bg-slate-800 text-slate-300"
+                                            }`}
+                                        >
+                                            {ratio.label}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs text-slate-400 font-medium">Zoom</label>
+                                <input
+                                    type="range"
+                                    value={zoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    onChange={(e) => setZoom(Number(e.target.value))}
+                                    className="w-full accent-blue-500 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
                         </div>
 
                         <AlertDialogFooter className="sm:justify-between w-full flex-col sm:flex-row gap-3">
                             <div className="flex flex-col sm:flex-row gap-3">
-                                <Button variant="outline" onClick={handleCancelClick} className="w-full sm:w-auto border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                                <button 
+                                    onClick={handleCancelClick} 
+                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors"
+                                >
                                     Cancel
-                                </Button>
+                                </button>
                                 {onRemove && (
-                                    <Button variant="ghost" onClick={onRemove} className="w-full sm:w-auto text-red-500 hover:text-red-400 hover:bg-red-500/10">
+                                    <button 
+                                        onClick={onRemove} 
+                                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-xl text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                    >
                                         Skip/Remove
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 {onBack && (
-                                    <Button variant="outline" onClick={onBack} className="w-full sm:w-auto border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                                    <button 
+                                        onClick={onBack} 
+                                        className="w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors"
+                                    >
                                         Back
-                                    </Button>
+                                    </button>
                                 )}
-                                <Button onClick={handleConfirm} disabled={isCropping} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white">
-                                    {isCropping ? "Cropping..." : "Confirm"}
+                                <Button 
+                                    onClick={handleConfirm} 
+                                    disabled={isCropping} 
+                                    className="w-full sm:w-auto rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold h-10 px-8 shadow-lg shadow-blue-500/20"
+                                >
+                                    {isCropping ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Cropping...</span>
+                                        </div>
+                                    ) : (
+                                        "Confirm"
+                                    )}
                                 </Button>
                             </div>
                         </AlertDialogFooter>

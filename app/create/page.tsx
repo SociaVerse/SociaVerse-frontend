@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useToast } from "@/components/ui/custom-toast"
 import { useAuth } from "@/components/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ImageCropper } from "@/components/ui/image-cropper"
+import { compressImage } from "@/utils/image-compression"
 
 export default function CreatePostPage() {
     const router = useRouter()
@@ -18,8 +20,16 @@ export default function CreatePostPage() {
     const [images, setImages] = useState<File[]>([])
     const [imagePreviews, setImagePreviews] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [isCompressing, setIsCompressing] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    // Cropper State
+    const [pendingCropFiles, setPendingCropFiles] = useState<File[]>([])
+    const [currentCropIndex, setCurrentCropIndex] = useState(0)
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
+    const [cropDialogOpen, setCropDialogOpen] = useState(false)
+    const [tempCroppedImages, setTempCroppedImages] = useState<File[]>([])
 
     // Auto-resize textarea
     useEffect(() => {
@@ -30,13 +40,120 @@ export default function CreatePostPage() {
     }, [content])
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = Array.from(e.target.files)
-            setImages(prev => [...prev, ...newFiles])
+        if (e.target.files && e.target.files.length > 0) {
+            const selectedFiles = Array.from(e.target.files)
+            if (images.length + selectedFiles.length > 10) {
+                toast({ type: 'error', title: "Limit Exceeded", message: "You can only upload up to 10 images." })
+                return
+            }
 
-            const newPreviews = newFiles.map(file => URL.createObjectURL(file))
-            setImagePreviews(prev => [...prev, ...newPreviews])
+            setPendingCropFiles(selectedFiles)
+            setTempCroppedImages([])
+            setCurrentCropIndex(0)
+            startCropForIndex(selectedFiles, 0)
+
+            // Allow selecting same files again if cancelled
+            e.target.value = ''
         }
+    }
+
+    const startCropForIndex = (files: File[], index: number) => {
+        const file = files[index]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.addEventListener("load", () => {
+            setCropImageSrc(reader.result?.toString() || null)
+            setCropDialogOpen(true)
+        })
+        reader.readAsDataURL(file)
+    }
+
+    const handleCropComplete = async (croppedFile: File) => {
+        const newTempImages = [...tempCroppedImages]
+        newTempImages[currentCropIndex] = croppedFile
+        setTempCroppedImages(newTempImages)
+
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+
+        const nextIndex = currentCropIndex + 1
+        if (nextIndex < pendingCropFiles.length) {
+            setTimeout(() => {
+                setCurrentCropIndex(nextIndex)
+                startCropForIndex(pendingCropFiles, nextIndex)
+            }, 100)
+        } else {
+            setIsCompressing(true)
+            try {
+                const compressedFiles = await Promise.all(
+                    newTempImages.map(async (f) => {
+                        try {
+                            return await compressImage(f)
+                        } catch (err) {
+                            console.error("Failed to compress", f.name, err)
+                            return f
+                        }
+                    })
+                )
+                setImages(prev => [...prev, ...compressedFiles])
+                const newPreviews = compressedFiles.map(file => URL.createObjectURL(file))
+                setImagePreviews(prev => [...prev, ...newPreviews])
+            } catch (error) {
+                console.error("Error processing images", error)
+            } finally {
+                setIsCompressing(false)
+                setPendingCropFiles([])
+                setTempCroppedImages([])
+            }
+        }
+    }
+
+    const handleCropCancel = () => {
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+        setPendingCropFiles([])
+        setTempCroppedImages([])
+        setCurrentCropIndex(0)
+    }
+
+    const handleCropBack = () => {
+        if (currentCropIndex > 0) {
+            setCropDialogOpen(false)
+            setCropImageSrc(null)
+            setTimeout(() => {
+                const prevIndex = currentCropIndex - 1
+                setCurrentCropIndex(prevIndex)
+                startCropForIndex(pendingCropFiles, prevIndex)
+            }, 100)
+        }
+    }
+
+    const handleCropRemove = () => {
+        const newPending = [...pendingCropFiles]
+        const newTemp = [...tempCroppedImages]
+
+        newPending.splice(currentCropIndex, 1)
+        if (newTemp.length > currentCropIndex) {
+            newTemp.splice(currentCropIndex, 1)
+        }
+
+        setPendingCropFiles(newPending)
+        setTempCroppedImages(newTemp)
+        setCropDialogOpen(false)
+        setCropImageSrc(null)
+
+        if (newPending.length === 0) {
+            setCurrentCropIndex(0)
+            return
+        }
+
+        const nextIndex = currentCropIndex >= newPending.length ? newPending.length - 1 : currentCropIndex
+
+        setTimeout(() => {
+            setCurrentCropIndex(nextIndex)
+            startCropForIndex(newPending, nextIndex)
+        }, 100)
     }
 
     const removeImage = (index: number) => {
@@ -83,10 +200,10 @@ export default function CreatePostPage() {
                 <span className="font-semibold text-lg">New Post</span>
                 <Button
                     onClick={handleSubmit}
-                    disabled={(!content.trim() && images.length === 0) || isSubmitting}
+                    disabled={(!content.trim() && images.length === 0) || isSubmitting || isCompressing}
                     className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full px-5 py-1.5 h-auto text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
+                    {isSubmitting || isCompressing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
                 </Button>
             </div>
 
@@ -190,6 +307,19 @@ export default function CreatePostPage() {
                 ref={fileInputRef}
                 onChange={handleImageSelect}
             />
+
+            {cropImageSrc && (
+                <ImageCropper
+                    open={cropDialogOpen}
+                    imageSrc={cropImageSrc}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                    currentStep={currentCropIndex + 1}
+                    totalSteps={pendingCropFiles.length}
+                    onBack={currentCropIndex > 0 ? handleCropBack : undefined}
+                    onRemove={handleCropRemove}
+                />
+            )}
         </motion.div>
     )
 }
