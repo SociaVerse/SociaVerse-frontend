@@ -77,7 +77,7 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
         setLocalLikeCount(prev => newVal ? prev + 1 : Math.max(0, prev - 1))
         
         try {
-            await api.toggleLike(post.id)
+            await api.likePost(post.id)
         } catch (error) {
             // Revert on failure
             setIsLikedLocally(!newVal)
@@ -266,7 +266,6 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
                                         <Button onClick={handleShare} variant="ghost" size="icon" className="w-10 h-10 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
                                             <Share2 className="w-5 h-5" />
                                         </Button>
-                                    </div>
                                 </div>
 
                                 {/* Comments List */}
