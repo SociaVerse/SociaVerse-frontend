@@ -82,7 +82,7 @@ function MasonryCard({ glowColor, onClick, children, overlay }: MasonryCardProps
 
     return (
         <div
-            className="relative group rounded-2xl overflow-hidden cursor-pointer break-inside-avoid mb-4 bg-slate-900/50 backdrop-blur-md border transition-all duration-200"
+            className="relative group rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer break-inside-avoid mb-2 sm:mb-3 bg-slate-900/50 backdrop-blur-md border transition-all duration-200"
             style={showOverlay ? {
                 transform: "scale(1.03)",
                 border: `1px solid ${glowColor.replace("0.35", "0.55")}`,
@@ -169,24 +169,26 @@ export default function ExplorePage() {
 
             {/* Sticky header */}
             <div className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-6xl mx-auto px-4">
+                <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
+                    {/* Search bar row */}
                     <div className="flex items-center gap-3 py-3">
                         <div className="hidden md:flex items-center gap-1.5 shrink-0">
+                            <Sparkles className="w-5 h-5 text-emerald-400" />
+                            <span className="font-bold text-lg text-slate-100">Explore</span>
+                        </div>
+                        <div className="md:hidden flex items-center gap-1.5 shrink-0">
                             <Sparkles className="w-4 h-4 text-emerald-400" />
-                            <span className="font-bold text-slate-100">Explore</span>
                         </div>
                         <div className="flex-1"><SearchBar /></div>
                     </div>
-                    <div className="flex items-center gap-2 pb-3 overflow-x-auto scrollbar-none">
-                        <div className="md:hidden flex items-center gap-1.5 mr-1 shrink-0">
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                        </div>
+                    {/* Tab chips */}
+                    <div className="flex items-center gap-2 pb-3 overflow-x-auto scrollbar-hide">
                         {TABS.map(({ label, Icon }) => {
                             const meta = TABS.find(t => t.label === label)!
                             const isActive = activeTab === label
                             return (
                                 <button key={label} onClick={() => setActiveTab(label)}
-                                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap border shrink-0 transition-all duration-200 ${isActive ? `bg-linear-to-r ${meta.chipClass} text-white border-transparent` : `bg-slate-900/60 ${meta.textActive} border-white/5 hover:bg-slate-800/60`}`}
+                                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border shrink-0 transition-all duration-200 ${isActive ? `bg-linear-to-r ${meta.chipClass} text-white border-transparent` : `bg-slate-900/60 ${meta.textActive} border-white/5 hover:bg-slate-800/60`}`}
                                     style={isActive ? { boxShadow: `0 0 16px ${meta.glow}` } : {}}>
                                     <Icon className="w-3.5 h-3.5" />{label}
                                 </button>
@@ -197,7 +199,7 @@ export default function ExplorePage() {
             </div>
 
             {/* Feed area */}
-            <div className="relative z-10 max-w-6xl mx-auto px-4 py-6">
+            <div className="relative z-10 max-w-[1800px] mx-auto px-2 sm:px-3 lg:px-5 py-4">
                 <AnimatePresence mode="wait">
                     <motion.div key={activeTab}
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -372,12 +374,12 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
         navigator.clipboard?.writeText(`${window.location.origin}/post/${postId}`)
     }
 
-    const HEIGHTS = ["h-64", "h-44", "h-52", "h-40", "h-60", "h-48"]
+    const HEIGHTS = ["h-72", "h-56", "h-64", "h-48", "h-80", "h-52"]
 
     if (loading) return (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
             {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden bg-slate-900/40 border border-white/5">
+                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${HEIGHTS[i % HEIGHTS.length]}`} />
                     <div className="p-3 space-y-2"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div>
                 </div>
@@ -386,16 +388,16 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
     )
 
     if (posts.length === 0) return (
-        <div className="flex flex-col items-center justify-center py-24 text-slate-500">
-            <Sparkles className="w-12 h-12 mb-4 opacity-20" />
-            <p className="font-medium text-lg">Nothing here yet</p>
-            <p className="text-sm mt-1 text-slate-600">Follow people to see their posts</p>
+        <div className="flex flex-col items-center justify-center py-32 text-slate-500">
+            <Sparkles className="w-14 h-14 mb-5 opacity-20" />
+            <p className="font-semibold text-xl">Nothing here yet</p>
+            <p className="text-sm mt-2 text-slate-600">Follow people to see their posts</p>
         </div>
     )
 
     return (
         <div>
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
                 {posts.map((post, i) => {
                     const hasImage = !!(post as any).image || !!(post as any).media_url
                     const imageUrl = (post as any).image || (post as any).media_url
@@ -414,22 +416,22 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
                                 {hasImage && (
                                     <div className={`w-full overflow-hidden ${HEIGHTS[i % HEIGHTS.length]}`}>
                                         <img src={imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`}
-                                            alt="post" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                            alt="post" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                     </div>
                                 )}
-                                <div className="p-3">
+                                <div className="p-3.5">
                                     {(post as any).content && (
-                                        <p className={`text-slate-200 text-sm leading-relaxed mb-2.5 ${hasImage ? "line-clamp-2" : "line-clamp-6"}`}>
+                                        <p className={`text-slate-100 text-[15px] leading-relaxed mb-3 ${hasImage ? "line-clamp-3" : "line-clamp-8"}`}>
                                             {(post as any).content}
                                         </p>
                                     )}
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2.5">
                                         <img src={authorAvatar ? (authorAvatar.startsWith("http") ? authorAvatar : `${API}${authorAvatar}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=0f172a&color=94a3b8`}
-                                            alt={authorName} className="w-5 h-5 rounded-full object-cover border border-white/10 shrink-0" />
-                                        <span className="text-xs text-slate-400 truncate">{authorName}</span>
-                                        <div className="ml-auto flex items-center gap-2 text-[10px] text-slate-600 shrink-0">
-                                            {likeCount > 0 && <span className="flex items-center gap-0.5"><Heart className="w-2.5 h-2.5" />{likeCount}</span>}
-                                            {commentCount > 0 && <span className="flex items-center gap-0.5"><MessageCircle className="w-2.5 h-2.5" />{commentCount}</span>}
+                                            alt={authorName} className="w-6 h-6 rounded-full object-cover border border-white/10 shrink-0" />
+                                        <span className="text-sm text-slate-300 font-medium truncate">{authorName}</span>
+                                        <div className="ml-auto flex items-center gap-2.5 text-xs text-slate-500 shrink-0">
+                                            {likeCount > 0 && <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{likeCount}</span>}
+                                            {commentCount > 0 && <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{commentCount}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -438,8 +440,8 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
                     )
                 })}
             </div>
-            <div ref={lastPostRef} className="h-10 flex items-center justify-center mt-2">
-                {loadingMore && <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />}
+            <div ref={lastPostRef} className="h-12 flex items-center justify-center mt-3">
+                {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />}
             </div>
         </div>
     )
@@ -486,17 +488,17 @@ function EventsFeed() {
     useEffect(() => { fetchEvents(true) }, [fetchEvents])
     const lastEventRef = useInfiniteScroll({ callback: () => fetchEvents(false), isLoading: loading || loadingMore, hasMore })
 
-    const EHEIGHTS = ["h-52", "h-40", "h-60", "h-44", "h-56", "h-36"]
+    const EHEIGHTS = ["h-64", "h-52", "h-72", "h-56", "h-68", "h-48"]
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""
 
     if (loading) return (
         <div>
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-none">
-                {EVENT_CATEGORIES.map((_, i) => <Skeleton key={i} className="h-8 w-20 rounded-full shrink-0" />)}
+            <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
+                {EVENT_CATEGORIES.map((_, i) => <Skeleton key={i} className="h-9 w-20 rounded-full shrink-0" />)}
             </div>
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
                 {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden bg-slate-900/40 border border-white/5">
+                    <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                         <Skeleton className={`w-full ${EHEIGHTS[i % EHEIGHTS.length]}`} />
                         <div className="p-3 space-y-2"><Skeleton className="h-3 w-3/4" /><Skeleton className="h-2.5 w-1/2" /></div>
                     </div>
@@ -508,7 +510,7 @@ function EventsFeed() {
     return (
         <div>
             {/* Category pills */}
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-none">
+            <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
                 {EVENT_CATEGORIES.map(({ label, emoji }) => (
                     <button key={label} onClick={() => setCategory(label)}
                         className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border shrink-0 transition-all ${category === label ? "bg-linear-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-[0_0_12px_rgba(249,115,22,0.35)]" : "bg-slate-900/60 text-slate-400 border-white/5 hover:border-orange-500/30 hover:text-orange-300"}`}>
@@ -523,7 +525,7 @@ function EventsFeed() {
                 </div>
             ) : (
                 <div>
-                    <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+                    <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
                         {events.map((event, i) => {
                             const imageUrl = event.cover_image || event.image || event.banner
                             const title = event.title || event.name
@@ -562,8 +564,8 @@ function EventsFeed() {
                             )
                         })}
                     </div>
-                    <div ref={lastEventRef} className="h-10 flex items-center justify-center mt-2">
-                        {loadingMore && <Loader2 className="w-5 h-5 animate-spin text-orange-400" />}
+                    <div ref={lastEventRef} className="h-12 flex items-center justify-center mt-3">
+                        {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-orange-400" />}
                     </div>
                 </div>
             )}
@@ -623,12 +625,12 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
         })
     }
 
-    const PHEIGHTS = ["h-48", "h-36", "h-44", "h-40", "h-52"]
+    const PHEIGHTS = ["h-64", "h-48", "h-56", "h-52", "h-72"]
 
     if (loading) return (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
             {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden bg-slate-900/40 border border-white/5">
+                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${PHEIGHTS[i % PHEIGHTS.length]}`} />
                     <div className="p-3 space-y-2 text-center">
                         <Skeleton className="h-3 w-2/3 mx-auto" /><Skeleton className="h-2.5 w-1/2 mx-auto" /><Skeleton className="h-7 w-full rounded-full mt-1" />
@@ -647,7 +649,7 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
 
     return (
         <div>
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
                 {people.map((person, i) => {
                     const isFollowing = following[person.id]
                     const isPending = pending[person.id]
@@ -686,8 +688,8 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
                     )
                 })}
             </div>
-            <div ref={lastPersonRef} className="h-10 flex items-center justify-center mt-2">
-                {loadingMore && <Loader2 className="w-5 h-5 animate-spin text-violet-400" />}
+            <div ref={lastPersonRef} className="h-12 flex items-center justify-center mt-3">
+                {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-violet-400" />}
             </div>
         </div>
     )
@@ -732,12 +734,12 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
         "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&q=80&w=600",
         "https://images.unsplash.com/photo-1590642916589-59234a0a613c?auto=format&fit=crop&q=80&w=600",
     ]
-    const CHEIGHTS = ["h-44", "h-36", "h-52", "h-40", "h-48", "h-38"]
+    const CHEIGHTS = ["h-56", "h-44", "h-64", "h-52", "h-60", "h-48"]
 
     if (loading) return (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+        <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-4 rounded-2xl overflow-hidden bg-slate-900/40 border border-white/5">
+                <div key={i} className="break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
                     <Skeleton className={`w-full ${CHEIGHTS[i % CHEIGHTS.length]}`} />
                     <div className="p-3 space-y-2"><Skeleton className="h-3 w-2/3" /><Skeleton className="h-2.5 w-1/2" /></div>
                 </div>
@@ -757,7 +759,7 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
 
     return (
         <div>
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+            <div className="columns-2 lg:columns-3 gap-2 sm:gap-3">
                 {communities.map((comm, i) => (
                     <motion.div key={comm.id || comm.slug} initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: Math.min(i * 0.03, 0.3) }}>
                         <MasonryCard glowColor="rgba(59,130,246,0.35)" onClick={() => router.push(`/community/${comm.slug}`)}
@@ -786,8 +788,8 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
                     </motion.div>
                 ))}
             </div>
-            <div ref={lastCommunityRef} className="h-10 flex items-center justify-center mt-2">
-                {loadingMore && <Loader2 className="w-5 h-5 animate-spin text-blue-400" />}
+            <div ref={lastCommunityRef} className="h-12 flex items-center justify-center mt-3">
+                {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-blue-400" />}
             </div>
         </div>
     )
