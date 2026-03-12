@@ -20,14 +20,20 @@ interface PostModalProps {
     post: Post | null;
     isOpen: boolean;
     onClose: () => void;
+    isLiked?: boolean;
+    likeCount?: number;
+    onLikeToggle?: (isLiked: boolean, count: number) => void;
+    onCommentAdded?: () => void;
 }
 
-export function PostModal({ post, isOpen, onClose }: PostModalProps) {
+export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeToggle, onCommentAdded }: PostModalProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const [comments, setComments] = useState<Comment[]>([])
     const [isLoadingComments, setIsLoadingComments] = useState(false)
     const [isLikedLocally, setIsLikedLocally] = useState(false)
     const [localLikeCount, setLocalLikeCount] = useState(0)
+    const [commentText, setCommentText] = useState('')
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const { user } = useAuth()
     const { toast } = useToast()
     const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -35,11 +41,12 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
     useEffect(() => {
         if (isOpen && post) {
             setCurrentImageIndex(0)
-            setIsLikedLocally(!!post.is_liked)
-            setLocalLikeCount(post.likes_count || 0)
+            setIsLikedLocally(isLiked ?? !!post.is_liked)
+            setLocalLikeCount(likeCount ?? (post.likes_count || 0))
+            setCommentText('')
             fetchComments()
         }
-    }, [isOpen, post])
+    }, [isOpen, post, isLiked, likeCount])
 
     const fetchComments = async () => {
         if (!post) return
@@ -73,19 +80,28 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
         
         // Optimistic UI update
         const newVal = !isLikedLocally
+        const newCount = newVal ? localLikeCount + 1 : Math.max(0, localLikeCount - 1)
         setIsLikedLocally(newVal)
-        setLocalLikeCount(prev => newVal ? prev + 1 : Math.max(0, prev - 1))
-        
+        setLocalLikeCount(newCount)
+        if (onLikeToggle) {
+            onLikeToggle(newVal, newCount)
+        }
+
         try {
             await api.likePost(post.id)
         } catch (error) {
             // Revert on failure
-            setIsLikedLocally(!newVal)
-            setLocalLikeCount(prev => !newVal ? prev + 1 : Math.max(0, prev - 1))
+            const revertedVal = !newVal
+            const revertedCount = revertedVal ? newCount + 1 : Math.max(0, newCount - 1)
+            setIsLikedLocally(revertedVal)
+            setLocalLikeCount(revertedCount)
+            if (onLikeToggle) {
+                onLikeToggle(revertedVal, revertedCount)
+            }
         }
     }
 
-    const handleShare = () => {
+    const handleShare = async () => {
         if (!post) return
         const url = `${window.location.origin}/post/${post.id}`
         navigator.clipboard?.writeText(url)
@@ -95,6 +111,30 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
             message: "Post link has been copied to your clipboard.",
             duration: 3000
         })
+        try {
+            await api.sharePost(post.id)
+        } catch (e) {
+            console.error("Failed to register share", e)
+        }
+    }
+
+    const handlePostComment = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!commentText.trim() || !post) return
+        setIsSubmitting(true)
+        try {
+            const newComment = await api.addComment(post.id, commentText)
+            setComments(prev => [newComment, ...prev])
+            setCommentText('')
+            if (onCommentAdded) {
+                onCommentAdded()
+            }
+            toast({ type: "success", title: "Success", message: "Comment posted!" })
+        } catch (error) {
+            toast({ type: "error", title: "Error", message: "Failed to post comment." })
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     if (!post) return null
@@ -310,7 +350,7 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
                         </div>
 
                         {/* Floating Action Input - Glassmorphism Masterpiece */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/10 z-30 pb-16 md:pb-6">
+                        <form onSubmit={handlePostComment} className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/10 z-30 pb-16 md:pb-6">
                             <div className="max-w-2xl mx-auto flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-all duration-300 rounded-[2rem] p-2.5 px-4 border border-white/10 shadow-2xl group ring-1 ring-white/5">
                                 <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 ring-2 ring-blue-500/30">
                                     <img
@@ -321,14 +361,17 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
                                 </div>
                                 <input
                                     type="text"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    disabled={isSubmitting}
                                     placeholder="Express something..."
                                     className="flex-1 bg-transparent border-none outline-none text-[13px] text-slate-100 placeholder:text-slate-500 font-medium"
                                 />
-                                <Button size="sm" className="h-9 w-9 rounded-full p-0 bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:scale-110 active:scale-90">
+                                <Button disabled={isSubmitting || !commentText.trim()} type="submit" size="sm" className="h-9 w-9 rounded-full p-0 bg-blue-600 hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:scale-110 active:scale-90 disabled:opacity-50">
                                     <ChevronRight className="w-5 h-5" />
                                 </Button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </DialogContent>

@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
 import { PostModal } from "@/components/post-modal"
 import { useToast } from "@/components/ui/custom-toast"
+import { api } from "@/services/api"
 
 const API = process.env.NEXT_PUBLIC_API_URL
 
@@ -152,6 +153,12 @@ export default function ExplorePage() {
     const { isAuthenticated, user } = useAuth()
     const [showAuthModal, setShowAuthModal] = useState(false)
     const [selectedPost, setSelectedPost] = useState<Post | null>(null)
+    
+    // Lifted states for synchronization
+    const [posts, setPosts] = useState<Post[]>([])
+    const [liked, setLiked] = useState<Record<number, boolean>>({})
+    const [likeCounts, setLikeCounts] = useState<Record<number, number>>({})
+    
     const router = useRouter()
 
     const handleAuthAction = (action: () => void) => {
@@ -207,7 +214,17 @@ export default function ExplorePage() {
                         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
                         {activeTab === "For You" && (
-                            <ForYouFeed handleAuthAction={handleAuthAction} isAuthenticated={isAuthenticated} onOpenPost={setSelectedPost} />
+                            <ForYouFeed 
+                                handleAuthAction={handleAuthAction} 
+                                isAuthenticated={isAuthenticated} 
+                                onOpenPost={setSelectedPost}
+                                posts={posts}
+                                setPosts={setPosts}
+                                liked={liked}
+                                setLiked={setLiked}
+                                likeCounts={likeCounts}
+                                setLikeCounts={setLikeCounts}
+                            />
                         )}
                         {activeTab === "Events" && <EventsFeed />}
                         {activeTab === "People" && (
@@ -218,7 +235,25 @@ export default function ExplorePage() {
                 </AnimatePresence>
             </div>
 
-            {selectedPost && <PostModal post={selectedPost} isOpen={!!selectedPost} onClose={() => setSelectedPost(null)} />}
+            {selectedPost && <PostModal 
+                post={selectedPost} 
+                isOpen={!!selectedPost} 
+                onClose={() => setSelectedPost(null)}
+                isLiked={liked[selectedPost.id] ?? !!(selectedPost as any).is_liked}
+                likeCount={likeCounts[selectedPost.id] ?? ((selectedPost as any).like_count || (selectedPost as any).likes_count || 0)}
+                onLikeToggle={(isLiked, count) => {
+                    setLiked((l: Record<number, boolean>) => ({ ...l, [selectedPost.id]: isLiked }))
+                    setLikeCounts((c: Record<number, number>) => ({ ...c, [selectedPost.id]: count }))
+                }}
+                onCommentAdded={() => {
+                    setPosts((currentPosts: Post[]) => currentPosts.map((p: Post) => {
+                        if (p.id === selectedPost.id) {
+                            return { ...p, comments_count: (p.comments_count || 0) + 1 }
+                        }
+                        return p;
+                    }));
+                }}
+            />}
             {showAuthModal && <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />}
         </div>
     )
@@ -325,19 +360,32 @@ function SearchBar() {
 
 // ── For You Feed (Posts Masonry) ──────────────────────────────────────────────
 
-function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
+function ForYouFeed({ 
+    handleAuthAction, 
+    isAuthenticated, 
+    onOpenPost,
+    posts,
+    setPosts,
+    liked,
+    setLiked,
+    likeCounts,
+    setLikeCounts
+}: {
     handleAuthAction: (fn: () => void) => void
     isAuthenticated: boolean
     onOpenPost: (post: Post) => void
+    posts: Post[]
+    setPosts: React.Dispatch<React.SetStateAction<Post[]>>
+    liked: Record<number, boolean>
+    setLiked: React.Dispatch<React.SetStateAction<Record<number, boolean>>>
+    likeCounts: Record<number, number>
+    setLikeCounts: React.Dispatch<React.SetStateAction<Record<number, number>>>
 }) {
-    const [posts, setPosts] = useState<Post[]>([])
     const [loading, setLoading] = useState(true)
     const [loadingMore, setLoadingMore] = useState(false)
     const [nextUrl, setNextUrl] = useState<string | null>(null)
     const [hasMore, setHasMore] = useState(true)
-    const [liked, setLiked] = useState<Record<number, boolean>>({})
     const [saved, setSaved] = useState<Record<number, boolean>>({})
-    const [likeCounts, setLikeCounts] = useState<Record<number, number>>({})
     const { toast } = useToast()
 
     const fetchPosts = useCallback(async (isInitial = true) => {
@@ -374,8 +422,7 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
             setLikeCounts(c => ({ ...c, [post.id]: isCurrentlyLiked ? Math.max(0, currentCount - 1) : currentCount + 1 }))
             
             try {
-                const token = localStorage.getItem("sociaverse_token")
-                await fetch(`${API}/api/posts/${post.id}/like/`, { method: "POST", headers: { Authorization: `Token ${token}` } })
+                await api.likePost(post.id)
             } catch(e) { 
                 console.error(e) 
                 // Revert on error
@@ -395,6 +442,7 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
             message: "Post link has been copied to your clipboard.",
             duration: 3000
         })
+        api.sharePost(postId).catch(e => console.error("Failed to register share", e))
     }
 
     const handleSave = (e: React.MouseEvent, postId: number) => {

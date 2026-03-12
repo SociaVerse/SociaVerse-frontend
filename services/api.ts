@@ -70,6 +70,14 @@ export const api = {
         return response.json();
     },
 
+    sharePost: async (postId: number): Promise<{ status: 'shared' }> => {
+        const response = await fetchWithAuth(`/posts/${postId}/share/`, {
+            method: 'POST',
+        });
+        if (!response.ok) throw new Error('Failed to share post');
+        return response.json();
+    },
+
     getComments: async (postId: number): Promise<Comment[]> => {
         const response = await fetchWithAuth(`/posts/${postId}/comments/`);
         if (!response.ok) throw new Error('Failed to fetch comments');
@@ -132,6 +140,14 @@ export const api = {
         });
 
         if (!response.ok) throw new Error('Failed to create post');
+        return response.json();
+    },
+
+    savePost: async (postId: number): Promise<{ status: 'saved' | 'unsaved' }> => {
+        const response = await fetchWithAuth(`/posts/${postId}/save/`, {
+            method: 'POST',
+        });
+        if (!response.ok) throw new Error('Failed to save post');
         return response.json();
     },
 
