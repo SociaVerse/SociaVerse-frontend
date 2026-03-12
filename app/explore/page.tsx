@@ -160,7 +160,7 @@ export default function ExplorePage() {
     const activeTabMeta = TABS.find(t => t.label === activeTab)!
 
     return (
-        <div className="min-h-dvh bg-slate-950 text-slate-100">
+        <div className="min-h-dvh bg-slate-950 text-slate-100 pt-16">
             {/* Ambient glow */}
             <div
                 className="fixed inset-0 pointer-events-none transition-all duration-700 z-0"
@@ -168,7 +168,7 @@ export default function ExplorePage() {
             />
 
             {/* Sticky header */}
-            <div className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+            <div className="sticky top-16 z-30 bg-slate-950/90 backdrop-blur-2xl border-b border-white/5 shadow-sm shadow-black/20">
                 <div className="max-w-[1800px] mx-auto px-3 sm:px-4 lg:px-6">
                     {/* Search bar row */}
                     <div className="flex items-center gap-3 py-3">
@@ -399,8 +399,10 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
         <div>
             <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
                 {posts.map((post, i) => {
-                    const hasImage = !!(post as any).image || !!(post as any).media_url
-                    const imageUrl = (post as any).image || (post as any).media_url
+                    const imagesArr = (post as any).images || []
+                    const hasImage = imagesArr.length > 0 || !!(post as any).image || !!(post as any).media_url
+                    const imageUrl = imagesArr.length > 0 ? imagesArr[0].image : ((post as any).image || (post as any).media_url)
+                    const actualImgUrl = imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`) : ""
                     const authorName = (post as any).author_name || (post as any).author?.username || "Unknown"
                     const authorAvatar = (post as any).author_avatar || (post as any).author?.profile_picture
                     const likeCount = (post as any).like_count || (post as any).likes_count || 0
@@ -413,17 +415,15 @@ function ForYouFeed({ handleAuthAction, isAuthenticated, onOpenPost }: {
                                     onLike={e => handleLike(e, post.id)}
                                     onComment={e => { e.stopPropagation(); onOpenPost(post) }}
                                     onShare={e => handleShare(e, post.id)} />}>
-                                {hasImage ? (
+                                {hasImage && (
                                     <div className="w-full relative bg-slate-900/40">
-                                        <img src={imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`}
+                                        <img src={actualImgUrl}
                                             alt="post" className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                     </div>
-                                ) : (
-                                    <div className={`w-full ${HEIGHTS[i % HEIGHTS.length]} bg-slate-900/40`} />
                                 )}
-                                <div className="p-3.5 bg-slate-900/80">
+                                <div className={`p-4 sm:p-5 bg-slate-900/80 ${!hasImage ? "min-h-[140px] flex flex-col justify-between" : ""}`}>
                                     {(post as any).content && (
-                                        <p className={`text-slate-100 text-[14px] leading-snug mb-3 ${hasImage ? "line-clamp-3" : "line-clamp-6"}`}>
+                                        <p className={`text-slate-100 text-[14px] leading-relaxed mb-4 ${hasImage ? "line-clamp-3" : "line-clamp-10"}`}>
                                             {(post as any).content}
                                         </p>
                                     )}
