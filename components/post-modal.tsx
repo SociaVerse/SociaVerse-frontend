@@ -264,6 +264,9 @@ export function PostModal({ post, isOpen, onClose }: PostModalProps) {
                                             </div>
                                         </div>
                                         <Button onClick={handleShare} variant="ghost" size="icon" className="w-10 h-10 text-slate-500 hover:text-white hover:bg-white/5 rounded-full transition-all">
+                                            <Share2 className="w-5 h-5" />
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 {/* Comments List */}
