@@ -37,6 +37,8 @@ export function Signup() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null)
   const [collegeSuggestions, setCollegeSuggestions] = useState<string[]>([])
   const [isSearchingCollege, setIsSearchingCollege] = useState(false)
   const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false)
@@ -90,6 +92,36 @@ export function Signup() {
     return () => clearTimeout(timeoutId)
   }, [formData.username])
 
+  // Email Availability Check (Debounced)
+  useEffect(() => {
+    const checkEmail = async () => {
+      const email = formData.email.trim()
+      if (!email || !email.includes("@")) {
+        setEmailAvailable(null)
+        return
+      }
+
+      setIsCheckingEmail(true)
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/check-email/?email=${encodeURIComponent(email.toLowerCase())}`)
+        const data = await response.json()
+        if (response.ok) {
+          setEmailAvailable(data.available)
+        } else {
+          setEmailAvailable(null)
+        }
+      } catch (error) {
+        console.error("Error checking email:", error)
+        setEmailAvailable(null)
+      } finally {
+        setIsCheckingEmail(false)
+      }
+    }
+
+    const timeoutId = setTimeout(checkEmail, 500)
+    return () => clearTimeout(timeoutId)
+  }, [formData.email])
+
   // College Search (Debounced)
   useEffect(() => {
     if (wasCollegeSelected) {
@@ -138,6 +170,10 @@ export function Signup() {
     if (!formData.dob) { newErrors.dob = "Date of birth is required"; isValid = false }
     try {
       z.string().email().parse(formData.email)
+      if (emailAvailable === false) {
+        newErrors.email = "Email is already registered"
+        isValid = false
+      }
     } catch {
       newErrors.email = "Invalid email address"; isValid = false
     }
@@ -383,7 +419,37 @@ export function Signup() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
-                    <InputItem label="Email" icon={Mail} type="email" placeholder="edu@mail.com" value={formData.email} onChange={(e: any) => handleInputChange("email", e.target.value)} error={errors.email} />
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Email</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+                          <Mail className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                        </div>
+                        <Input
+                          type="email"
+                          placeholder="edu@mail.com"
+                          value={formData.email}
+                          onChange={(e: any) => handleInputChange("email", e.target.value)}
+                          className={`pl-10 h-12 text-sm bg-slate-950/40 border-slate-800 text-slate-100 placeholder:text-slate-600 focus:border-blue-500/50 focus:bg-slate-900/60 focus:ring-0 transition-all rounded-xl ${errors.email ? 'border-red-500/50' : ''}`}
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                          {isCheckingEmail ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500" />
+                          ) : emailAvailable === true ? (
+                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                          ) : emailAvailable === false ? (
+                            <X className="h-3.5 w-3.5 text-red-500" />
+                          ) : null}
+                        </div>
+                      </div>
+                      {errors.email ? (
+                        <p className="text-[10px] text-red-400 ml-1">{errors.email}</p>
+                      ) : emailAvailable === true ? (
+                        <p className="text-[10px] text-emerald-400 ml-1">Email is available</p>
+                      ) : emailAvailable === false ? (
+                        <p className="text-[10px] text-red-400 ml-1">Email is already registered</p>
+                      ) : null}
+                    </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase tracking-wider">Password</label>
                       <div className="relative group">
