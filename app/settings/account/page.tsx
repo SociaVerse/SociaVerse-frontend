@@ -19,7 +19,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Settings, Lock, Trash2, Mail, Loader2 } from "lucide-react"
+import { Settings, Lock, Trash2, Mail, Loader2, ShieldCheck, CheckCircle } from "lucide-react"
 
 export default function AccountSettingsPage() {
     const { user, isAuthenticated, logout } = useAuth()
@@ -28,6 +28,12 @@ export default function AccountSettingsPage() {
 
     const [isLoading, setIsLoading] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
+
+    // Email Verification State
+    const [isEmailVerified, setIsEmailVerified] = useState(false)
+    const [verifyStep, setVerifyStep] = useState<"idle" | "sending" | "otp" | "verifying">("idle")
+    const [verifyOtp, setVerifyOtp] = useState("")
+    const [verifyError, setVerifyError] = useState("")
 
     // Password Form State
     const [passwords, setPasswords] = useState({
@@ -43,6 +49,82 @@ export default function AccountSettingsPage() {
             setUsername(user.username)
         }
     }, [user])
+
+    // Fetch email verification status
+    useEffect(() => {
+        if (isAuthenticated) {
+            const fetchVerificationStatus = async () => {
+                try {
+                    const token = localStorage.getItem('sociaverse_token')
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
+                        headers: { 'Authorization': `Token ${token}` }
+                    })
+                    if (response.ok) {
+                        const data = await response.json()
+                        setIsEmailVerified(data.is_verified || false)
+                    }
+                } catch (error) {
+                    console.error("Error fetching verification status:", error)
+                }
+            }
+            fetchVerificationStatus()
+        }
+    }, [isAuthenticated])
+
+    const handleSendVerificationOtp = async () => {
+        setVerifyStep("sending")
+        setVerifyError("")
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/email-verify/request/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
+            })
+            const data = await response.json()
+            if (response.ok) {
+                setVerifyStep("otp")
+                toast({ title: "Code Sent", message: "Check your email for the verification code.", type: "success" })
+            } else {
+                setVerifyError(data.error || data.message || "Failed to send code.")
+                setVerifyStep("idle")
+            }
+        } catch (error) {
+            setVerifyError("Network error. Please try again.")
+            setVerifyStep("idle")
+        }
+    }
+
+    const handleVerifyEmailOtp = async () => {
+        if (verifyOtp.length < 6) return
+        setVerifyStep("verifying")
+        setVerifyError("")
+        try {
+            const token = localStorage.getItem('sociaverse_token')
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/email-verify/confirm/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${token}`
+                },
+                body: JSON.stringify({ otp: verifyOtp }),
+            })
+            const data = await response.json()
+            if (response.ok) {
+                setIsEmailVerified(true)
+                setVerifyStep("idle")
+                toast({ title: "Verified!", message: "Your email has been verified successfully.", type: "success" })
+            } else {
+                setVerifyError(data.error || "Verification failed.")
+                setVerifyStep("otp")
+            }
+        } catch (error) {
+            setVerifyError("Network error. Please try again.")
+            setVerifyStep("otp")
+        }
+    }
 
     const handleUpdateUsername = async () => {
         if (!username || username === user?.username) return
@@ -180,15 +262,81 @@ export default function AccountSettingsPage() {
                 </p>
             </div>
 
-            {/* Email Section (Read Only) */}
-            <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/50 space-y-4">
+            {/* Email Verification Section */}
+            <div className={`p-6 rounded-xl border space-y-4 ${isEmailVerified ? 'bg-emerald-900/10 border-emerald-900/30' : 'bg-amber-900/10 border-amber-900/30'}`}>
                 <h3 className="text-lg font-medium text-white flex items-center gap-2">
                     <Mail className="w-5 h-5 text-slate-400" /> Email Address
                 </h3>
-                <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800 text-slate-300">
-                    {user.email}
+                <div className="flex items-center gap-3">
+                    <div className="flex-1 bg-slate-950/50 p-3 rounded-lg border border-slate-800 text-slate-300">
+                        {user.email}
+                    </div>
+                    {isEmailVerified && (
+                        <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
+                            <CheckCircle className="w-4 h-4 text-emerald-400" />
+                            <span className="text-sm font-medium text-emerald-400">Verified</span>
+                        </div>
+                    )}
                 </div>
-                <p className="text-xs text-slate-500">Your email address is used for login and notifications. It cannot be changed currently.</p>
+
+                {!isEmailVerified && (
+                    <div className="space-y-3">
+                        <div className="flex items-start gap-3 p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+                            <ShieldCheck className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                            <div>
+                                <p className="text-sm text-amber-200 font-medium">Email not verified</p>
+                                <p className="text-xs text-amber-200/60 mt-0.5">Verify your email to secure your account and enable password recovery.</p>
+                            </div>
+                        </div>
+
+                        {verifyStep === "idle" && (
+                            <Button
+                                onClick={handleSendVerificationOtp}
+                                className="bg-amber-600 hover:bg-amber-500 text-white font-medium"
+                            >
+                                <Mail className="w-4 h-4 mr-2" /> Send Verification Code
+                            </Button>
+                        )}
+
+                        {verifyStep === "sending" && (
+                            <Button disabled className="bg-amber-600/50 text-white/70">
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...
+                            </Button>
+                        )}
+
+                        {(verifyStep === "otp" || verifyStep === "verifying") && (
+                            <div className="space-y-3">
+                                <div className="flex gap-3">
+                                    <Input
+                                        placeholder="000000"
+                                        value={verifyOtp}
+                                        onChange={(e) => setVerifyOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                                        className="text-center text-lg tracking-[0.3em] font-mono bg-slate-950/50 border-slate-700 text-white focus:border-amber-500/50 focus:ring-0 max-w-[200px]"
+                                        maxLength={6}
+                                    />
+                                    <Button
+                                        onClick={handleVerifyEmailOtp}
+                                        disabled={verifyStep === "verifying" || verifyOtp.length < 6}
+                                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+                                    >
+                                        {verifyStep === "verifying" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
+                                    </Button>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleSendVerificationOtp}
+                                    className="text-xs text-slate-400 hover:text-slate-300 underline"
+                                >
+                                    Resend code
+                                </button>
+                            </div>
+                        )}
+
+                        {verifyError && (
+                            <p className="text-xs text-red-400">{verifyError}</p>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Change Password Form */}

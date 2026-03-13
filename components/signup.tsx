@@ -17,7 +17,7 @@ export function Signup() {
   const { login } = useAuth()
 
   // States
-  const [step, setStep] = useState<"signup" | "verify" | "success">("signup")
+  const [step, setStep] = useState<"signup" | "success">("signup")
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -32,7 +32,7 @@ export function Signup() {
     agreeToTerms: false
   })
 
-  const [otp, setOtp] = useState("")
+
   const [passwordStrength, setPasswordStrength] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
@@ -218,7 +218,11 @@ export function Signup() {
       const data = await response.json()
 
       if (response.ok) {
-        setStep("verify")
+        // Store token and log in immediately
+        if (data.token) localStorage.setItem("sociaverse_token", data.token)
+        login()
+        setStep("success")
+        setTimeout(() => router.push("/events"), 2000)
       } else {
         console.error("Signup failed:", data)
         let errorMessage = "Something went wrong."
@@ -236,34 +240,7 @@ export function Signup() {
     }
   }
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrors({})
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/verify-otp/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, otp }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        if (data.token) localStorage.setItem("sociaverse_token", data.token)
-        login()
-        setStep("success")
-        setTimeout(() => router.push("/events"), 3000)
-      } else {
-        setErrors({ verify: data.error || "Verification failed" })
-      }
-    } catch (error) {
-      setErrors({ verify: "Network error. Please try again." })
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 relative overflow-hidden font-sans selection:bg-blue-500/30 pt-20 md:pt-24">
@@ -494,30 +471,7 @@ export function Signup() {
             </motion.div>
           )}
 
-          {step === "verify" && (
-            <motion.div
-              key="verify"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              className="w-full max-w-sm bg-slate-900/60 backdrop-blur-xl border border-white/5 rounded-[2rem] shadow-2xl p-8 text-center"
-            >
-              <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
-                <Mail className="w-8 h-8 text-blue-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Verify Email</h2>
-              <p className="text-slate-400 text-xs mb-8">Code sent to <span className="text-white">{formData.email}</span></p>
 
-              <form onSubmit={handleVerify} className="space-y-6">
-                <Input placeholder="000000" value={otp} onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))} className="text-center text-2xl tracking-[0.5em] font-mono h-14 bg-slate-950/50 border-white/10 text-white focus:border-blue-500/50 focus:ring-0 rounded-xl" maxLength={6} />
-                {errors.verify && <p className="text-xs text-red-400">{errors.verify}</p>}
-                <Button type="submit" disabled={isLoading || otp.length < 6} className="w-full h-11 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20">{isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify Now"}</Button>
-              </form>
-              <div className="mt-4">
-                <button onClick={() => setStep("signup")} className="text-xs text-slate-500 hover:text-slate-400">Wrong email?</button>
-              </div>
-            </motion.div>
-          )}
 
           {step === "success" && (
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-12 text-center max-w-md shadow-2xl">
