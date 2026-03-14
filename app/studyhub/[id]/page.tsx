@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm"
 import {
   ArrowLeft, Heart, MessageCircle, Bookmark, Share2, Eye,
   FileText, Download, BookOpen, GraduationCap, User, Send,
-  MoreVertical, Trash2, Clock
+  MoreVertical, Trash2, Clock, Lock
 } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { studyhubApi, StudyNote, NoteComment } from "@/services/studyhub"
@@ -247,34 +247,74 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
                         )}
                       </div>
                     </div>
-                    <a
-                      href={note.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                      className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
-                    >
-                      <Download className="w-4 h-4" />
-                      Download
-                    </a>
+                    {isAuthenticated ? (
+                      <a
+                        href={note.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-all text-sm font-medium border border-red-500/20"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download
+                      </a>
+                    ) : (
+                      <Link
+                        href="/login"
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 text-slate-400 rounded-lg hover:bg-slate-700 transition-all text-sm font-medium border border-slate-600"
+                      >
+                        <Lock className="w-4 h-4" />
+                        Login to Download
+                      </Link>
+                    )}
                   </div>
 
-                  {/* PDF Preview iframe */}
-                  <div className="mt-4 rounded-lg overflow-hidden border border-slate-700/50 bg-black/50">
-                    <iframe
-                      src={`${note.pdf_url}#toolbar=0`}
-                      className="w-full h-[500px] sm:h-[600px]"
-                      title="PDF Preview"
-                    />
-                  </div>
+                  {/* PDF Preview — login required */}
+                  {isAuthenticated ? (
+                    <div className="mt-4 rounded-lg overflow-hidden border border-slate-700/50 bg-black/50">
+                      <iframe
+                        src={`${note.pdf_url}#toolbar=0`}
+                        className="w-full h-[500px] sm:h-[600px]"
+                        title="PDF Preview"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-lg border border-slate-700/50 bg-slate-800/30 flex flex-col items-center justify-center py-16">
+                      <Lock className="w-10 h-10 text-slate-600 mb-3" />
+                      <p className="text-sm font-semibold text-slate-300 mb-1">Login to view this PDF</p>
+                      <p className="text-xs text-slate-500 mb-4">Sign in to preview and download study materials</p>
+                      <Link href="/login" className="px-5 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-red-500/20 transition-all">
+                        Login Now
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Content */}
+              {/* Content — login required for full view */}
               {note.content && (
-                <div className="prose prose-invert prose-red max-w-none mb-6 prose-headings:text-white prose-p:text-slate-300 prose-a:text-red-400 prose-strong:text-white prose-code:text-red-400 prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-800/50 prose-pre:border prose-pre:border-slate-700 prose-ul:text-slate-300 prose-ol:text-slate-300">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
-                </div>
+                isAuthenticated ? (
+                  <div className="prose prose-invert prose-red max-w-none mb-6 prose-headings:text-white prose-p:text-slate-300 prose-a:text-red-400 prose-strong:text-white prose-code:text-red-400 prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-800/50 prose-pre:border prose-pre:border-slate-700 prose-ul:text-slate-300 prose-ol:text-slate-300">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="mb-6">
+                    <div className="prose prose-invert prose-red max-w-none prose-headings:text-white prose-p:text-slate-300 relative">
+                      <div className="line-clamp-4 overflow-hidden">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content.slice(0, 300)}</ReactMarkdown>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-900 to-transparent" />
+                    </div>
+                    <div className="mt-2 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl text-center">
+                      <Lock className="w-5 h-5 text-slate-500 mx-auto mb-2" />
+                      <p className="text-sm text-slate-300 font-medium mb-1">Login to read the full note</p>
+                      <p className="text-xs text-slate-500 mb-3">Sign in to access complete study materials</p>
+                      <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-red-500/20 transition-all">
+                        Login Now
+                      </Link>
+                    </div>
+                  </div>
+                )
               )}
 
               {/* Actions bar */}
@@ -286,7 +326,7 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
                   </button>
                   <button className="flex items-center gap-2 text-sm text-slate-400 font-medium">
                     <MessageCircle className="w-5 h-5" />
-                    {note.comments_count}
+                    {comments.length}
                   </button>
                   <button onClick={handleSave} className={`flex items-center gap-2 text-sm font-medium transition-all ${note.is_saved ? "text-yellow-400" : "text-slate-400 hover:text-yellow-400"}`}>
                     <Bookmark className={`w-5 h-5 ${note.is_saved ? "fill-current" : ""}`} />
@@ -307,7 +347,7 @@ export default function NoteDetailPage({ params }: { params: Promise<{ id: strin
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-red-400" />
-              Comments ({note.comments_count})
+              Comments ({comments.length})
             </h2>
 
             {/* Add comment */}
