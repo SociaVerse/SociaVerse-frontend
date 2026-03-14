@@ -408,7 +408,7 @@ function ForYouFeed({
         finally { setLoading(false); setLoadingMore(false) }
     }, [hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchPosts(true) }, [])
+    useEffect(() => { fetchPosts(true) }, [fetchPosts])
     const lastPostRef = useInfiniteScroll({ callback: () => fetchPosts(false), isLoading: loading || loadingMore, hasMore })
 
     const handleLike = async (e: React.MouseEvent, post: Post) => {
@@ -586,7 +586,7 @@ function EventsFeed() {
         finally { setLoading(false); setLoadingMore(false) }
     }, [category, hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchEvents(true) }, [])
+    useEffect(() => { fetchEvents(true) }, [fetchEvents])
     const lastEventRef = useInfiniteScroll({ callback: () => fetchEvents(false), isLoading: loading || loadingMore, hasMore })
 
     const EHEIGHTS = ["h-64", "h-52", "h-72", "h-56", "h-68", "h-48"]
@@ -711,7 +711,7 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
         finally { setLoading(false); setLoadingMore(false) }
     }, [hasMore, loadingMore, nextUrl, currentUserId])
 
-    useEffect(() => { fetchPeople(true) }, [])
+    useEffect(() => { fetchPeople(true) }, [fetchPeople])
     const lastPersonRef = useInfiniteScroll({ callback: () => fetchPeople(false), isLoading: loading || loadingMore, hasMore })
 
     const handleFollow = (userId: number) => {

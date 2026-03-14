@@ -32,6 +32,7 @@ const regularNavLinks = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
+  { href: "/studyhub", label: "Study Hub" },
   { href: "/community", label: "Community" },
 ]
 

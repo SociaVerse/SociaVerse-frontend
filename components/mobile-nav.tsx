@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar } from "lucide-react"
+import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
@@ -22,6 +22,7 @@ export function MobileNav() {
     const regularNavItems = [
         { href: "/", icon: Home, label: "Home" },
         { href: "/explore", icon: Search, label: "Explore" },
+        { href: "/studyhub", icon: BookOpen, label: "Study Hub" },
         { href: "/community", icon: Users, label: "Communities", isMain: true },
         { href: "/chat", icon: MessageCircle, label: "Chat" },
         { href: "/events", icon: Calendar, label: "Events" },
