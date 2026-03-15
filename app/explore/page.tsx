@@ -518,24 +518,18 @@ function ForYouFeed({
                                     <div className="w-full relative bg-slate-900/40">
                                         <img src={actualImgUrl}
                                             alt="post" className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                                        {/* Visibility Badge */}
-                                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
-                                            {post.visibility === 'global' ? (
-                                                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
-                                            ) : (
-                                                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
-                                            )}
-                                        </div>
+                                        {/* Visibility Badge - Only show University, hide Global in Explore */}
+                                        {post.visibility === 'university' && (
+                                            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
+                                                <MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 <div className={`p-4 sm:p-5 bg-slate-900/80 ${!hasImage ? "min-h-[140px] flex flex-col justify-between" : ""}`}>
-                                    {!hasImage && (
+                                    {!hasImage && post.visibility === 'university' && (
                                         <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
-                                            {post.visibility === 'global' ? (
-                                                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
-                                            ) : (
-                                                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
-                                            )}
+                                            <MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span>
                                         </div>
                                     )}
                                     {(post as any).content && (
