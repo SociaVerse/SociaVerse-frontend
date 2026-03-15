@@ -265,7 +265,7 @@ export default function StudyHubPage() {
     } finally {
       setLoading(false)
     }
-  }, [sort, debouncedSearch, branch, semester, pdfOnly])
+  }, [sort, debouncedSearch, branch, semester, pdfOnly, visibility])
 
   // Reset and fetch on filter change
   useEffect(() => {
