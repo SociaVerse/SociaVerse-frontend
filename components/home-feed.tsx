@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays, EyeOff } from "lucide-react"
+import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays, EyeOff, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,9 @@ import { PostCard } from "@/components/post-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll"
-import { Loader2 } from "lucide-react"
+import { Loader2, GraduationCap, Globe, MapPin } from "lucide-react"
+import { eventsApi, Event } from "@/services/events"
+import { studyhubApi, StudyNote } from "@/services/studyhub"
 
 export function HomeFeed() {
     const { user, isAuthenticated } = useAuth()
@@ -24,6 +26,9 @@ export function HomeFeed() {
     const [activeTab, setActiveTab] = useState<"foryou" | "following">("foryou")
     const [nextCursor, setNextCursor] = useState<string | null>(null)
     const [hasMore, setHasMore] = useState(true)
+    const [uniEvents, setUniEvents] = useState<Event[]>([])
+    const [uniNotes, setUniNotes] = useState<StudyNote[]>([])
+    const [loadingSidebar, setLoadingSidebar] = useState(true)
 
     const handleAuthAction = (action: () => void) => {
         if (!isAuthenticated) return router.push("/login")
@@ -83,6 +88,29 @@ export function HomeFeed() {
         setNextCursor(null)
         fetchPosts(true)
     }, [activeTab])
+
+    const fetchSidebarData = async () => {
+        if (!isAuthenticated) return
+        setLoadingSidebar(true)
+        try {
+            const [eventsRes, notesRes] = await Promise.all([
+                eventsApi.getEvents({ visibility: 'university', page: 1 }),
+                studyhubApi.getNotes({ visibility: 'university', page: 1 })
+            ])
+            setUniEvents(eventsRes.results.slice(0, 4))
+            setUniNotes(notesRes.results.slice(0, 3))
+        } catch (error) {
+            console.error("Failed to fetch sidebar data:", error)
+        } finally {
+            setLoadingSidebar(false)
+        }
+    }
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchSidebarData()
+        }
+    }, [isAuthenticated])
 
     const lastPostRef = useInfiniteScroll({
         callback: () => fetchPosts(false),
@@ -229,54 +257,69 @@ export function HomeFeed() {
                             />
                         </div>
 
-                        {/* Trending Topic Card */}
+                        {/* University Events */}
                         <div className="bg-slate-900/20 border border-slate-800/40 rounded-3xl overflow-hidden p-6 backdrop-blur-sm">
                             <h3 className="font-bold text-xl mb-6 flex items-center gap-2 text-slate-200">
-                                <TrendingUp className="h-5 w-5 text-blue-500" />
-                                Trending
+                                <CalendarDays className="h-5 w-5 text-blue-500" />
+                                Events in {user?.college || "University"}
                             </h3>
                             <div className="space-y-5">
-                                {[
-                                    { tag: "#Hackathon2025", count: "12.5K posts" },
-                                    { tag: "Midterms", count: "8.2K posts" },
-                                    { tag: "CampusFest", count: "5.1K posts" },
-                                    { tag: "#Internships", count: "3.4K posts" },
-                                ].map((topic, i) => (
-                                    <div key={i} className="flex justify-between items-center group cursor-pointer">
-                                        <div>
-                                            <p className="font-bold text-slate-300 group-hover:text-blue-400 transition-colors">{topic.tag}</p>
-                                            <p className="text-xs text-slate-500 font-medium">{topic.count}</p>
+                                {loadingSidebar ? (
+                                    [1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full rounded-xl bg-slate-800/50" />)
+                                ) : uniEvents.length > 0 ? (
+                                    uniEvents.map((event) => (
+                                        <div 
+                                            key={event.id} 
+                                            className="group cursor-pointer"
+                                            onClick={() => router.push(`/events/${event.id}`)}
+                                        >
+                                            <p className="font-bold text-slate-300 group-hover:text-blue-400 transition-colors line-clamp-1">{event.title}</p>
+                                            <p className="text-xs text-slate-500 font-medium">{event.mode} • {new Date(event.start_date).toLocaleDateString()}</p>
                                         </div>
-                                        <MoreHorizontal className="h-4 w-4 text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-slate-500">No upcoming events.</p>
+                                )}
                             </div>
+                            {uniEvents.length > 0 && (
+                                <Link href="/events" className="mt-6 block text-xs font-bold text-blue-500 hover:text-blue-400 transition-colors">
+                                    View all events →
+                                </Link>
+                            )}
                         </div>
 
-                        {/* Who to Follow */}
+                        {/* University Notes */}
                         <div className="bg-slate-900/20 border border-slate-800/40 rounded-3xl overflow-hidden p-6 backdrop-blur-sm">
-                            <h3 className="font-bold text-xl mb-6 text-slate-200">Who to follow</h3>
+                            <h3 className="font-bold text-xl mb-6 flex items-center gap-2 text-slate-200">
+                                <GraduationCap className="h-5 w-5 text-purple-500" />
+                                Notes for {user?.college || "University"}
+                            </h3>
                             <div className="space-y-5">
-                                {[
-                                    { name: "Dev Club", handle: "@devclub_official", img: "https://ui-avatars.com/api/?name=DC&background=random" },
-                                    { name: "Sarah J.", handle: "@sarah_des", img: "https://ui-avatars.com/api/?name=SJ&background=random" },
-                                    { name: "Tech Talk", handle: "@techtalks", img: "https://ui-avatars.com/api/?name=TT&background=random" },
-                                ].map((u, i) => (
-                                    <div key={i} className="flex items-center justify-between">
-                                        <div className="flex gap-3 items-center">
-                                            <Avatar className="h-10 w-10 border border-slate-800">
-                                                <AvatarImage src={u.img} />
-                                                <AvatarFallback>{u.name[0]}</AvatarFallback>
-                                            </Avatar>
+                                {loadingSidebar ? (
+                                    [1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl bg-slate-800/50" />)
+                                ) : uniNotes.length > 0 ? (
+                                    uniNotes.map((note) => (
+                                        <div 
+                                            key={note.id} 
+                                            className="flex items-center justify-between group cursor-pointer"
+                                            onClick={() => router.push(`/studyhub/${note.id}`)}
+                                        >
                                             <div className="overflow-hidden">
-                                                <p className="font-bold text-sm text-slate-200 truncate">{u.name}</p>
-                                                <p className="text-xs text-slate-500 truncate">{u.handle}</p>
+                                                <p className="font-bold text-sm text-slate-200 group-hover:text-purple-400 transition-colors truncate">{note.title}</p>
+                                                <p className="text-xs text-slate-500 truncate">{note.subject}</p>
                                             </div>
+                                            <ArrowRight className="h-4 w-4 text-slate-600 group-hover:text-purple-400 transition-all -translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0" />
                                         </div>
-                                        <Button size="sm" variant="outline" className="h-8 rounded-full text-xs px-4 bg-slate-900/50 border-slate-700/50 hover:bg-slate-800 hover:text-white hover:border-slate-600 transition-all">Follow</Button>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-slate-500">No notes shared yet.</p>
+                                )}
                             </div>
+                            {uniNotes.length > 0 && (
+                                <Link href="/studyhub" className="mt-6 block text-xs font-bold text-purple-500 hover:text-purple-400 transition-colors">
+                                    Browse all notes →
+                                </Link>
+                            )}
                         </div>
 
                     </div>
@@ -305,22 +348,13 @@ function DiscoverWidget() {
             href: "/events",
             gradient: "from-violet-600 to-purple-500",
             glow: "shadow-violet-500/30",
-        },
-        {
+        },        {
             icon: EyeOff,
             label: "Confessions",
             sub: "Anonymous",
             href: "/confessions",
             gradient: "from-pink-600 to-rose-500",
             glow: "shadow-pink-500/30",
-        },
-        {
-            icon: Users,
-            label: "Community",
-            sub: "Find your crew",
-            href: "/community",
-            gradient: "from-emerald-600 to-teal-500",
-            glow: "shadow-emerald-500/30",
         },
     ]
 

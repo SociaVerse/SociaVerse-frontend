@@ -160,23 +160,6 @@ function NoteCard({ note, onLike }: { note: StudyNote; onLike: (id: number) => v
             )}
           </div>
 
-          {/* College & Visibility */}
-          <div className="flex flex-wrap items-center gap-3 mb-3">
-            {note.college && (
-              <div className="flex items-center gap-1 text-xs text-slate-500">
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>{note.college}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-950/60 border border-white/5 text-[10px] font-bold">
-              {note.visibility === 'global' ? (
-                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
-              ) : (
-                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University Only</span></>
-              )}
-            </div>
-          </div>
-
           {/* Action bar */}
           <div className="flex items-center justify-between pt-3 border-t border-slate-800/50">
             <button
@@ -251,6 +234,7 @@ export default function StudyHubPage() {
   const [branch, setBranch] = useState("")
   const [semester, setSemester] = useState("")
   const [sort, setSort] = useState<"trending" | "newest" | "most_liked" | "most_saved">("trending")
+  const [visibility, setVisibility] = useState<"university" | "global">("university")
   const [pdfOnly, setPdfOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
@@ -271,6 +255,7 @@ export default function StudyHubPage() {
         branch: branch || undefined,
         semester: semester || undefined,
         pdf_only: pdfOnly || undefined,
+        visibility: visibility,
       }
       const data = await studyhubApi.getNotes(params)
       setNotes(prev => append ? [...prev, ...data.results] : data.results)
@@ -286,7 +271,7 @@ export default function StudyHubPage() {
   useEffect(() => {
     setPage(1)
     fetchNotes(1)
-  }, [fetchNotes])
+  }, [fetchNotes, visibility])
 
   // Load more
   const loadMore = () => {
@@ -341,6 +326,34 @@ export default function StudyHubPage() {
           <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
             Share notes, PDFs, and exam prep material. Help your college community ace their exams.
           </p>
+
+          {/* Visibility Scope Selector */}
+          <div className="flex justify-center mt-8">
+            <div className="inline-flex p-1 bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl">
+              <button
+                onClick={() => setVisibility("university")}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  visibility === "university"
+                    ? "bg-red-600 text-white shadow-lg shadow-red-500/20"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <MapPin className="w-4 h-4" />
+                My University
+              </button>
+              <button
+                onClick={() => setVisibility("global")}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                  visibility === "global"
+                    ? "bg-red-600 text-white shadow-lg shadow-red-500/20"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                Global Hub
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         {/* Search + Create */}

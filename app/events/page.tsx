@@ -53,6 +53,7 @@ export default function EventsPage() {
     const { isAuthenticated, isLoading } = useAuth()
     const { toast, confirm } = useToast()
     const [activeTab, setActiveTab] = useState("foryou")
+    const [visibilityFilter, setVisibilityFilter] = useState<"university" | "global">("university")
     const [searchQuery, setSearchQuery] = useState("")
     const [events, setEvents] = useState<Event[]>([])
     const [isFetching, setIsFetching] = useState(true)
@@ -71,7 +72,9 @@ export default function EventsPage() {
             const token = localStorage.getItem("sociaverse_token")
             const headers = token ? { 'Authorization': `Token ${token}` } : {}
 
-            const url = isInitial ? `${process.env.NEXT_PUBLIC_API_URL}/api/events/` : nextUrl
+            const url = isInitial 
+                ? `${process.env.NEXT_PUBLIC_API_URL}/api/events/?visibility=${visibilityFilter}` 
+                : nextUrl
             if (!url) return
 
             const eventsRes = await fetch(url, { headers: headers as HeadersInit })
@@ -101,7 +104,7 @@ export default function EventsPage() {
 
     useEffect(() => {
         fetchEvents(true)
-    }, [isAuthenticated, fetchEvents])
+    }, [isAuthenticated, fetchEvents, visibilityFilter])
 
     const lastEventRef = useInfiniteScroll({
         callback: () => fetchEvents(false),
@@ -256,6 +259,37 @@ export default function EventsPage() {
                             >
                                 Join hackathons, workshops, and exclusive meetups happening in your community.
                             </motion.p>
+
+                            {/* Visibility Scope Selector */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.25 }}
+                                className="inline-flex p-1 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl"
+                            >
+                                <button
+                                    onClick={() => setVisibilityFilter("university")}
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                        visibilityFilter === "university"
+                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                >
+                                    <MapPin className="w-4 h-4" />
+                                    My University
+                                </button>
+                                <button
+                                    onClick={() => setVisibilityFilter("global")}
+                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                        visibilityFilter === "global"
+                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                >
+                                    <Globe className="w-4 h-4" />
+                                    Global Scene
+                                </button>
+                            </motion.div>
                         </div>
 
                         <motion.div
@@ -451,13 +485,6 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
                 />
 
                 <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2">
-                    <span className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg">
-                        {event.visibility === 'global' ? (
-                            <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
-                        ) : (
-                            <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
-                        )}
-                    </span>
                     <span className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg">
                         <Tag className="w-3 h-3 text-blue-400" /> {event.category}
                     </span>

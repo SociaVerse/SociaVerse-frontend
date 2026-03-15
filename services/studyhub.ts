@@ -86,6 +86,7 @@ export interface GetNotesParams {
     sort?: 'newest' | 'trending' | 'most_liked' | 'most_saved';
     pdf_only?: boolean;
     username?: string;
+    visibility?: 'global' | 'university';
     page?: number;
 }
 
@@ -99,6 +100,7 @@ export const studyhubApi = {
         if (params.sort) searchParams.set('sort', params.sort);
         if (params.pdf_only) searchParams.set('pdf_only', 'true');
         if (params.username) searchParams.set('username', params.username);
+        if (params.visibility) searchParams.set('visibility', params.visibility);
         if (params.page) searchParams.set('page', String(params.page));
 
         const qs = searchParams.toString();
