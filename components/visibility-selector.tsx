@@ -7,9 +7,10 @@ interface VisibilitySelectorProps {
     value: "university" | "global"
     onChange: (value: "university" | "global") => void
     className?: string
+    hideLabel?: boolean
 }
 
-export function VisibilitySelector({ value, onChange, className = "" }: VisibilitySelectorProps) {
+export function VisibilitySelector({ value, onChange, className = "", hideLabel = false }: VisibilitySelectorProps) {
     const options = [
         {
             id: "university" as const,
@@ -35,9 +36,11 @@ export function VisibilitySelector({ value, onChange, className = "" }: Visibili
 
     return (
         <div className={`space-y-2 ${className}`}>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-                Who can see this?
-            </label>
+            {!hideLabel && (
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Who can see this?
+                </label>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {options.map((option) => {
                     const isActive = value === option.id

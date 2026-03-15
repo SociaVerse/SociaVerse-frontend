@@ -219,11 +219,15 @@ export default function CreatePostPage() {
                             {(user?.username || "U").slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col flex-1">
                         <span className="font-bold text-sm text-slate-200">{user?.username || "User"}</span>
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-white/10 w-fit">
-                            <span className="text-[10px] text-slate-400 font-medium">Public</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-500"></span>
+                        <div className="mt-1">
+                            <VisibilitySelector 
+                                value={visibility} 
+                                onChange={setVisibility} 
+                                className="!space-y-0"
+                                hideLabel={true}
+                            />
                         </div>
                     </div>
                 </div>
@@ -300,11 +304,8 @@ export default function CreatePostPage() {
                     </button>
                 </div>
 
-                {/* Visibility Selector */}
-                <div className="px-4 py-3 border-t border-white/5">
-                    <VisibilitySelector value={visibility} onChange={setVisibility} />
                 </div>
-            </div>
+            
 
             <input
                 type="file"
