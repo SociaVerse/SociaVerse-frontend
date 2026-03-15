@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/custom-toast"
 import { compressImage } from "@/utils/image-compression"
+import { VisibilitySelector } from "@/components/visibility-selector"
 
 // Steps Definition
 const STEPS = [
@@ -61,6 +62,7 @@ export default function CreateEventPage() {
         maxTeamSize: 4,
         community: "independent", // or community ID
         mode: "offline",
+        visibility: "university" as "university" | "global",
 
         // Step 3
         description: "",
@@ -135,6 +137,7 @@ export default function CreateEventPage() {
                 speakers: formData.speakers,
                 schedule: formData.schedule,
                 faqs: formData.faqs,
+                visibility: formData.visibility,
             }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/`, {
@@ -562,6 +565,12 @@ function Step1({ data, update }: { data: any, update: (field: string, value: any
                         onChange={(e) => update("endDate", e.target.value)}
                     />
                 </div>
+            </div>
+
+            {/* Visibility */}
+            <div className="space-y-3">
+                <Label className="text-slate-300 font-medium ml-1">Visibility</Label>
+                <VisibilitySelector value={data.visibility || "university"} onChange={(v) => update("visibility", v)} />
             </div>
         </div>
 

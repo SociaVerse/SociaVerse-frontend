@@ -12,6 +12,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { useAuth } from "@/components/auth-provider"
 import { studyhubApi } from "@/services/studyhub"
+import { VisibilitySelector } from "@/components/visibility-selector"
 
 const BRANCHES = [
   { value: "cse", label: "Computer Science (CSE)" },
@@ -42,6 +43,7 @@ export default function CreateNotePage() {
   const [showPreview, setShowPreview] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [visibility, setVisibility] = useState<"university" | "global">("university")
 
   const handlePdfSelect = (file: File | null) => {
     setPdfError("")
@@ -82,6 +84,7 @@ export default function CreateNotePage() {
       if (pdfFile) {
         formData.append("uploaded_pdf", pdfFile)
       }
+      formData.append("visibility", visibility)
 
       const note = await studyhubApi.createNote(formData)
       router.push(`/studyhub/${note.id}`)
@@ -286,6 +289,9 @@ export default function CreateNotePage() {
                 id="create-note-pdf-input"
               />
             </div>
+
+            {/* Visibility */}
+            <VisibilitySelector value={visibility} onChange={setVisibility} />
 
             {/* Submit */}
             <div className="pt-4 flex justify-end gap-3">

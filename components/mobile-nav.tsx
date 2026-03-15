@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar, BookOpen } from "lucide-react"
+import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar, BookOpen, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {
@@ -21,12 +21,8 @@ export function MobileNav() {
 
     const regularNavItems = [
         { href: "/", icon: Home, label: "Home" },
-        { href: "/explore", icon: Search, label: "Explore" },
         { href: "/studyhub", icon: BookOpen, label: "Study Hub" },
-        { href: "/community", icon: Users, label: "Communities", isMain: true },
-        { href: "/chat", icon: MessageCircle, label: "Chat" },
         { href: "/events", icon: Calendar, label: "Events" },
-        { href: "/marketplace", icon: Store, label: "Market" },
     ]
 
     const waitlistNavItems = [
@@ -57,7 +53,6 @@ export function MobileNav() {
                                         className={cn(
                                             "relative z-10 w-6 h-6 transition-all duration-300",
                                             isActive ? "text-white -translate-y-0.5" : "text-slate-400 group-hover:text-slate-200",
-                                            item.isMain && !isActive ? "text-blue-400" : ""
                                         )}
                                         strokeWidth={isActive ? 2.5 : 2}
                                     />

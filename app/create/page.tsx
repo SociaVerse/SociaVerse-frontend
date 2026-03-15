@@ -11,6 +11,7 @@ import { useAuth } from "@/components/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ImageCropper } from "@/components/ui/image-cropper"
 import { compressImage } from "@/utils/image-compression"
+import { VisibilitySelector } from "@/components/visibility-selector"
 
 export default function CreatePostPage() {
     const router = useRouter()
@@ -21,6 +22,7 @@ export default function CreatePostPage() {
     const [imagePreviews, setImagePreviews] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isCompressing, setIsCompressing] = useState(false)
+    const [visibility, setVisibility] = useState<"university" | "global">("university")
     const fileInputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -169,7 +171,7 @@ export default function CreatePostPage() {
 
         setIsSubmitting(true)
         try {
-            await api.createPost(content, images)
+            await api.createPost(content, images, visibility)
             toast({ type: 'success', title: "Posted!", duration: 2000 })
             router.push("/explore")
         } catch (error) {
@@ -292,10 +294,15 @@ export default function CreatePostPage() {
                         <Smile className="w-6 h-6 text-yellow-500" />
                         <span className="text-slate-300 font-medium">Feeling/Activity</span>
                     </button>
-                    <button className="flex items-center gap-3 p-4 hover:bg-white/5 active:bg-white/10 transition-colors">
+                    <button className="flex items-center gap-3 p-4 hover:bg-white/5 active:bg-white/10 transition-colors border-b border-white/5">
                         <MapPin className="w-6 h-6 text-red-500" />
                         <span className="text-slate-300 font-medium">Check in</span>
                     </button>
+                </div>
+
+                {/* Visibility Selector */}
+                <div className="px-4 py-3 border-t border-white/5">
+                    <VisibilitySelector value={visibility} onChange={setVisibility} />
                 </div>
             </div>
 

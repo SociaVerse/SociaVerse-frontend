@@ -29,11 +29,9 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
 const regularNavLinks = [
-  { href: "/marketplace", label: "Marketplace" },
   { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
   { href: "/studyhub", label: "Study Hub" },
-  { href: "/community", label: "Community" },
 ]
 
 const waitlistNavLinks = [

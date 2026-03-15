@@ -12,6 +12,7 @@ export interface User {
     profile_picture?: string;
     is_verified?: boolean;
     default_upi_id?: string | null;
+    college: string;
 }
 
 export interface Comment {
@@ -33,6 +34,8 @@ export interface Post {
     likes_count: number;
     comments_count: number;
     is_liked: boolean;
+    visibility?: 'university' | 'global';
+    university_id?: number | null;
 }
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -118,9 +121,10 @@ export const api = {
         return response.json();
     },
 
-    createPost: async (content: string, images: File[]): Promise<Post> => {
+    createPost: async (content: string, images: File[], visibility: 'university' | 'global' = 'university'): Promise<Post> => {
         const formData = new FormData();
         formData.append('content', content);
+        formData.append('visibility', visibility);
         images.forEach((image) => {
             formData.append('uploaded_images', image);
         });

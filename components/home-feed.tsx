@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays } from "lucide-react"
+import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -45,7 +45,7 @@ export function HomeFeed() {
             // Let's assume we can pass params or it returns the full object now after backend change.
             const token = localStorage.getItem("sociaverse_token")
             const url = isInitial
-                ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/`
+                ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/?visibility=university`
                 : nextCursor
 
             if (!url) return
@@ -145,9 +145,9 @@ export function HomeFeed() {
                             {/* Welcome Heading */}
                             <div className="mb-2">
                                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 tracking-tight">
-                                    Welcome back, {user?.first_name || "Adventurer"}!
+                                    🏫 Your University Feed
                                 </h1>
-                                <p className="text-slate-400 text-sm font-medium mt-1">See what's happening in your verse ✨</p>
+                                <p className="text-slate-400 text-sm font-medium mt-1">See what's happening at your campus ✨</p>
                             </div>
 
                             {/* Discover Widget */}
@@ -293,7 +293,7 @@ function DiscoverWidget() {
         {
             icon: Compass,
             label: "Explore",
-            sub: "Trending now",
+            sub: "Global content",
             href: "/explore",
             gradient: "from-blue-600 to-sky-500",
             glow: "shadow-blue-500/30",
@@ -307,20 +307,20 @@ function DiscoverWidget() {
             glow: "shadow-violet-500/30",
         },
         {
+            icon: EyeOff,
+            label: "Confessions",
+            sub: "Anonymous",
+            href: "/confessions",
+            gradient: "from-pink-600 to-rose-500",
+            glow: "shadow-pink-500/30",
+        },
+        {
             icon: Users,
             label: "Community",
             sub: "Find your crew",
             href: "/community",
             gradient: "from-emerald-600 to-teal-500",
             glow: "shadow-emerald-500/30",
-        },
-        {
-            icon: ShoppingBag,
-            label: "Marketplace",
-            sub: "Buy & sell",
-            href: "/marketplace",
-            gradient: "from-orange-500 to-amber-400",
-            glow: "shadow-orange-500/30",
         },
     ]
 

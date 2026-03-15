@@ -183,7 +183,7 @@ export default function ExplorePage() {
                     <div className="flex items-center gap-3 py-3">
                         <div className="hidden md:flex items-center gap-1.5 shrink-0">
                             <Sparkles className="w-5 h-5 text-emerald-400" />
-                            <span className="font-bold text-lg text-slate-100">Explore</span>
+                            <span className="font-bold text-lg text-slate-100">🌍 Global Explore</span>
                         </div>
                         <div className="md:hidden flex items-center gap-1.5 shrink-0">
                             <Sparkles className="w-4 h-4 text-emerald-400" />
@@ -394,7 +394,7 @@ function ForYouFeed({
         try {
             const token = localStorage.getItem("sociaverse_token")
             const headers: HeadersInit = token ? { Authorization: `Token ${token}` } : {}
-            const url = isInitial ? `${API}/api/posts/` : nextUrl
+            const url = isInitial ? `${API}/api/posts/?visibility=global` : nextUrl
             if (!url) return
             const res = await fetch(url, { headers })
             if (res.ok) {
@@ -572,7 +572,7 @@ function EventsFeed() {
             const token = localStorage.getItem("sociaverse_token")
             const headers: HeadersInit = token ? { Authorization: `Token ${token}` } : {}
             const catParam = category !== "All" ? `&category=${encodeURIComponent(category)}` : ""
-            const url = isInitial ? `${API}/api/events/?limit=20${catParam}` : nextUrl
+            const url = isInitial ? `${API}/api/events/?limit=20${catParam}&visibility=global` : nextUrl
             if (!url) return
             const res = await fetch(url, { headers })
             if (res.ok) {
