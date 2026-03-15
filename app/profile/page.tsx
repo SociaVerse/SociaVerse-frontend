@@ -34,6 +34,7 @@ import remarkGfm from 'remark-gfm'
 import { PostModal } from "@/components/post-modal"
 import { ProfileAboutSection } from "@/components/profile-about-section"
 import { Post } from "@/services/api"
+import { VisibilitySelector } from "@/components/visibility-selector"
 
 export default function ProfilePage() {
     const { isAuthenticated, user, isLoading } = useAuth()
@@ -473,6 +474,7 @@ function PostsFeed({ profile, currentUser, onImageClick, onPostClick }: {
     onPostClick: (post: Post) => void
 }) {
     const [content, setContent] = useState("")
+    const [visibility, setVisibility] = useState<'global' | 'university'>('global')
     const [images, setImages] = useState<File[]>([])
     const [posts, setPosts] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(false)
@@ -646,6 +648,7 @@ function PostsFeed({ profile, currentUser, onImageClick, onPostClick }: {
         setIsLoading(true)
         const formData = new FormData()
         formData.append('content', content)
+        formData.append('visibility', visibility)
         images.forEach(image => {
             formData.append('uploaded_images', image)
         })
@@ -766,6 +769,13 @@ function PostsFeed({ profile, currentUser, onImageClick, onPostClick }: {
                             />
                         </div>
                         <div className="flex-1 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <VisibilitySelector 
+                                    value={visibility} 
+                                    onChange={setVisibility} 
+                                    hideLabel 
+                                />
+                            </div>
                             <textarea
                                 placeholder="What's on your mind?"
                                 value={content}
