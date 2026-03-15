@@ -21,7 +21,9 @@ export function MobileNav() {
 
     const regularNavItems = [
         { href: "/", icon: Home, label: "Home" },
+        { href: "/explore", icon: Search, label: "Explore" },
         { href: "/studyhub", icon: BookOpen, label: "Study Hub" },
+        { href: "/chat", icon: MessageCircle, label: "Chat" },
         { href: "/events", icon: Calendar, label: "Events" },
     ]
 

@@ -36,7 +36,8 @@ interface Event {
     community: string
     rules: string | null
     prize: string | null
-    is_promoted: boolean
+    is_promoted: boolean;
+    visibility: 'global' | 'university';
     attendees_count?: number // Optional if backend doesn't send it yet
 }
 
@@ -451,7 +452,14 @@ function EventCard({ event, index, onDelete, isFavorited, onToggleFavorite }: { 
 
                 <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2">
                     <span className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg">
-                        <Globe className="w-3 h-3 text-blue-400" /> {event.category}
+                        {event.visibility === 'global' ? (
+                            <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+                        ) : (
+                            <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
+                        )}
+                    </span>
+                    <span className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold text-white flex items-center gap-1.5 shadow-lg">
+                        <Tag className="w-3 h-3 text-blue-400" /> {event.category}
                     </span>
                     {event.prize && (
                         <span className="px-3 py-1.5 rounded-full bg-yellow-500/10 backdrop-blur-md border border-yellow-500/20 text-xs font-bold text-yellow-400 flex items-center gap-1.5 shadow-lg">

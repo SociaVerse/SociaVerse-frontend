@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Search, Plus, BookOpen, FileText, Heart, MessageCircle,
   Bookmark, Eye, Filter, ChevronDown, Flame, Clock,
-  ThumbsUp, Star, X, GraduationCap, Sparkles
+  ThumbsUp, Star, X, GraduationCap, Sparkles, Globe, MapPin
 } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { studyhubApi, StudyNote, GetNotesParams } from "@/services/studyhub"
@@ -160,13 +160,22 @@ function NoteCard({ note, onLike }: { note: StudyNote; onLike: (id: number) => v
             )}
           </div>
 
-          {/* College */}
-          {note.college && (
-            <p className="text-xs text-slate-500 mb-3 flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5" />
-              {note.college}
-            </p>
-          )}
+          {/* College & Visibility */}
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            {note.college && (
+              <div className="flex items-center gap-1 text-xs text-slate-500">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>{note.college}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-950/60 border border-white/5 text-[10px] font-bold">
+              {note.visibility === 'global' ? (
+                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+              ) : (
+                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University Only</span></>
+              )}
+            </div>
+          </div>
 
           {/* Action bar */}
           <div className="flex items-center justify-between pt-3 border-t border-slate-800/50">

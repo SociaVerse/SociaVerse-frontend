@@ -518,9 +518,26 @@ function ForYouFeed({
                                     <div className="w-full relative bg-slate-900/40">
                                         <img src={actualImgUrl}
                                             alt="post" className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                                        {/* Visibility Badge */}
+                                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
+                                            {post.visibility === 'global' ? (
+                                                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+                                            ) : (
+                                                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                                 <div className={`p-4 sm:p-5 bg-slate-900/80 ${!hasImage ? "min-h-[140px] flex flex-col justify-between" : ""}`}>
+                                    {!hasImage && (
+                                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
+                                            {post.visibility === 'global' ? (
+                                                <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+                                            ) : (
+                                                <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
+                                            )}
+                                        </div>
+                                    )}
                                     {(post as any).content && (
                                         <p className={`text-slate-100 text-[14px] leading-relaxed mb-4 ${hasImage ? "line-clamp-3" : "line-clamp-10"}`}>
                                             {(post as any).content}
@@ -647,11 +664,27 @@ function EventsFeed() {
                                                 <img src={imageUrl.startsWith("http") ? imageUrl : `${API}${imageUrl}`}
                                                     alt={title} className="w-full h-auto max-h-[600px] object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                                                 <div className="absolute inset-0 bg-linear-to-t from-slate-950/50 via-transparent to-transparent pointer-events-none" />
+                                                {/* Visibility Badge */}
+                                                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
+                                                    {event.visibility === 'global' ? (
+                                                        <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+                                                    ) : (
+                                                        <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
+                                                    )}
+                                                </div>
                                                 {dateStr && <div className="absolute top-2.5 right-2.5 bg-orange-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-lg">{dateStr}</div>}
                                             </div>
                                         ) : (
                                             <div className={`relative w-full bg-linear-to-br from-orange-500/10 to-amber-500/5 flex items-center justify-center ${EHEIGHTS[(i + 2) % EHEIGHTS.length]}`}>
                                                 <Calendar className="w-12 h-12 text-orange-500/30" />
+                                                {/* Visibility Badge */}
+                                                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-950/60 backdrop-blur-md border border-white/10 text-[10px] font-bold">
+                                                    {event.visibility === 'global' ? (
+                                                        <><Globe className="w-3 h-3 text-emerald-400" /><span className="text-emerald-300">Global</span></>
+                                                    ) : (
+                                                        <><MapPin className="w-3 h-3 text-violet-400" /><span className="text-violet-300">University</span></>
+                                                    )}
+                                                </div>
                                                 {dateStr && <div className="absolute top-2.5 right-2.5 bg-orange-500/20 border border-orange-500/30 text-orange-300 text-[10px] font-bold px-2 py-1 rounded-lg">{dateStr}</div>}
                                             </div>
                                         )}

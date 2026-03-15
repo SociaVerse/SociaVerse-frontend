@@ -34,6 +34,7 @@ export interface StudyNote {
     views: number;
     is_liked: boolean;
     is_saved: boolean;
+    visibility: 'global' | 'university';
     created_at: string;
     updated_at: string;
 }
