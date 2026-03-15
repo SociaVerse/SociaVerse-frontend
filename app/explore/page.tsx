@@ -408,7 +408,7 @@ function ForYouFeed({
         finally { setLoading(false); setLoadingMore(false) }
     }, [hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchPosts(true) }, [fetchPosts])
+    useEffect(() => { fetchPosts(true) }, [])
     const lastPostRef = useInfiniteScroll({ callback: () => fetchPosts(false), isLoading: loading || loadingMore, hasMore })
 
     const handleLike = async (e: React.MouseEvent, post: Post) => {
@@ -472,7 +472,7 @@ function ForYouFeed({
 
     const HEIGHTS = ["h-72", "h-56", "h-64", "h-48", "h-80", "h-52"]
 
-    if (loading) return (
+    if (loading && posts.length === 0) return (
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
             {Array.from({ length: 14 }).map((_, i) => (
                 <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
@@ -586,13 +586,13 @@ function EventsFeed() {
         finally { setLoading(false); setLoadingMore(false) }
     }, [category, hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchEvents(true) }, [fetchEvents])
+    useEffect(() => { fetchEvents(true) }, [])
     const lastEventRef = useInfiniteScroll({ callback: () => fetchEvents(false), isLoading: loading || loadingMore, hasMore })
 
     const EHEIGHTS = ["h-64", "h-52", "h-72", "h-56", "h-68", "h-48"]
     const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""
 
-    if (loading) return (
+    if (loading && events.length === 0) return (
         <div>
             <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
                 {EVENT_CATEGORIES.map((_, i) => <Skeleton key={i} className="h-9 w-20 rounded-full shrink-0" />)}
@@ -711,7 +711,7 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
         finally { setLoading(false); setLoadingMore(false) }
     }, [hasMore, loadingMore, nextUrl, currentUserId])
 
-    useEffect(() => { fetchPeople(true) }, [fetchPeople])
+    useEffect(() => { fetchPeople(true) }, [])
     const lastPersonRef = useInfiniteScroll({ callback: () => fetchPeople(false), isLoading: loading || loadingMore, hasMore })
 
     const handleFollow = (userId: number) => {
@@ -728,7 +728,7 @@ function PeopleFeed({ handleAuthAction, isAuthenticated, currentUserId }: {
 
     const PHEIGHTS = ["h-64", "h-48", "h-56", "h-52", "h-72"]
 
-    if (loading) return (
+    if (loading && people.length === 0) return (
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
             {Array.from({ length: 12 }).map((_, i) => (
                 <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
@@ -825,7 +825,7 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
         finally { setLoading(false); setLoadingMore(false) }
     }, [hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchCommunities(true) }, [fetchCommunities])
+    useEffect(() => { fetchCommunities(true) }, [])
     const lastCommunityRef = useInfiniteScroll({ callback: () => fetchCommunities(false), isLoading: loading || loadingMore, hasMore })
 
     const router = useRouter()
@@ -837,7 +837,7 @@ function CommunitiesFeed({ isAuthenticated }: { isAuthenticated: boolean }) {
     ]
     const CHEIGHTS = ["h-56", "h-44", "h-64", "h-52", "h-60", "h-48"]
 
-    if (loading) return (
+    if (loading && communities.length === 0) return (
         <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 2xl:columns-7 gap-3 sm:gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="break-inside-avoid mb-3 sm:mb-4 rounded-xl overflow-hidden bg-slate-900/40 border border-white/5">
