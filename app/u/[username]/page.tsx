@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
 import { useToast } from "@/components/ui/custom-toast"
+import { api } from "@/services/api"
 import Link from "next/link"
 import { UserList } from "@/components/user-list"
 import { PostCard } from "@/components/post-card"
@@ -587,20 +588,11 @@ function PostsFeed({ username, currentUser }: { username: string, currentUser: a
 
     const fetchPosts = async () => {
         try {
-            const token = localStorage.getItem('sociaverse_token')
-            const headers: HeadersInit = {}
-            if (token) headers['Authorization'] = `Token ${token}`
-
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/?username=${username}`, {
-                headers
-            })
-            if (response.ok) {
-                const data = await response.json()
-                const results = Array.isArray(data) ? data : data.results || []
-                setPosts(results)
-            }
+            const data = await api.getPosts({ username });
+            const results = Array.isArray(data) ? data : data.results || [];
+            setPosts(results);
         } catch (error) {
-            console.error("Error fetching posts:", error)
+            console.error("Error fetching posts:", error);
         }
     }
 

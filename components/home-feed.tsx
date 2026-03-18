@@ -50,7 +50,7 @@ export function HomeFeed() {
             // Let's assume we can pass params or it returns the full object now after backend change.
             const token = localStorage.getItem("sociaverse_token")
             const url = isInitial
-                ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/?visibility=university`
+                ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/`
                 : nextCursor
 
             if (!url) return

@@ -59,8 +59,15 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 export const api = {
-    getPosts: async (): Promise<Post[]> => {
-        const response = await fetchWithAuth('/posts/');
+    getPosts: async (params: { visibility?: string, username?: string } = {}): Promise<any> => {
+        const searchParams = new URLSearchParams();
+        if (params.visibility) searchParams.append('visibility', params.visibility);
+        if (params.username) searchParams.append('username', params.username);
+        
+        const queryString = searchParams.toString();
+        const url = `/posts/${queryString ? `?${queryString}` : ''}`;
+        
+        const response = await fetchWithAuth(url);
         if (!response.ok) throw new Error('Failed to fetch posts');
         return response.json();
     },
