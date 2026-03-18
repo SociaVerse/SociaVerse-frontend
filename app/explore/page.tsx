@@ -604,7 +604,7 @@ function EventsFeed() {
         finally { setLoading(false); setLoadingMore(false) }
     }, [category, hasMore, loadingMore, nextUrl])
 
-    useEffect(() => { fetchEvents(true) }, [])
+    useEffect(() => { fetchEvents(true) }, [category])
     const lastEventRef = useInfiniteScroll({ callback: () => fetchEvents(false), isLoading: loading || loadingMore, hasMore })
 
     const EHEIGHTS = ["h-64", "h-52", "h-72", "h-56", "h-68", "h-48"]

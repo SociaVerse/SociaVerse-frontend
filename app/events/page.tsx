@@ -105,7 +105,7 @@ export default function EventsPage() {
             setIsFetching(false)
             setLoadingMore(false)
         }
-    }, [hasMore, loadingMore, nextUrl])
+    }, [visibilityFilter, hasMore, loadingMore, nextUrl])
 
     useEffect(() => {
         fetchEvents(true)
