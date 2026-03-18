@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/ta
 import {
     Calendar, MapPin, Clock, Users, ArrowRight, Music, Code, Trophy, Star, Lock,
     Search, SlidersHorizontal, Filter, Globe, Sparkles, DollarSign, Tag, X, ChevronDown,
-    Edit, Trash2, Loader2
+    Edit, Trash2, Loader2, User
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -58,7 +58,7 @@ export default function EventsPage() {
     const { isAuthenticated, isLoading } = useAuth()
     const { toast, confirm } = useToast()
     const [activeTab, setActiveTab] = useState("all")
-    const [visibilityFilter, setVisibilityFilter] = useState<"university" | "global">("global")
+    const [visibilityFilter, setVisibilityFilter] = useState<"university" | "global" | "mine">("global")
     const [searchQuery, setSearchQuery] = useState("")
     const [events, setEvents] = useState<Event[]>([])
     const [isFetching, setIsFetching] = useState(true)
@@ -274,7 +274,7 @@ export default function EventsPage() {
                             >
                                 <button
                                     onClick={() => setVisibilityFilter("university")}
-                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
                                         visibilityFilter === "university"
                                             ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
                                             : "text-slate-400 hover:text-slate-200"
@@ -285,7 +285,7 @@ export default function EventsPage() {
                                 </button>
                                 <button
                                     onClick={() => setVisibilityFilter("global")}
-                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
                                         visibilityFilter === "global"
                                             ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
                                             : "text-slate-400 hover:text-slate-200"
@@ -293,6 +293,17 @@ export default function EventsPage() {
                                 >
                                     <Globe className="w-4 h-4" />
                                     Global Scene
+                                </button>
+                                <button
+                                    onClick={() => setVisibilityFilter("mine")}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                                        visibilityFilter === "mine"
+                                            ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                >
+                                    <User className="w-4 h-4" />
+                                    My Events
                                 </button>
                             </motion.div>
                         </div>
