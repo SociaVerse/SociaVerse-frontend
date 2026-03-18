@@ -43,17 +43,22 @@ interface Event {
 
 const CATEGORIES = [
     { id: "all", label: "All Events" },
+    { id: "hackathon", label: "Hackathon", icon: Code },
     { id: "tech", label: "Tech & Coding", icon: Code },
-    { id: "music", label: "Music & Arts", icon: Music },
+    { id: "workshop", label: "Workshop", icon: Code },
+    { id: "seminar", label: "Seminar", icon: Code },
+    { id: "cultural", label: "Cultural", icon: Music },
     { id: "gaming", label: "Gaming", icon: Trophy },
     { id: "business", label: "Business", icon: Star },
+    { id: "sports", label: "Sports", icon: Trophy },
+    { id: "entertainment", label: "Entertainment", icon: Music },
 ]
 
 export default function EventsPage() {
     const { isAuthenticated, isLoading } = useAuth()
     const { toast, confirm } = useToast()
-    const [activeTab, setActiveTab] = useState("foryou")
-    const [visibilityFilter, setVisibilityFilter] = useState<"university" | "global">("university")
+    const [activeTab, setActiveTab] = useState("all")
+    const [visibilityFilter, setVisibilityFilter] = useState<"university" | "global">("global")
     const [searchQuery, setSearchQuery] = useState("")
     const [events, setEvents] = useState<Event[]>([])
     const [isFetching, setIsFetching] = useState(true)

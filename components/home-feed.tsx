@@ -94,8 +94,8 @@ export function HomeFeed() {
         setLoadingSidebar(true)
         try {
             const [eventsRes, notesRes] = await Promise.all([
-                eventsApi.getEvents({ visibility: 'university', page: 1 }),
-                studyhubApi.getNotes({ visibility: 'university', page: 1 })
+                eventsApi.getEvents({ page: 1 }),
+                studyhubApi.getNotes({ page: 1 })
             ])
             setUniEvents(eventsRes.results.slice(0, 4))
             setUniNotes(notesRes.results.slice(0, 3))
@@ -261,7 +261,7 @@ export function HomeFeed() {
                         <div className="bg-slate-900/20 border border-slate-800/40 rounded-3xl overflow-hidden p-6 backdrop-blur-sm">
                             <h3 className="font-bold text-xl mb-6 flex items-center gap-2 text-slate-200">
                                 <CalendarDays className="h-5 w-5 text-blue-500" />
-                                Events in {user?.college || "University"}
+                                Coming Up
                             </h3>
                             <div className="space-y-5">
                                 {loadingSidebar ? (
@@ -292,7 +292,7 @@ export function HomeFeed() {
                         <div className="bg-slate-900/20 border border-slate-800/40 rounded-3xl overflow-hidden p-6 backdrop-blur-sm">
                             <h3 className="font-bold text-xl mb-6 flex items-center gap-2 text-slate-200">
                                 <GraduationCap className="h-5 w-5 text-purple-500" />
-                                Notes for {user?.college || "University"}
+                                Fresh Notes
                             </h3>
                             <div className="space-y-5">
                                 {loadingSidebar ? (

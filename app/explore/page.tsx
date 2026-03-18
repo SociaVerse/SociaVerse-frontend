@@ -562,9 +562,16 @@ function ForYouFeed({
 // ── Events Feed (Masonry) ─────────────────────────────────────────────────────
 
 const EVENT_CATEGORIES = [
-    { label: "All", emoji: "✨" }, { label: "Music", emoji: "🎵" }, { label: "Tech", emoji: "💻" },
-    { label: "Sports", emoji: "⚽" }, { label: "Arts", emoji: "🎨" }, { label: "Food", emoji: "🍕" },
-    { label: "Gaming", emoji: "🎮" }, { label: "Education", emoji: "📚" },
+    { label: "All", emoji: "✨" },
+    { label: "Hackathon", emoji: "💻" },
+    { label: "Workshop", emoji: "📚" },
+    { label: "Seminar", emoji: "🎤" },
+    { label: "Cultural", emoji: "🎨" },
+    { label: "Gaming", emoji: "🎮" },
+    { label: "Sports", emoji: "⚽" },
+    { label: "Business", emoji: "💼" },
+    { label: "Tech", emoji: "🔬" },
+    { label: "Entertainment", emoji: "🎭" },
 ]
 
 function EventsFeed() {
