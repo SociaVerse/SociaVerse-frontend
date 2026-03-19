@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, Search, MessageCircle, Store, Zap, Globe, Rocket, Users, Calendar, BookOpen, EyeOff } from "lucide-react"
+import { Home, Search, MessageCircle, Store, Zap, Rocket, Users, Calendar, BookOpen, EyeOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function MobileNav() {

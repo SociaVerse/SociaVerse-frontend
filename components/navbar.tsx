@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Globe, Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus, Tag } from "lucide-react"
+import { Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus, Tag } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -56,7 +56,13 @@ export function Navbar() {
   const isCreatePage = pathname === "/create"
   const isProfilePage = pathname === "/profile" || pathname?.startsWith("/u/")
   const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
-  const navLinks = isWaitlistMode ? waitlistNavLinks : regularNavLinks;
+  const navLinks = isWaitlistMode
+    ? waitlistNavLinks
+    : regularNavLinks.map(link =>
+        link.href === "/" && !isAuthenticated
+          ? { ...link, label: "Home" }
+          : link
+      );
 
 
 
@@ -237,17 +243,6 @@ export function Navbar() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            {!isWaitlistMode && (
-              <>
-                {/* SociaLink Entry Point */}
-                <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 hover:scale-110 transition-all relative group">
-                  <Link href="/socialink">
-                    <div className="absolute top-1 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
-                    <Globe className="h-5 w-5 group-hover:animate-spin-slow" />
-                  </Link>
-                </Button>
-              </>
-            )}
 
             {!isWaitlistMode && (
               <motion.div
@@ -313,13 +308,6 @@ export function Navbar() {
             <div className="flex md:hidden items-center gap-3">
               {isAuthenticated ? (
                 <>
-                  {/* SociaLink Entry Point - Mobile */}
-                  <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-violet-400 transition-all relative group">
-                    <Link href="/socialink">
-                      <div className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse"></div>
-                      <Globe className="h-5 w-5" />
-                    </Link>
-                  </Button>
                   <NavbarNotifications />
                   <Link href="/profile" className="relative group">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
