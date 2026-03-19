@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
 
 const regularNavLinks = [
+  { href: "/", label: "Your University" },
   { href: "/events", label: "Events" },
   { href: "/explore", label: "Explore" },
   { href: "/studyhub", label: "Study Hub" },

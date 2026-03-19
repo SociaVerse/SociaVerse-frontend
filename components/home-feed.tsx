@@ -168,7 +168,7 @@ export function HomeFeed() {
                             </div>
                         </div>
 
-                        <div className="p-4 space-y-6">
+                        <div className="p-4 space-y-4">
 
                             {/* Welcome Heading */}
                             <div className="mb-2">
@@ -348,13 +348,6 @@ function DiscoverWidget() {
             href: "/events",
             gradient: "from-violet-600 to-purple-500",
             glow: "shadow-violet-500/30",
-        },        {
-            icon: EyeOff,
-            label: "Confessions",
-            sub: "Anonymous",
-            href: "/confessions",
-            gradient: "from-pink-600 to-rose-500",
-            glow: "shadow-pink-500/30",
         },
     ]
 
@@ -386,7 +379,7 @@ function DiscoverWidget() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                     {tiles.map((tile, i) => (
                         <motion.button
                             key={tile.href}
