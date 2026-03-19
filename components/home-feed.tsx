@@ -94,8 +94,8 @@ export function HomeFeed() {
         setLoadingSidebar(true)
         try {
             const [eventsRes, notesRes] = await Promise.all([
-                eventsApi.getEvents({ page: 1 }),
-                studyhubApi.getNotes({ page: 1 })
+                eventsApi.getEvents({ page: 1, visibility: 'university' }),
+                studyhubApi.getNotes({ page: 1, visibility: 'university' })
             ])
             setUniEvents(eventsRes.results.slice(0, 4))
             setUniNotes(notesRes.results.slice(0, 3))

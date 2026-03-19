@@ -46,9 +46,11 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 export const eventsApi = {
-    getEvents: async (params: { visibility?: string, page?: number } = {}): Promise<PaginatedResponse<Event>> => {
+    getEvents: async (params: { visibility?: string, page?: number, username?: string, participant?: string } = {}): Promise<PaginatedResponse<Event>> => {
         const queryParams = new URLSearchParams();
         if (params.visibility) queryParams.set('visibility', params.visibility);
+        if (params.username) queryParams.set('username', params.username);
+        if (params.participant) queryParams.set('participant', params.participant);
         if (params.page) queryParams.set('page', params.page.toString());
 
         const qs = queryParams.toString();

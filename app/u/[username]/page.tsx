@@ -13,6 +13,7 @@ import {
 import { FaTwitter, FaInstagram, FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa"
 import { useToast } from "@/components/ui/custom-toast"
 import { api } from "@/services/api"
+import { eventsApi, Event } from "@/services/events"
 import Link from "next/link"
 import { UserList } from "@/components/user-list"
 import { PostCard } from "@/components/post-card"
@@ -485,14 +486,23 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                             </div>
                         </div>
 
-                        {/* Photos Preview */}
+                        {/* Events Preview */}
                         <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-white">Photos</h3>
-                                <Button variant="link" className="text-blue-400 p-0 h-auto text-sm">See all</Button>
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <Calendar className="w-5 h-5 text-blue-500" />
+                                    Events
+                                </h3>
+                                <Button 
+                                    variant="link" 
+                                    className="text-blue-400 p-0 h-auto text-sm"
+                                    onClick={() => setActiveTab("Events")}
+                                >
+                                    See all
+                                </Button>
                             </div>
-                            <div className="text-center py-8 text-slate-500 text-sm">
-                                No photos yet
+                            <div className="text-center py-6 text-slate-400 text-sm">
+                                Check out the events {profile.username} has organized or is attending.
                             </div>
                         </div>
                     </div>
@@ -502,7 +512,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
                         {/* Custom Tabs */}
                         <div className="flex items-center gap-8 border-b border-slate-800 mb-6 sticky top-0 bg-slate-950/95 backdrop-blur-xl z-20 pt-2 pb-px overflow-x-auto scrollbar-hide">
-                            {["Posts", "About", "Followers", "Following", "Portfolio", "Media", "Likes"].map((tab) => (
+                            {["Posts", "About", "Events", "Followers", "Following", "Portfolio", "Media"].map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
@@ -541,6 +551,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
                                 >
                                     {activeTab === "Posts" && <PostsFeed username={username} currentUser={currentUser} />}
                                     {activeTab === "About" && <ProfileAboutSection profile={profile} />}
+                                    {activeTab === "Events" && <EventsProfileTab username={username} />}
                                     {activeTab === "Followers" && (
                                         <UserList endpoint={`${process.env.NEXT_PUBLIC_API_URL}/api/users/${profile.id}/followers/`} emptyMessage="No followers yet" />
                                     )}
@@ -719,6 +730,105 @@ function PortfolioSection({ portfolio }: { portfolio: any[] }) {
                     )}
                 </motion.div>
             ))}
+        </div>
+    )
+}
+
+function EventsProfileTab({ username }: { username: string }) {
+    const [organizedEvents, setOrganizedEvents] = useState<Event[]>([])
+    const [participatingEvents, setParticipatingEvents] = useState<Event[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchUserEvents = async () => {
+            setIsLoading(true)
+            try {
+                const [orgRes, partRes] = await Promise.all([
+                    eventsApi.getEvents({ username }),
+                    eventsApi.getEvents({ participant: username })
+                ])
+                setOrganizedEvents(orgRes.results || [])
+                setParticipatingEvents(partRes.results || [])
+            } catch (error) {
+                console.error("Error fetching user events:", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        if (username) fetchUserEvents()
+    }, [username])
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+            </div>
+        )
+    }
+
+    const EventCardMini = ({ event }: { event: Event }) => {
+        const dateObj = new Date(event.start_date)
+        const isPast = dateObj < new Date()
+        
+        return (
+            <Link href={`/events/${event.id}`}>
+                <div className="bg-slate-900/40 border border-slate-800 p-4 rounded-xl hover:border-blue-500/30 transition-colors group relative overflow-hidden h-full">
+                    {isPast && (
+                        <div className="absolute top-2 right-2 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] uppercase font-bold rounded-full">
+                            Ended
+                        </div>
+                    )}
+                    <h4 className="text-base font-bold text-white mb-2 pr-12 group-hover:text-blue-400 transition-colors line-clamp-2">{event.title}</h4>
+                    <div className="space-y-1.5 text-xs text-slate-400">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 text-blue-400/70" />
+                            <span>{dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-blue-400/70" />
+                            <span className="truncate">{event.location}</span>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        )
+    }
+
+    return (
+        <div className="space-y-10">
+            {/* Organized Events Section */}
+            <div>
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-500" />
+                    Organized by {username}
+                </h3>
+                {organizedEvents.length === 0 ? (
+                    <div className="text-center py-8 bg-slate-900/30 border border-slate-800 rounded-xl text-slate-500 text-sm">
+                        No events organized yet.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {organizedEvents.map(event => <EventCardMini key={`org-${event.id}`} event={event} />)}
+                    </div>
+                )}
+            </div>
+
+            {/* Participating Events Section */}
+            <div>
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <BadgeCheck className="w-5 h-5 text-green-500" />
+                    Participating In
+                </h3>
+                {participatingEvents.length === 0 ? (
+                    <div className="text-center py-8 bg-slate-900/30 border border-slate-800 rounded-xl text-slate-500 text-sm">
+                        Not participating in any events yet.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {participatingEvents.map(event => <EventCardMini key={`part-${event.id}`} event={event} />)}
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
