@@ -20,7 +20,7 @@ export function Footer() {
                     <span className="font-bold text-slate-300">SociaVerse</span>
                     <span>© {new Date().getFullYear()}</span>
                 </div>
-                <div className="flex gap-6">
+                <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 md:mt-0">
                     <Link href="/features" className="hover:text-slate-300 transition-colors">Features</Link>
                     {!isWaitlistMode && (
                         <>
@@ -28,6 +28,8 @@ export function Footer() {
                             <Link href="/explore" className="hover:text-slate-300 transition-colors">Explore</Link>
                         </>
                     )}
+                    <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
+                    <Link href="/privacy-policy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
                 </div>
             </div>
         </footer>

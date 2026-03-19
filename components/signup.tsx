@@ -455,7 +455,7 @@ export function Signup() {
 
                   <div className="flex items-center pt-1 w-full">
                     <input id="terms" type="checkbox" checked={formData.agreeToTerms} onChange={(e) => handleInputChange("agreeToTerms", e.target.checked)} className="h-3 w-3 rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-indigo-500/50" />
-                    <label htmlFor="terms" className="ml-2 text-[10px] text-slate-400">I agree to the <a href="#" className="text-indigo-400 hover:underline">Terms</a> & <a href="#" className="text-indigo-400 hover:underline">Privacy Policy</a></label>
+                    <label htmlFor="terms" className="ml-2 text-[10px] text-slate-400">I agree to the <Link href="/le" className="text-indigo-400 hover:underline">Terms</Link> & <Link href="/privacy-policy" className="text-indigo-400 hover:underline">Privacy Policy</Link></label>
                   </div>
                   {errors.terms && <p className="text-[10px] text-red-400 ml-5 -mt-2">Required</p>}
 

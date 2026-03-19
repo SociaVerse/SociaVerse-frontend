@@ -25,6 +25,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ImageCropper } from "@/components/ui/image-cropper"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function ProfileSettingsPage() {
     const { isAuthenticated, isLoading } = useAuth()
@@ -32,19 +33,35 @@ export default function ProfileSettingsPage() {
     const [loading, setLoading] = useState(false)
     const [fetching, setFetching] = useState(true)
 
-    // Form Stats
-    const bioRef = useRef<HTMLTextAreaElement>(null)
-    const nameRef = useRef<HTMLInputElement>(null)
-    const locationRef = useRef<HTMLInputElement>(null)
-    const websiteRef = useRef<HTMLInputElement>(null)
-    const dobRef = useRef<HTMLInputElement>(null)
-    const collegeRef = useRef<HTMLInputElement>(null)
+    // Basic Form State
+    const [formData, setFormData] = useState({
+        fullName: "",
+        username: "",
+        location: "",
+        website: "",
+        dob: "",
+        college: "",
+        bio: "",
+        twitter: "",
+        instagram: "",
+        linkedin: "",
+        github: ""
+    })
 
-    // Social Links Refs
-    const twitterRef = useRef<HTMLInputElement>(null)
-    const instagramRef = useRef<HTMLInputElement>(null)
-    const linkedinRef = useRef<HTMLInputElement>(null)
-    const githubRef = useRef<HTMLInputElement>(null)
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+    }
+
+    // Validation State
+    const [originalUsername, setOriginalUsername] = useState("")
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+    const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+    
+    // College Autocomplete State
+    const [collegeSuggestions, setCollegeSuggestions] = useState<string[]>([])
+    const [isSearchingCollege, setIsSearchingCollege] = useState(false)
+    const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false)
+    const [wasCollegeSelected, setWasCollegeSelected] = useState(false)
 
     const [gender, setGender] = useState("")
     const [isPrivate, setIsPrivate] = useState(false)
@@ -131,13 +148,21 @@ const LOOKING_FOR_OPTIONS = [
             if (response.ok) {
                 const data = await response.json()
 
-                // Set default values
-                if (nameRef.current) nameRef.current.value = `${data.first_name} ${data.last_name}`.trim()
-                if (bioRef.current) bioRef.current.value = data.bio || ""
-                if (locationRef.current) locationRef.current.value = data.location || ""
-                if (websiteRef.current) websiteRef.current.value = data.website || ""
-                if (dobRef.current) dobRef.current.value = data.date_of_birth || ""
-                if (collegeRef.current) collegeRef.current.value = data.college || ""
+                // Set form state
+                setOriginalUsername(data.username || "")
+                setFormData({
+                    fullName: `${data.first_name} ${data.last_name}`.trim(),
+                    username: data.username || "",
+                    bio: data.bio || "",
+                    location: data.location || "",
+                    website: data.website || "",
+                    dob: data.date_of_birth || "",
+                    college: data.college || "",
+                    twitter: data.social_links?.twitter || "",
+                    instagram: data.social_links?.instagram || "",
+                    linkedin: data.social_links?.linkedin || "",
+                    github: data.social_links?.github || ""
+                })
 
                 setGender(data.gender || "")
                 setIsPrivate(data.is_private || false)
@@ -168,13 +193,6 @@ const LOOKING_FOR_OPTIONS = [
                 if (obsessionRef.current) obsessionRef.current.value = data.currently_obsessed_with || ""
                 if (skillRef.current) skillRef.current.value = data.random_skill || ""
 
-                // Social Links
-                const links = data.social_links || {}
-                if (twitterRef.current) twitterRef.current.value = links.twitter || ""
-                if (instagramRef.current) instagramRef.current.value = links.instagram || ""
-                if (linkedinRef.current) linkedinRef.current.value = links.linkedin || ""
-                if (githubRef.current) githubRef.current.value = links.github || ""
-
             }
         } catch (error) {
             console.error("Error fetching profile:", error)
@@ -183,6 +201,70 @@ const LOOKING_FOR_OPTIONS = [
             setFetching(false)
         }
     }
+
+    // Username Availability Check (Debounced)
+    useEffect(() => {
+        const checkUsername = async () => {
+            const username = formData.username.trim()
+            if (username.length < 3 || username === originalUsername) {
+                setUsernameAvailable(null)
+                return
+            }
+
+            setIsCheckingUsername(true)
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/check-username/?username=${username.toLowerCase()}`)
+                const data = await response.json()
+                if (response.ok) {
+                    setUsernameAvailable(data.available)
+                } else {
+                    setUsernameAvailable(null)
+                }
+            } catch (error) {
+                console.error("Error checking username:", error)
+                setUsernameAvailable(null)
+            } finally {
+                setIsCheckingUsername(false)
+            }
+        }
+
+        const timeoutId = setTimeout(checkUsername, 500)
+        return () => clearTimeout(timeoutId)
+    }, [formData.username, originalUsername])
+
+    // College Search (Debounced)
+    useEffect(() => {
+        if (wasCollegeSelected) {
+            setWasCollegeSelected(false)
+            return
+        }
+
+        const searchColleges = async () => {
+            const query = formData.college.trim()
+            if (query.length < 2) {
+                setCollegeSuggestions([])
+                setShowCollegeSuggestions(false)
+                return
+            }
+
+            setIsSearchingCollege(true)
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/colleges/search/?q=${encodeURIComponent(query)}`)
+                const data = await response.json()
+                if (response.ok) {
+                    setCollegeSuggestions(data)
+                    setShowCollegeSuggestions(data.length > 0)
+                }
+            } catch (error) {
+                console.error("Error searching colleges:", error)
+            } finally {
+                setIsSearchingCollege(false)
+            }
+        }
+
+        const timeoutId = setTimeout(searchColleges, 300)
+        return () => clearTimeout(timeoutId)
+    }, [formData.college, wasCollegeSelected])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
         const file = e.target.files?.[0]
@@ -262,64 +344,73 @@ const LOOKING_FOR_OPTIONS = [
         setLoading(true)
 
         try {
-            const formData = new FormData()
+            const submitData = new FormData()
 
             // Basic Info
-            const fullName = nameRef.current?.value || ""
+            const fullName = formData.fullName || ""
             const [firstName, ...lastNameParts] = fullName.split(' ')
-            formData.append('first_name', firstName || "")
-            formData.append('last_name', lastNameParts.join(' ') || "")
+            submitData.append('first_name', firstName || "")
+            submitData.append('last_name', lastNameParts.join(' ') || "")
 
-            if (bioRef.current?.value) formData.append('bio', bioRef.current.value)
-            if (locationRef.current?.value) formData.append('location', locationRef.current.value)
-            if (websiteRef.current?.value) formData.append('website', websiteRef.current.value)
-            if (dobRef.current?.value) formData.append('date_of_birth', dobRef.current.value)
-            if (collegeRef.current?.value) formData.append('college', collegeRef.current.value)
-            if (gender) formData.append('gender', gender)
+            if (formData.username && formData.username !== originalUsername) {
+                if (usernameAvailable === false) {
+                    toast({ title: "Error", message: "Username is already taken.", type: "error" })
+                    setLoading(false)
+                    return
+                }
+                submitData.append('username', formData.username)
+            }
+
+            if (formData.bio) submitData.append('bio', formData.bio)
+            if (formData.location) submitData.append('location', formData.location)
+            if (formData.website) submitData.append('website', formData.website)
+            if (formData.dob) submitData.append('date_of_birth', formData.dob)
+            if (formData.college) submitData.append('college', formData.college)
+            if (gender) submitData.append('gender', gender)
 
             // Files
-            if (avatarFile) formData.append('profile_picture', avatarFile)
-            if (bannerFile) formData.append('banner_image', bannerFile)
+            if (avatarFile) submitData.append('profile_picture', avatarFile)
+            if (bannerFile) submitData.append('banner_image', bannerFile)
 
             // Social Links
             const socialLinks = {
-                twitter: twitterRef.current?.value,
-                instagram: instagramRef.current?.value,
-                linkedin: linkedinRef.current?.value,
-                github: githubRef.current?.value,
+                twitter: formData.twitter,
+                instagram: formData.instagram,
+                linkedin: formData.linkedin,
+                github: formData.github,
             }
-            formData.append('social_links', JSON.stringify(socialLinks))
-            formData.append('portfolio', JSON.stringify(portfolio))
+            submitData.append('social_links', JSON.stringify(socialLinks))
+            submitData.append('portfolio', JSON.stringify(portfolio))
             
             // New Fields
-            formData.append('interests', JSON.stringify(interests))
-            formData.append('vibe_tags', JSON.stringify(vibeTags))
-            if (personalityType) formData.append('personality_type', personalityType)
-            if (mbti) formData.append('mbti', mbti)
-            if (quoteRef.current?.value !== undefined) formData.append('favorite_quote', quoteRef.current.value)
-            formData.append('currently_obsessed_with', obsessionRef.current?.value || "")
-            formData.append('random_skill', skillRef.current?.value || "")
+            submitData.append('interests', JSON.stringify(interests))
+            submitData.append('vibe_tags', JSON.stringify(vibeTags))
+            if (personalityType) submitData.append('personality_type', personalityType)
+            if (mbti) submitData.append('mbti', mbti)
+            if (quoteRef.current?.value !== undefined) submitData.append('favorite_quote', quoteRef.current.value)
+            submitData.append('currently_obsessed_with', obsessionRef.current?.value || "")
+            submitData.append('random_skill', skillRef.current?.value || "")
             
-            formData.append('relationship_status', relationshipStatus)
-            formData.append('zodiac_sign', zodiacSign)
-            formData.append('looking_for', JSON.stringify(lookingFor))
-            formData.append('status_emoji', statusEmoji)
-            formData.append('status_text', statusText)
-            formData.append('languages_spoken', JSON.stringify(languages))
+            submitData.append('relationship_status', relationshipStatus)
+            submitData.append('zodiac_sign', zodiacSign)
+            submitData.append('looking_for', JSON.stringify(lookingFor))
+            submitData.append('status_emoji', statusEmoji)
+            submitData.append('status_text', statusText)
+            submitData.append('languages_spoken', JSON.stringify(languages))
             
             try {
                 const musicData = musicRef.current?.value ? JSON.parse(musicRef.current.value) : {}
-                formData.append('top_music', JSON.stringify(musicData))
-            } catch(e) { formData.append('top_music', JSON.stringify({})) }
+                submitData.append('top_music', JSON.stringify(musicData))
+            } catch(e) { submitData.append('top_music', JSON.stringify({})) }
             
             const movies = movieRef.current?.value.split(",").map(m => m.trim()).filter(Boolean) || []
-            formData.append('favorite_movies', JSON.stringify(movies))
+            submitData.append('favorite_movies', JSON.stringify(movies))
             
             const bucket = bucketRefs.map(r => r.current?.value || "").filter(Boolean)
-            formData.append('bucket_list', JSON.stringify(bucket))
+            submitData.append('bucket_list', JSON.stringify(bucket))
             
             const peeves = peevesRef.current?.value.split(",").map(p => p.trim()).filter(Boolean) || []
-            formData.append('pet_peeves', JSON.stringify(peeves))
+            submitData.append('pet_peeves', JSON.stringify(peeves))
 
             const token = localStorage.getItem('sociaverse_token')
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me/`, {
@@ -327,7 +418,7 @@ const LOOKING_FOR_OPTIONS = [
                 headers: {
                     'Authorization': `Token ${token}`
                 },
-                body: formData
+                body: submitData
             })
 
             if (response.ok) {
@@ -481,11 +572,38 @@ const LOOKING_FOR_OPTIONS = [
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="name">Display Name</Label>
-                            <Input id="name" ref={nameRef} placeholder="Your Name" className="bg-slate-950/50 border-slate-800" />
+                            <Input id="name" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} placeholder="Your Name" className="bg-slate-950/50 border-slate-800" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="username">Username</Label>
+                            <div className="relative group">
+                                <UserIcon className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
+                                <Input
+                                    id="username"
+                                    value={formData.username}
+                                    onChange={(e) => handleInputChange("username", e.target.value)}
+                                    placeholder="your_username"
+                                    className={`pl-10 bg-slate-950/50 border-slate-800 ${formData.username && formData.username !== originalUsername ? (usernameAvailable === false ? 'border-red-500/50' : usernameAvailable === true ? 'border-emerald-500/50' : '') : ''}`}
+                                />
+                                {formData.username && formData.username !== originalUsername && (
+                                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                        {isCheckingUsername ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                                        ) : usernameAvailable === true ? (
+                                            <Check className="h-4 w-4 text-emerald-500" />
+                                        ) : usernameAvailable === false ? (
+                                            <X className="h-4 w-4 text-red-500" />
+                                        ) : null}
+                                    </div>
+                                )}
+                            </div>
+                            {formData.username && formData.username !== originalUsername && usernameAvailable === false && (
+                                <p className="text-[10px] text-red-400">Username is taken</p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="dob">Date of Birth</Label>
-                            <Input id="dob" type="date" ref={dobRef} className="bg-slate-950/50 border-slate-800" />
+                            <Input id="dob" type="date" value={formData.dob} onChange={(e) => handleInputChange("dob", e.target.value)} className="bg-slate-950/50 border-slate-800" />
                         </div>
                     </div>
 
@@ -493,19 +611,63 @@ const LOOKING_FOR_OPTIONS = [
                         <Label htmlFor="college">College</Label>
                         <div className="relative">
                             <School className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                            <Input id="college" ref={collegeRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Your College Name" />
+                            <Input
+                                id="college"
+                                value={formData.college}
+                                onChange={(e) => {
+                                    handleInputChange("college", e.target.value)
+                                    setShowCollegeSuggestions(true)
+                                }}
+                                onFocus={() => collegeSuggestions.length > 0 && setShowCollegeSuggestions(true)}
+                                className="pl-10 bg-slate-950/50 border-slate-800"
+                                placeholder="Your College Name"
+                            />
+                            {isSearchingCollege && (
+                                <div className="absolute inset-y-0 right-3 flex items-center">
+                                    <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                                </div>
+                            )}
                         </div>
+
+                        {/* College Suggestions Dropdown */}
+                        <AnimatePresence>
+                            {showCollegeSuggestions && collegeSuggestions.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="absolute z-50 w-full mt-1 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl"
+                                >
+                                    {collegeSuggestions.map((name, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => {
+                                                setWasCollegeSelected(true)
+                                                handleInputChange("college", name)
+                                                setCollegeSuggestions([])
+                                                setShowCollegeSuggestions(false)
+                                            }}
+                                            className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-white/5 hover:text-white transition-colors border-b border-white/5 last:border-0"
+                                        >
+                                            {name}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="bio">Bio</Label>
                         <Textarea
                             id="bio"
-                            ref={bioRef}
+                            value={formData.bio}
+                            onChange={(e) => handleInputChange("bio", e.target.value)}
                             className="bg-slate-950/50 border-slate-800 min-h-[100px] resize-none"
                             placeholder="Tell us a little bit about yourself..."
                         />
-                        <p className="text-xs text-slate-500 text-right">0/160</p>
+                        <p className="text-xs text-slate-500 text-right">{formData.bio.length}/160</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
@@ -513,7 +675,7 @@ const LOOKING_FOR_OPTIONS = [
                             <Label htmlFor="location">Location</Label>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="location" ref={locationRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="City, Country" />
+                                <Input id="location" value={formData.location} onChange={(e) => handleInputChange("location", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="City, Country" />
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -545,35 +707,35 @@ const LOOKING_FOR_OPTIONS = [
                             <Label htmlFor="website">Website</Label>
                             <div className="relative">
                                 <Globe className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="website" ref={websiteRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="https://yourwebsite.com" />
+                                <Input id="website" value={formData.website} onChange={(e) => handleInputChange("website", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="https://yourwebsite.com" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="twitter">Twitter</Label>
                             <div className="relative">
                                 <Twitter className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="twitter" ref={twitterRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
+                                <Input id="twitter" value={formData.twitter} onChange={(e) => handleInputChange("twitter", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="instagram">Instagram</Label>
                             <div className="relative">
                                 <Instagram className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="instagram" ref={instagramRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
+                                <Input id="instagram" value={formData.instagram} onChange={(e) => handleInputChange("instagram", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="linkedin">LinkedIn</Label>
                             <div className="relative">
                                 <Linkedin className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="linkedin" ref={linkedinRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
+                                <Input id="linkedin" value={formData.linkedin} onChange={(e) => handleInputChange("linkedin", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="github">GitHub</Label>
                             <div className="relative">
                                 <Github className="absolute left-3 top-3 w-4 h-4 text-slate-500" />
-                                <Input id="github" ref={githubRef} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
+                                <Input id="github" value={formData.github} onChange={(e) => handleInputChange("github", e.target.value)} className="pl-10 bg-slate-950/50 border-slate-800" placeholder="Username" />
                             </div>
                         </div>
                     </div>
