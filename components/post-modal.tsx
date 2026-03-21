@@ -173,8 +173,10 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
                 </div>
 
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-                    {/* Image Section - The Cinematic Hero */}
-                    <div className="relative flex-[1.6] bg-black/40 flex items-center justify-center min-h-[30vh] md:min-h-0 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden">
+                    {/* Combined Scroll Container for Mobile, Flex Container for Desktop */}
+                    <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden w-full h-full pb-[80px] md:pb-0 custom-scrollbar">
+                        {/* Image Section - The Cinematic Hero */}
+                        <div className="relative shrink-0 flex-[1.6] bg-black/40 flex items-center justify-center min-h-[40vh] md:min-h-0 border-b md:border-b-0 md:border-r border-white/5 overflow-hidden">
                         {/* Background Ambient Glow */}
                         {images.length > 0 && (
                             <div className="absolute inset-0 opacity-20 blur-3xl scale-150 pointer-events-none">
@@ -241,8 +243,8 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
                         )}
                     </div>
 
-                    {/* Content Sidebar - Elegant Typography */}
-                    <div className="flex-1 w-full md:w-[440px] flex flex-col min-h-0 bg-slate-900/40 backdrop-blur-3xl relative">
+                        {/* Content Sidebar - Elegant Typography */}
+                        <div className="w-full h-auto md:h-full md:flex-1 md:w-[440px] flex flex-col min-h-0 bg-slate-900/40 backdrop-blur-3xl relative shrink-0">
                         {/* Desktop Header - Premium */}
                         <div className="hidden md:flex p-5 border-b border-white/5 items-center justify-between bg-slate-900/40">
                             <div className="flex items-center gap-3.5">
@@ -269,8 +271,8 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
                         </div>
 
                         {/* Master Scroll Area */}
-                        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-                            <div className="p-5 space-y-7 pb-40">
+                        <div className="h-auto overflow-visible md:flex-1 md:min-h-0 md:overflow-y-auto custom-scrollbar">
+                            <div className="p-5 space-y-7 pb-6 md:pb-40">
                                 {/* The Post Captions */}
                                 <div className="space-y-4">
                                     <div className="text-slate-100 text-[15px] leading-[1.6] font-medium tracking-tight">
@@ -348,9 +350,10 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Floating Action Input - Glassmorphism Masterpiece */}
-                        <form onSubmit={handlePostComment} className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/10 z-30 pb-16 md:pb-6">
+                    {/* Floating Action Input Moved Outside the Scroll Area - Glassmorphism Masterpiece */}
+                    <form onSubmit={handlePostComment} className="absolute bottom-0 left-0 right-0 md:left-auto md:right-0 md:w-[440px] p-4 md:p-6 bg-slate-950/80 backdrop-blur-3xl border-t border-white/10 z-30 pb-6">
                             <div className="max-w-2xl mx-auto flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-all duration-300 rounded-[2rem] p-2.5 px-4 border border-white/10 shadow-2xl group ring-1 ring-white/5">
                                 <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 ring-2 ring-blue-500/30">
                                     <img
