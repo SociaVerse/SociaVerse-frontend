@@ -22,10 +22,14 @@ export function Footer() {
                 </div>
                 <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 md:mt-0">
                     <Link href="/features" className="hover:text-slate-300 transition-colors">Features</Link>
-                    {!isWaitlistMode && (
+                    {isWaitlistMode ? (
+                        <Link href="/team" className="hover:text-slate-300 transition-colors">Team</Link>
+                    ) : (
                         <>
+                            <Link href="/team" className="hover:text-slate-300 transition-colors">Team</Link>
                             <Link href="/events" className="hover:text-slate-300 transition-colors">Events</Link>
                             <Link href="/explore" className="hover:text-slate-300 transition-colors">Explore</Link>
+                            <Link href="/studyhub" className="hover:text-slate-300 transition-colors">Study Hub</Link>
                         </>
                     )}
                     <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
