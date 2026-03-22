@@ -1,6 +1,7 @@
 "use client"
 
 import { useAuth } from "@/components/auth-provider"
+import { MemeEventPage } from "@/components/meme-event-page"
 import { LandingPage } from "@/components/landing-page"
 import { HomeFeed } from "@/components/home-feed"
 import { useEffect, useState } from "react"
@@ -27,5 +28,5 @@ export default function Home() {
     return <HomeFeed />
   }
 
-  return <LandingPage />
+  return <MemeEventPage />
 }
