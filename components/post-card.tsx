@@ -8,6 +8,10 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Post, Comment, api } from "@/services/api"
 import { useAuth } from "@/components/auth-provider"
+import {
+    Dialog,
+    DialogContent,
+} from "@/components/ui/dialog"
 
 import {
     DropdownMenu,
@@ -35,8 +39,18 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const { isAuthenticated, user } = useAuth();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
 
     const isAuthor = user?.id === post.author.id;
+
+    const handleActionWithAuth = (action: () => void) => {
+        if (!isAuthenticated) {
+            setShowAuthDialog(true);
+        } else {
+            // Also call the original prop just in case
+            handleAuthAction(action);
+        }
+    };
 
     const handleDeletePost = async () => {
         if (onDelete) {
@@ -45,7 +59,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
     };
 
     const handleLike = async () => {
-        handleAuthAction(async () => {
+        handleActionWithAuth(async () => {
             // Optimistic update
             const newIsLiked = !isLiked;
             setIsLiked(newIsLiked);
@@ -91,7 +105,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
         e.preventDefault();
         if (!newComment.trim()) return;
 
-        handleAuthAction(async () => {
+        handleActionWithAuth(async () => {
             try {
                 const comment = await api.addComment(post.id, newComment);
                 setComments([comment, ...comments]);
@@ -298,7 +312,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                                                     key={comment.id}
                                                     comment={comment}
                                                     postId={post.id}
-                                                    handleAuthAction={handleAuthAction}
+                                                    handleAuthAction={handleActionWithAuth}
                                                     onDelete={(id) => {
                                                         setComments(comments.filter(c => c.id !== id));
                                                         setCommentsCount(prev => prev - 1);
@@ -315,6 +329,34 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* Auth Dialog */}
+            <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+                <DialogContent className="sm:max-w-md bg-[#03040b] border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.1)] rounded-3xl overflow-hidden p-0 z-[100]">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[200px] bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+                    
+                    <div className="relative z-10 p-8 text-center flex flex-col items-center">
+                        <div className="w-20 h-20 mb-6 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-[inset_0_0_20px_rgba(59,130,246,0.2)]">
+                            <Heart className="w-10 h-10 text-blue-400 fill-blue-400/20" />
+                        </div>
+                        
+                        <h2 className="text-2xl font-bold text-white mb-3">Join the Community</h2>
+                        <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                            Log in or sign up to like this post, leave comments, and connect with other students on campus.
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-3 w-full">
+                            <Button asChild variant="outline" className="flex-1 rounded-xl border-slate-700 hover:bg-slate-800 hover:text-white bg-transparent h-12">
+                                <Link href="/login">Log In</Link>
+                            </Button>
+                            <Button asChild className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 h-12 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                                <Link href="/signup">Sign Up</Link>
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
         </motion.div>
     );
 }

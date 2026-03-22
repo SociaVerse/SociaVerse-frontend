@@ -73,7 +73,7 @@ type Chat = {
 }
 
 function ChatContent() {
-    const { user } = useAuth()
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth()
     const searchParams = useSearchParams()
     const router = useRouter()
 
@@ -473,6 +473,50 @@ function ChatContent() {
         console.log("Forwarding to", targetChatId)
         setIsForwardDialogOpen(false)
         setForwardingMessage(null)
+    }
+
+    if (authLoading) {
+        return (
+            <div className="h-[100dvh] md:h-screen bg-slate-950 text-slate-100 md:pt-28 md:pb-4 md:px-6 lg:px-8 flex gap-6 overflow-hidden relative">
+                <div className="w-full flex items-center justify-center">
+                    <div className="w-8 h-8 md:w-12 md:h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+            </div>
+        )
+    }
+
+    if (!user && !isAuthenticated) {
+        return (
+            <div className="h-[100dvh] md:min-h-screen bg-[#03040b] text-white flex flex-col items-center justify-center relative overflow-hidden font-sans md:pt-28 pb-24">
+                {/* Background Glows */}
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute bottom-1/4 right-0 w-[400px] h-[400px] bg-fuchsia-600/10 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="relative z-10 max-w-md w-full mx-auto px-6 text-center">
+                    <div className="mb-8 relative flex justify-center">
+                        <div className="w-24 h-24 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center backdrop-blur-xl shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                            <MessageCircle className="w-12 h-12 text-blue-400" />
+                        </div>
+                    </div>
+                    
+                    <h1 className="text-3xl sm:text-4xl font-black mb-4 tracking-tight text-white">
+                        Connect with Campus
+                    </h1>
+                    <p className="text-slate-400 text-base sm:text-lg mb-10 leading-relaxed max-w-sm mx-auto">
+                        Log in or sign up to message friends, join event groups, and start chatting.
+                    </p>
+
+                    <div className="flex flex-col gap-4 sm:flex-row justify-center mt-6">
+                        <Link href="/login" className="px-8 py-3.5 rounded-full bg-white text-slate-900 font-bold text-lg transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
+                            Log In
+                        </Link>
+                        <Link href="/signup" className="px-8 py-3.5 rounded-full bg-slate-900/50 text-white font-bold text-lg border border-slate-700 hover:bg-slate-800 transition-colors backdrop-blur-md">
+                            Sign Up
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

@@ -55,6 +55,10 @@ export function Navbar() {
   const isChatPage = pathname === "/chat" || pathname?.startsWith("/chat/")
   const isCreatePage = pathname === "/create"
   const isProfilePage = pathname === "/profile" || pathname?.startsWith("/u/")
+  
+  // Only hide navbar in Chat if authenticated AND we're actively chatting
+  const isChatPageConfig = (pathname === "/chat" || pathname?.startsWith("/chat/")) && isAuthenticated;
+  
   const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
   const navLinks = isWaitlistMode
     ? waitlistNavLinks
@@ -163,7 +167,7 @@ export function Navbar() {
           scrolled
             ? "bg-slate-900/90 backdrop-blur-lg border-slate-700/50 shadow-lg shadow-blue-500/10"
             : "bg-slate-900/50 backdrop-blur-md border-white/5",
-          isChatPage || isProfilePage ? "hidden md:block" : ""
+          isChatPageConfig || isProfilePage ? "hidden md:block" : ""
         )}
       >
         <div className="max-w-7xl mx-auto px-6 flex h-16 items-center justify-between">

@@ -34,9 +34,18 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
     const [localLikeCount, setLocalLikeCount] = useState(0)
     const [commentText, setCommentText] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { user } = useAuth()
+    const [showAuthDialog, setShowAuthDialog] = useState(false)
+    const { user, isAuthenticated } = useAuth()
     const { toast } = useToast()
     const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+    const handleActionWithAuth = (action: () => void) => {
+        if (!isAuthenticated) {
+            setShowAuthDialog(true)
+        } else {
+            action()
+        }
+    }
 
     useEffect(() => {
         if (isOpen && post) {
@@ -76,29 +85,31 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
     }
 
     const handleToggleLike = async () => {
-        if (!post) return
-        
-        // Optimistic UI update
-        const newVal = !isLikedLocally
-        const newCount = newVal ? localLikeCount + 1 : Math.max(0, localLikeCount - 1)
-        setIsLikedLocally(newVal)
-        setLocalLikeCount(newCount)
-        if (onLikeToggle) {
-            onLikeToggle(newVal, newCount)
-        }
-
-        try {
-            await api.likePost(post.id)
-        } catch (error) {
-            // Revert on failure
-            const revertedVal = !newVal
-            const revertedCount = revertedVal ? newCount + 1 : Math.max(0, newCount - 1)
-            setIsLikedLocally(revertedVal)
-            setLocalLikeCount(revertedCount)
+        handleActionWithAuth(async () => {
+            if (!post) return
+            
+            // Optimistic UI update
+            const newVal = !isLikedLocally
+            const newCount = newVal ? localLikeCount + 1 : Math.max(0, localLikeCount - 1)
+            setIsLikedLocally(newVal)
+            setLocalLikeCount(newCount)
             if (onLikeToggle) {
-                onLikeToggle(revertedVal, revertedCount)
+                onLikeToggle(newVal, newCount)
             }
-        }
+
+            try {
+                await api.likePost(post.id)
+            } catch (error) {
+                // Revert on failure
+                const revertedVal = !newVal
+                const revertedCount = revertedVal ? newCount + 1 : Math.max(0, newCount - 1)
+                setIsLikedLocally(revertedVal)
+                setLocalLikeCount(revertedCount)
+                if (onLikeToggle) {
+                    onLikeToggle(revertedVal, revertedCount)
+                }
+            }
+        });
     }
 
     const handleShare = async () => {
@@ -120,21 +131,23 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
 
     const handlePostComment = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!commentText.trim() || !post) return
-        setIsSubmitting(true)
-        try {
-            const newComment = await api.addComment(post.id, commentText)
-            setComments(prev => [newComment, ...prev])
-            setCommentText('')
-            if (onCommentAdded) {
-                onCommentAdded()
+        handleActionWithAuth(async () => {
+            if (!commentText.trim() || !post) return
+            setIsSubmitting(true)
+            try {
+                const newComment = await api.addComment(post.id, commentText)
+                setComments(prev => [newComment, ...prev])
+                setCommentText('')
+                if (onCommentAdded) {
+                    onCommentAdded()
+                }
+                toast({ type: "success", title: "Success", message: "Comment posted!" })
+            } catch (error) {
+                toast({ type: "error", title: "Error", message: "Failed to post comment." })
+            } finally {
+                setIsSubmitting(false)
             }
-            toast({ type: "success", title: "Success", message: "Comment posted!" })
-        } catch (error) {
-            toast({ type: "error", title: "Error", message: "Failed to post comment." })
-        } finally {
-            setIsSubmitting(false)
-        }
+        });
     }
 
     if (!post) return null
@@ -144,6 +157,7 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
     )
 
     return (
+        <>
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent showCloseButton={false} className="max-w-[98vw] w-full md:max-w-6xl h-[88vh] md:h-[85vh] p-0 bg-slate-950/95 backdrop-blur-2xl border-white/10 overflow-hidden sm:rounded-[2.5rem] rounded-3xl flex flex-col shadow-2xl">
 
@@ -379,5 +393,33 @@ export function PostModal({ post, isOpen, onClose, isLiked, likeCount, onLikeTog
                 </div>
             </DialogContent>
         </Dialog>
+
+        {/* Auth Dialog */}
+        <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+            <DialogContent className="sm:max-w-md bg-[#03040b] border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.1)] rounded-3xl overflow-hidden p-0 z-[100]">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[200px] bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+                
+                <div className="relative z-10 p-8 text-center flex flex-col items-center">
+                    <div className="w-20 h-20 mb-6 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shadow-[inset_0_0_20px_rgba(59,130,246,0.2)]">
+                        <Heart className="w-10 h-10 text-blue-400 fill-blue-400/20" />
+                    </div>
+                    
+                    <h2 className="text-2xl font-bold text-white mb-3">Join the Community</h2>
+                    <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                        Log in or sign up to like this post, leave comments, and connect with other students on campus.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                        <Button asChild variant="outline" className="flex-1 rounded-xl border-slate-700 hover:bg-slate-800 hover:text-white bg-transparent h-12">
+                            <Link href="/login">Log In</Link>
+                        </Button>
+                        <Button asChild className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0 h-12 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                            <Link href="/signup">Sign Up</Link>
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+        </>
     )
 }
