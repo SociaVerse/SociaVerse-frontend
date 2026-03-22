@@ -66,8 +66,20 @@ export default function EventsPage() {
     const [nextUrl, setNextUrl] = useState<string | null>(null)
     const [hasMore, setHasMore] = useState(true)
     const [favorites, setFavorites] = useState<Set<number>>(new Set())
+    const [initialFilterSet, setInitialFilterSet] = useState(false)
+
+    // Set initial visibility filter based on auth status once it loads
+    useEffect(() => {
+        if (!isLoading && !initialFilterSet) {
+            if (isAuthenticated) {
+                setVisibilityFilter("university")
+            }
+            setInitialFilterSet(true)
+        }
+    }, [isLoading, isAuthenticated, initialFilterSet])
 
     const fetchEvents = useCallback(async (isInitial = true) => {
+        if (!initialFilterSet) return // Wait until we set default filter
         if (!isInitial && (!hasMore || loadingMore)) return
 
         if (isInitial) setIsFetching(true)
@@ -105,11 +117,13 @@ export default function EventsPage() {
             setIsFetching(false)
             setLoadingMore(false)
         }
-    }, [visibilityFilter, hasMore, loadingMore, nextUrl])
+    }, [visibilityFilter, hasMore, loadingMore, nextUrl, initialFilterSet])
 
     useEffect(() => {
-        fetchEvents(true)
-    }, [isAuthenticated, fetchEvents, visibilityFilter])
+        if (initialFilterSet) {
+            fetchEvents(true)
+        }
+    }, [isAuthenticated, fetchEvents, visibilityFilter, initialFilterSet])
 
     const lastEventRef = useInfiniteScroll({
         callback: () => fetchEvents(false),
