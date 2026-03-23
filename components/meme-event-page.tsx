@@ -45,7 +45,7 @@ export function MemeEventPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span className="text-base sm:text-lg font-semibold tracking-wide text-indigo-100 relative z-10">
-              March 24 <span className="text-indigo-400/50 mx-2">—</span> March 29, 2026
+              March 23 <span className="text-indigo-400/50 mx-2">—</span> March 29, 2026
             </span>
           </div>
         </div>
@@ -101,8 +101,52 @@ export function MemeEventPage() {
 
         </div>
 
+        <div className="w-full max-w-5xl text-center mb-8 relative z-10 px-4 mt-16">
+          <h2 className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+            How to post a meme
+          </h2>
+        </div>
+
+        {/* How to Post a Meme Section - List Design */}
+        <div className="flex flex-col gap-6 mb-12 mt-6 w-full max-w-3xl text-left relative z-10 px-4 sm:px-0">
+          
+          {/* Step 1 */}
+          <div className="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors backdrop-blur-sm">
+            <div className="shrink-0 w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold border border-blue-500/30">
+              1
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg mb-1">Create Account / Login</h3>
+              <p className="text-slate-400 text-sm">Create your free SociaVerse account or log in if you already have one to get started.</p>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors backdrop-blur-sm">
+            <div className="shrink-0 w-12 h-12 rounded-full bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xl font-bold border border-fuchsia-500/30">
+              2
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg mb-1">Create Your Meme</h3>
+              <p className="text-slate-400 text-sm">Create a meme on whatever topic you want. The funnier, the better!</p>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex items-center gap-6 p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors backdrop-blur-sm">
+            <div className="shrink-0 w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl font-bold border border-cyan-500/30">
+              3
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg mb-1">Post in Global Mode</h3>
+              <p className="text-slate-400 text-sm">Go to your profile or feed, post the meme, and make sure to select <span className="text-cyan-400 font-medium">"Global"</span> mode!</p>
+            </div>
+          </div>
+
+        </div>
+
         {/* CTA Button */}
-        <div className="mt-4 md:mt-16 w-full flex justify-center z-20">
+        <div className="mt-8 md:mt-16 w-full flex justify-center z-20">
           <a 
             href="/signup" 
             className="group relative inline-flex items-center justify-center px-16 py-4 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xl tracking-wide transition-all duration-300 hover:scale-105 shadow-[0_0_30px_rgba(99,102,241,0.4)] hover:shadow-[0_0_50px_rgba(168,85,247,0.6)] border border-purple-400/20 hover:border-purple-400/50"
