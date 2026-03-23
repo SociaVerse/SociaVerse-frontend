@@ -43,7 +43,7 @@ export default function CreateNotePage() {
   const [showPreview, setShowPreview] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
-  const [visibility, setVisibility] = useState<"university" | "global">("university")
+  const [visibility, setVisibility] = useState<"university" | "global">("global")
 
   const handlePdfSelect = (file: File | null) => {
     setPdfError("")

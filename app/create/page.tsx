@@ -22,7 +22,7 @@ export default function CreatePostPage() {
     const [imagePreviews, setImagePreviews] = useState<string[]>([])
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isCompressing, setIsCompressing] = useState(false)
-    const [visibility, setVisibility] = useState<"university" | "global">("university")
+    const [visibility, setVisibility] = useState<"university" | "global">("global")
     const fileInputRef = useRef<HTMLInputElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 

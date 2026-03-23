@@ -234,7 +234,7 @@ export default function StudyHubPage() {
   const [branch, setBranch] = useState("")
   const [semester, setSemester] = useState("")
   const [sort, setSort] = useState<"trending" | "newest" | "most_liked" | "most_saved">("trending")
-  const [visibility, setVisibility] = useState<"university" | "global">("university")
+  const [visibility, setVisibility] = useState<"university" | "global">("global")
   const [pdfOnly, setPdfOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
