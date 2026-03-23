@@ -77,15 +77,26 @@ export default function EditEventPage() {
     useEffect(() => {
         const fetchEvent = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${id}/`)
+                const token = localStorage.getItem("sociaverse_token")
+                const headers: HeadersInit = {}
+                if (token) {
+                    headers["Authorization"] = `Token ${token}`
+                }
+
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${id}/`, { headers })
                 if (response.ok) {
                     const event = await response.json()
 
                     // Format dates for input fields (YYYY-MM-DDThh:mm)
                     const formatDate = (dateString: string) => {
                         if (!dateString) return ""
-                        const date = new Date(dateString)
-                        return date.toISOString().slice(0, 16)
+                        try {
+                            const date = new Date(dateString)
+                            if (isNaN(date.getTime())) return ""
+                            return date.toISOString().slice(0, 16)
+                        } catch (e) {
+                            return ""
+                        }
                     }
 
                     setFormData({
