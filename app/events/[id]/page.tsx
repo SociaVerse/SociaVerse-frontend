@@ -465,10 +465,10 @@ export default function EventDetailsPage() {
                                         <span className="text-3xl font-bold text-white tracking-tight">Free</span>
                                         <span className="text-[11px] text-neutral-400 font-medium bg-neutral-800 border border-neutral-700 px-2.5 py-1 rounded w-fit uppercase tracking-wider">Open to All</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-neutral-400 text-sm">
+                                    {/* <div className="flex items-center gap-2 text-neutral-400 text-sm">
                                         <Users className="w-4 h-4 text-neutral-500" />
                                         <span><strong className="text-neutral-200 font-semibold">{event.registration_count || 0}</strong> registered</span>
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 <Button
