@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Plus, Image as ImageIcon, Smile, MoreHorizontal, TrendingUp, Search, Bell, Compass, Users, ShoppingBag, CalendarDays, EyeOff, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -35,9 +35,13 @@ export function HomeFeed() {
         action()
     }
 
+    const isFetchingRef = useRef(false)
+
     const fetchPosts = async (isInitial = true) => {
+        if (isFetchingRef.current) return
         if (!isInitial && (!hasMore || loadingMore)) return
 
+        isFetchingRef.current = true
         if (isInitial) {
             setLoading(true)
         } else {
@@ -45,9 +49,6 @@ export function HomeFeed() {
         }
 
         try {
-            // StandardPagination returns { results, next }
-            // For now api.getPosts() returns just data. We need to check if it handles params.
-            // Let's assume we can pass params or it returns the full object now after backend change.
             const token = localStorage.getItem("sociaverse_token")
             const url = isInitial
                 ? `${process.env.NEXT_PUBLIC_API_URL}/api/posts/`
@@ -79,6 +80,7 @@ export function HomeFeed() {
         } finally {
             setLoading(false)
             setLoadingMore(false)
+            isFetchingRef.current = false
         }
     }
 
@@ -231,6 +233,12 @@ export function HomeFeed() {
                                         <div ref={lastPostRef} className="h-10 flex items-center justify-center w-full">
                                             {loadingMore && <Loader2 className="w-6 h-6 animate-spin text-blue-500" />}
                                         </div>
+
+                                        {!hasMore && posts.length > 0 && (
+                                            <div className="text-center py-6 text-slate-500 font-semibold border-t border-slate-800/20">
+                                                🎉 You've reached the end of the feed!
+                                            </div>
+                                        )}
                                     </motion.div>
                                 ) : (
                                     <div className="text-center py-20">

@@ -2,66 +2,57 @@
 
 import { BackgroundBeams } from "@/components/ui/background-beams"
 import { motion } from "framer-motion"
-import { ScrollText, Users, Shield, BookOpen, AlertCircle, Scale, Building2, Gavel } from "lucide-react"
+import { ScrollText, Users, Shield, BookOpen, AlertCircle, Scale, Gavel, Coins, Mail } from "lucide-react"
 
 export default function TermsOfService() {
   const sections = [
     {
       icon: <ScrollText className="w-6 h-6 text-indigo-400" />,
-      title: "1. Agreement to Terms",
-      content: "By accessing or using SociaVerse, a platform dedicated to university events and student communities, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, then you may not access the Service."
+      title: "1. Acceptance of Terms",
+      content: "By creating an account, registering, or accessing SociaVerse, you agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, you may not access or use our services."
     },
     {
       icon: <Users className="w-6 h-6 text-blue-400" />,
-      title: "2. Description of Service",
-      content: "SociaVerse provides a digital campus platform that allows students to discover events, share study materials, interact in communities, and connect with peers both globally and within their specific universities."
+      title: "2. Account Registration & Security",
+      content: "You must be at least 18 years old to use this platform. By registering or using SociaVerse, you represent and warrant that you are at least 18 years of age. You agree to provide accurate and complete registration details. You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account."
     },
     {
-      icon: <Shield className="w-6 h-6 text-emerald-400" />,
-      title: "3. User Accounts & Registration",
+      icon: <BookOpen className="w-6 h-6 text-emerald-400" />,
+      title: "3. User Content & Conduct",
       content: (
-        <ul className="list-disc pl-5 space-y-2 mt-2">
-          <li>You must provide accurate, complete, and current information when registering for an account.</li>
-          <li>You are responsible for safeguarding your login credentials and tracking any activity under your account.</li>
-          <li>You must immediately notify SociaVerse of any unauthorized use or security breaches regarding your account.</li>
-        </ul>
+        <>
+          <p className="mb-2">You retain ownership of any posts, comments, media, or other content you upload to SociaVerse. However, you grant SociaVerse a worldwide, non-exclusive, royalty-free license to host, display, and distribute your content.</p>
+          <p>You agree not to upload content that is illegal, defamatory, abusive, hateful, or infringes on any third-party rights. We reserve the right to remove any content at our sole discretion.</p>
+        </>
       )
     },
     {
-      icon: <Building2 className="w-6 h-6 text-purple-400" />,
-      title: "4. University Affiliation & Verification",
-      content: "Certain features of SociaVerse, such as internal college events and study hubs, are restricted based on your declared university affiliation. You agree not to misrepresent your educational institution. SociaVerse reserves the right to verify your academic status and revoke college-specific privileges if fraudulent activity is detected."
-    },
-    {
-      icon: <AlertCircle className="w-6 h-6 text-red-400" />,
-      title: "5. Community Guidelines & Acceptable Use",
+      icon: <Coins className="w-6 h-6 text-yellow-400" />,
+      title: "4. Tokens, Coins & Wallet",
       content: (
         <>
-          <p className="mb-2">You agree not to use the platform to:</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li>Post or transmit any content that is unlawful, harmful, threatening, abusive, harassing, defamatory, or otherwise objectionable.</li>
-            <li>Impersonate any person or entity, or falsely state or misrepresent your affiliation.</li>
-            <li>Upload or distribute virues, malware, or any other malicious code.</li>
-            <li>Harvest or collect email addresses or other contact information of other users without their consent.</li>
-            <li>Distribute copyrighted academic materials to which you do not have distribution rights.</li>
+          <p className="mb-2">SociaVerse features Blue and Gold coins as part of its interactive marketplace, rewards, and predictions. These coins represent virtual platform values:</p>
+          <ul className="list-disc pl-5 space-y-2 mt-2 text-slate-400">
+            <li><strong className="text-slate-200">Blue Coins:</strong> Used primarily for prediction participation and engagement rewards.</li>
+            <li><strong className="text-slate-200">Gold Coins:</strong> Used for premium marketplace items and rewards. Transactions are subject to withdrawal requests, which are processed according to verification protocols (KYC).</li>
           </ul>
         </>
       )
     },
     {
-      icon: <BookOpen className="w-6 h-6 text-cyan-400" />,
-      title: "6. Content Ownership & Licenses",
-      content: "You retain your rights to any content you submit, post, or display on or through SociaVerse. By submitting content (including event details, notes, and profile information), you grant us a worldwide, non-exclusive, royalty-free license to use, copy, reproduce, process, adapt, modify, publish, transmit, display, and distribute such content in any and all media or distribution methods."
+      icon: <Gavel className="w-6 h-6 text-purple-400" />,
+      title: "5. Account Termination",
+      content: "We reserve the right to suspend or terminate your account and access to the platform at any time, without prior notice, for conduct that we believe violates these Terms or is harmful to other users or our business interests."
     },
     {
-      icon: <Gavel className="w-6 h-6 text-rose-400" />,
-      title: "7. Termination",
-      content: "We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. All provisions of the Terms which by their nature should survive termination shall survive termination, including ownership provisions, warranty disclaimers, indemnity, and limitations of liability."
+      icon: <Scale className="w-6 h-6 text-rose-400" />,
+      title: "6. Limitation of Liability",
+      content: "SociaVerse is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We make no warranties, express or implied, regarding platform availability, accuracy of information, or freedom from errors. To the fullest extent permitted by law, SociaVerse shall not be liable for any indirect, incidental, or consequential damages."
     },
     {
-      icon: <Scale className="w-6 h-6 text-amber-400" />,
-      title: "8. Changes to Terms",
-      content: "We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide notice via the platform or email before any material changes take effect. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms."
+      icon: <AlertCircle className="w-6 h-6 text-amber-400" />,
+      title: "7. Changes to Terms",
+      content: "We may revise these Terms from time to time. The most current version will always be posted in the app. Your continued use of the platform after changes become effective constitutes your acceptance of the new Terms."
     }
   ]
 
@@ -85,7 +76,7 @@ export default function TermsOfService() {
             Terms of Service
           </h1>
           <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">
-            Last Updated: March 2026
+            Last Updated: May 2026
           </p>
         </motion.header>
 
@@ -102,7 +93,7 @@ export default function TermsOfService() {
                 <div className="p-3 bg-slate-800/50 rounded-xl border border-white/5 flex-shrink-0">
                   {section.icon}
                 </div>
-                <div className="space-y-3 pt-1">
+                <div className="space-y-3 pt-1 w-full">
                   <h2 className="text-xl md:text-2xl font-bold text-slate-100">
                     {section.title}
                   </h2>
@@ -121,7 +112,10 @@ export default function TermsOfService() {
             transition={{ delay: 1, duration: 0.5 }}
             className="text-center pt-8 text-slate-500 text-sm"
         >
-            <p>If you have any questions about these Terms, please contact us.</p>
+            <p className="flex items-center justify-center gap-2">
+              <Mail className="w-4 h-4 text-indigo-400" />
+              If you have any questions regarding these Terms, please contact us at: <a href="mailto:sociaverse7@gmail.com" className="text-indigo-400 hover:underline">sociaverse7@gmail.com</a>
+            </p>
         </motion.div>
       </div>
     </div>

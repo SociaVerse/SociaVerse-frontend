@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion"
 import { Heart, MessageCircle, Share2, MoreHorizontal, BadgeCheck, Send, X, Trash2, Edit2, Reply, CornerDownRight, Bookmark } from "lucide-react"
 import Link from "next/link"
@@ -28,7 +28,7 @@ interface PostCardProps {
     onPostClick?: (post: Post) => void;
 }
 
-export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImageClick, onPostClick }: PostCardProps) {
+export const PostCard = React.memo(function PostCard({ post: initialPost, handleAuthAction, onDelete, onImageClick, onPostClick }: PostCardProps) {
     const [post, setPost] = useState(initialPost);
     const [isLiked, setIsLiked] = useState(initialPost.is_liked);
     const [likesCount, setLikesCount] = useState(initialPost.likes_count);
@@ -359,7 +359,7 @@ export function PostCard({ post: initialPost, handleAuthAction, onDelete, onImag
 
         </motion.div>
     );
-}
+});
 
 import {
     AlertDialog,

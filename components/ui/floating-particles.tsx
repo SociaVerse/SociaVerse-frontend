@@ -17,7 +17,7 @@ export function FloatingParticles() {
             {[...Array(20)].map((_, i) => (
                 <motion.div
                     key={i}
-                    className="absolute bg-blue-500/20 rounded-full blur-[1px]"
+                    className="absolute bg-red-500/15 rounded-full blur-[1px]"
                     initial={{
                         x: Math.random() * 100 + "vw",
                         y: Math.random() * 100 + "vh",

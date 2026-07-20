@@ -1,7 +1,6 @@
 "use client"
 
 import { useAuth } from "@/components/auth-provider"
-import { MemeEventPage } from "@/components/meme-event-page"
 import { LandingPage } from "@/components/landing-page"
 import { HomeFeed } from "@/components/home-feed"
 import { useEffect, useState } from "react"
@@ -16,8 +15,8 @@ export default function Home() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
       </div>
     )
   }
@@ -28,5 +27,5 @@ export default function Home() {
     return <HomeFeed />
   }
 
-  return <MemeEventPage />
+  return <LandingPage />
 }

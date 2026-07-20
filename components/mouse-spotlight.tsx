@@ -20,7 +20,7 @@ export function MouseSpotlight() {
 
     const background = useTransform(
         [mouseX, mouseY],
-        ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(29, 78, 216, 0.15), transparent 40%)`
+        ([x, y]) => `radial-gradient(600px circle at ${x}px ${y}px, rgba(220, 38, 38, 0.08), transparent 40%)`
     );
 
     if (!mounted) return null;

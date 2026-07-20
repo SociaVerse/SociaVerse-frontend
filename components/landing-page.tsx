@@ -1,739 +1,579 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Globe, Zap, Shield, ArrowRight, Activity, Users, Star, Search, MessageCircle, Heart, Wifi, Battery, Signal, Rocket, Laptop, GraduationCap, FileText, PlaySquare, Calendar, Download, Share2, ArrowUp, Repeat } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { LandingCarousel } from "@/components/landing-carousel";
-import { MouseSpotlight } from "@/components/mouse-spotlight";
-import { BackgroundBeams } from "@/components/ui/background-beams";
-import { FloatingParticles } from "@/components/ui/floating-particles";
-import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
-import { MouseEvent } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  EyeOff,
+  MessageCircle,
+  Vote,
+  Gift,
+  ArrowRight,
+  ArrowUp,
+  Lock,
+  Sparkles,
+  TrendingUp,
+  Heart,
+  User,
+  Share2,
+  Coins,
+  Shield,
+  Smartphone,
+  CheckCircle2,
+  Trophy,
+  Flame,
+  ChevronRight,
+} from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
-function PhoneMockup() {
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
+/* ─── Animated Counter ─── */
+function AnimatedNumber({ target, duration = 2000 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
 
-    const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
-    const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+          const start = Date.now();
+          const tick = () => {
+            const elapsed = Date.now() - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          tick();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target, duration, hasAnimated]);
 
-    const rotateX = useTransform(mouseY, [-0.5, 0.5], ["15deg", "-15deg"]);
-    const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-15deg", "15deg"]);
-
-    // Reflection gradient movement
-    const glareX = useTransform(mouseX, [-0.5, 0.5], ["0%", "100%"]);
-    const glareY = useTransform(mouseY, [-0.5, 0.5], ["0%", "100%"]);
-
-    const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseXPos = e.clientX - rect.left;
-        const mouseYPos = e.clientY - rect.top;
-
-        const xPct = mouseXPos / width - 0.5;
-        const yPct = mouseYPos / height - 0.5;
-
-        x.set(xPct);
-        y.set(yPct);
-    };
-
-    const handleMouseLeave = () => {
-        x.set(0);
-        y.set(0);
-    };
-
-    return (
-        <motion.div
-            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="relative w-full max-w-[320px] mx-auto aspect-[9/19] bg-slate-950 rounded-[3rem] border-[4px] border-slate-700 shadow-2xl overflow-hidden cursor-pointer group perspective-1000 select-none ring-1 ring-white/10"
-        >
-            {/* Outer Frame Glow */}
-            <div className="absolute -inset-[2px] bg-gradient-to-b from-slate-600 to-slate-900 rounded-[3.2rem] -z-10" />
-            <div className="absolute -inset-[8px] bg-slate-950 rounded-[3.5rem] -z-20 shadow-2xl" />
-
-            {/* Dynamic Island Area */}
-            <div className="absolute top-0 left-0 w-full h-14 z-50 flex justify-center items-start pt-3 pointer-events-none">
-                <div className="w-28 h-8 bg-black rounded-full flex items-center justify-between px-3 z-50">
-                    <div className="w-2 h-2 rounded-full bg-slate-900/50" />
-                    <div className="w-16 h-16 bg-black rounded-full absolute -top-8 left-1/2 -translate-x-1/2 blur-md opacity-50" />
-                </div>
-            </div>
-
-            {/* Status Bar */}
-            <div className="absolute top-0 left-0 w-full h-14 z-40 flex justify-between items-center px-6 pt-2 text-[10px] font-bold text-white/90">
-                <span>9:41</span>
-                <div className="flex items-center gap-1.5">
-                    <Signal className="w-3 h-3" />
-                    <Wifi className="w-3 h-3" />
-                    <Battery className="w-4 h-4" />
-                </div>
-            </div>
-
-            {/* Screen Reflection */}
-            <motion.div
-                style={{
-                    background: useTransform(
-                        [glareX, glareY],
-                        ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, rgba(255,255,255,0.15) 0%, transparent 60%)`
-                    )
-                }}
-                className="absolute inset-0 pointer-events-none z-[60] mix-blend-overlay opacity-50 transition-opacity duration-300"
-            />
-
-            {/* Buttons */}
-            <div className="absolute top-24 -left-[6px] w-[3px] h-8 bg-slate-700 rounded-l-md" /> {/* Mute */}
-            <div className="absolute top-40 -left-[6px] w-[3px] h-14 bg-slate-700 rounded-l-md" /> {/* Vol Up */}
-            <div className="absolute top-56 -left-[6px] w-[3px] h-14 bg-slate-700 rounded-l-md" /> {/* Vol Down */}
-            <div className="absolute top-48 -right-[6px] w-[3px] h-20 bg-slate-700 rounded-r-md" /> {/* Power */}
-
-
-            {/* App Content */}
-            <div className="absolute inset-0 pt-16 px-4 bg-[#0A0E17] overflow-hidden">
-                {/* Header */}
-                <div className="flex flex-col gap-3 mb-4 mt-2">
-                    <div className="flex items-center justify-between">
-                        <span className="font-bold text-[13px] tracking-tight text-white/90">Welcome to the Verse</span>
-                        <div className="relative">
-                            <div className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
-                                <Activity className="w-3.5 h-3.5 text-slate-400" />
-                            </div>
-                            {/* Neon-purple unread alert */}
-                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-purple-500 rounded-full border border-[#0A0E17] shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                        </div>
-                    </div>
-                    {/* Toggle */}
-                    <div className="flex gap-2 p-1 bg-slate-900/60 border border-slate-800/60 rounded-lg">
-                        <div className="flex-1 text-center py-1 bg-slate-800 rounded-md text-[11px] font-bold text-white shadow-sm border border-slate-700">Global</div>
-                        <div className="flex-1 text-center py-1 text-[11px] font-semibold text-slate-500">Campus</div>
-                    </div>
-                </div>
-
-                {/* Feed Wrapper */}
-                <div className="relative h-full flex flex-col gap-3.5 pb-20">
-
-                    {/* Post 1: Kavya S. (Video Thumbnail) */}
-                    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3 relative z-10 shadow-lg shrink-0">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-400 to-pink-500 p-[2px]">
-                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-[9px]">KS</div>
-                            </div>
-                            <div className="flex-1 leading-[1.1]">
-                                <p className="font-bold text-slate-100 text-[11px]">Kavya S. <span className="text-[9px] text-purple-400/80 font-normal ml-1">Global</span></p>
-                                <p className="text-[9px] text-slate-500 mt-0.5">B.Des Animation</p>
-                            </div>
-                        </div>
-                        <p className="text-slate-300 text-[10px] mb-2.5 leading-snug">
-                            Trying out some new Ghibli-style environment shading techniques in Blender for my final project. Thoughts?
-                        </p>
-
-                        {/* Video Thumbnail Mockup */}
-                        <div className="w-full aspect-[16/9] bg-slate-950 border border-slate-800 rounded-xl mb-2.5 flex items-center justify-center relative overflow-hidden shrink-0">
-                            {/* Abstract gradient placeholder for video */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-green-900/50 via-blue-900/30 to-purple-900/50 mix-blend-screen scale-110 blur-md"></div>
-                            <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 z-10">
-                                <PlaySquare className="w-3 h-3 text-white ml-0.5" />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center px-1 border-t border-slate-800/50 pt-2">
-                            <div className="flex gap-4">
-                                <div className="flex items-center gap-1.5 text-slate-400">
-                                    <ArrowUp className="w-3 h-3" />
-                                    <span className="text-[10px] font-semibold">540</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-slate-400">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span className="text-[10px] font-semibold">89</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Post 2: Yash D. (Compact Resource) */}
-                    <div className="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3 relative z-10 shadow-lg shrink-0">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-400 to-cyan-500 p-[2px]">
-                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-[9px]">YD</div>
-                            </div>
-                            <div className="flex-1 leading-[1.1]">
-                                <p className="font-bold text-slate-100 text-[11px]">Yash D. <span className="text-[9px] text-emerald-400/80 font-normal ml-1">NFSU</span></p>
-                                <p className="text-[9px] text-slate-500 mt-0.5">Cybersecurity</p>
-                            </div>
-                        </div>
-                        <p className="text-slate-300 text-[10px] mb-2.5 leading-snug">
-                            Compiled an ultimate study guide on adversarial AI attacks. Good luck with midterms everyone!
-                        </p>
-
-                        {/* Glowing Border Card for Attachment */}
-                        <div className="flex items-center gap-2 bg-slate-950/80 border border-emerald-500/20 rounded-lg p-2 mb-2.5 shadow-[0_0_8px_rgba(52,211,153,0.05)]">
-                            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
-                                <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                            </div>
-                            <div className="flex-1 overflow-hidden">
-                                <p className="text-[10px] font-semibold text-slate-200 truncate">Adversarial_AI_Notes.pdf</p>
-                                <p className="text-[9px] text-slate-500 mt-0.5">Document • 3.2 MB</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center px-1 border-t border-slate-800/50 pt-2">
-                            <div className="flex gap-4">
-                                <div className="flex items-center gap-1.5 text-slate-400">
-                                    <ArrowUp className="w-3 h-3" />
-                                    <span className="text-[10px] font-semibold">312</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-slate-400">
-                                    <MessageCircle className="w-3 h-3" />
-                                    <span className="text-[10px] font-semibold">41</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Fade Mask to create infinite scroll illusion */}
-                <div className="absolute bottom-0 left-0 w-full h-32 z-30 pointer-events-none bg-gradient-to-t from-[#0A0E17] to-transparent" />
-            </div>
-        </motion.div>
-    )
+  return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
+/* ─── Feature Card ─── */
+function FeatureCard({
+  icon,
+  title,
+  description,
+  index,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.5, delay: index * 0.15 }}
+      className="group relative"
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-red-600/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative h-full p-8 md:p-10 rounded-3xl bg-zinc-950/80 border border-zinc-800/60 hover:border-red-900/40 transition-all duration-500">
+        <div className="w-14 h-14 rounded-2xl bg-red-950/40 border border-red-900/30 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-red-950/60 transition-all duration-300">
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold text-white mb-3 tracking-tight">{title}</h3>
+        <p className="text-zinc-500 text-[15px] leading-relaxed">{description}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Main Landing Page ─── */
 export function LandingPage() {
-    return (
-        <div className="flex-1 flex flex-col items-center justify-center text-center bg-slate-950 text-slate-100 overflow-hidden w-full relative">
+  const [pollVoted, setPollVoted] = useState(false);
+  const [pollChoice, setPollChoice] = useState<"a" | "b" | null>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
 
-            {/* Dynamic Backgrounds */}
-            <BackgroundBeams className="opacity-40" />
-            <MouseSpotlight />
-            <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-100 contrast-150 mix-blend-overlay pointer-events-none z-0" />
-            <FloatingParticles />
+  const handlePollVote = (choice: "a" | "b") => {
+    if (pollVoted) return;
+    setPollChoice(choice);
+    setPollVoted(true);
+  };
 
+  const pollData = {
+    a: { label: "Yes — AI search will dominate", base: 62 },
+    b: { label: "No — keywords still king", base: 38 },
+  };
+  const getPercent = (opt: "a" | "b") => {
+    if (!pollVoted) return 0;
+    return pollChoice === opt ? pollData[opt].base + 1 : pollData[opt].base - 1;
+  };
 
-            {/* Hero Section */}
-            <section className="relative w-full pt-36 pb-16 md:pt-40 md:pb-24 px-4 z-10 overflow-hidden">
+  return (
+    <div className="flex-1 flex flex-col items-center bg-black text-white overflow-hidden w-full relative selection:bg-red-600/30">
 
-                {/* Floating Background Icons & Elements */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    {/* Ambient Glowing Orbs */}
-                    <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" />
-                    <div className="absolute top-[40%] right-[-10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] mix-blend-screen animate-pulse-slow delay-1000" />
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  HERO SECTION                                      */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <motion.section
+        ref={heroRef}
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative w-full min-h-[100vh] flex items-center justify-center px-6 overflow-hidden"
+      >
+        {/* Background gradients */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-red-600/[0.07] rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-red-950/20 rounded-full blur-[120px]" />
+          <div className="absolute top-1/3 left-0 w-[300px] h-[300px] bg-zinc-800/20 rounded-full blur-[100px]" />
+        </div>
 
-                    <motion.div
-                        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute top-32 md:top-20 left-[5%] md:left-[10%] opacity-20 text-blue-500"
-                    >
-                        <Rocket className="w-12 h-12 md:w-16 md:h-16" />
-                    </motion.div>
-                    <motion.div
-                        animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute bottom-40 right-[8%] md:right-[15%] opacity-20 text-purple-500"
-                    >
-                        <Laptop className="w-14 h-14 md:w-20 md:h-20" />
-                    </motion.div>
-                    <motion.div
-                        animate={{ y: [0, -15, 0], rotate: [0, 10, 0] }}
-                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-                        className="absolute top-52 md:top-40 right-[2%] md:right-[5%] opacity-10 text-indigo-500"
-                    >
-                        <GraduationCap className="w-8 h-8 md:w-12 md:h-12" />
-                    </motion.div>
+        {/* Grid lines effect */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+          backgroundSize: '80px 80px'
+        }} />
 
-                    {/* Left side floating UI Graphic */}
-                    <motion.div
-                        animate={{ y: [0, -10, 0] }}
-                        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                        className="hidden xl:flex absolute top-[15%] left-[2%] 2xl:left-[6%] flex-col gap-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl z-0 w-64 opacity-80 hover:opacity-100 transition-opacity"
-                    >
-                        <div className="flex items-center gap-3 mb-1">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center shrink-0 shadow-lg">
-                                <Users className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-white leading-tight">CS 101 Study Group</p>
-                                <p className="text-xs text-slate-400">12 members active</p>
-                            </div>
-                        </div>
-                        <div className="flex -space-x-2 px-1">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="w-7 h-7 rounded-full bg-slate-800 border-2 border-slate-900 overflow-hidden">
-                                    <div className={`w-full h-full bg-gradient-to-br from-slate-600 to-slate-800 opacity-${i * 20}`} />
-                                </div>
-                            ))}
-                            <div className="w-7 h-7 rounded-full bg-slate-800 border-2 border-slate-900 flex items-center justify-center text-[9px] text-slate-300 font-bold z-10">+8</div>
-                        </div>
-                    </motion.div>
+        <div className="relative z-10 max-w-5xl mx-auto text-center pt-20">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mb-8"
+          >
+            <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-zinc-900/80 border border-zinc-800 text-red-500 text-xs font-bold tracking-wider uppercase">
+              <Flame className="w-3.5 h-3.5" />
+              The Anonymous Social Network
+            </span>
+          </motion.div>
 
-                    {/* Right side floating UI Graphic */}
-                    <motion.div
-                        animate={{ y: [0, 10, 0] }}
-                        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="hidden xl:flex absolute bottom-[15%] right-[2%] 2xl:right-[5%] flex-col p-5 rounded-2xl bg-slate-900/60 border border-slate-700/50 backdrop-blur-md shadow-2xl z-0 w-[260px] opacity-80 hover:opacity-100 transition-opacity"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2 bg-green-500/10 px-2 py-1 rounded-md border border-green-500/20">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-[10px] uppercase font-bold text-green-400 tracking-wider">Live Event</span>
-                            </div>
-                            <span className="text-xs text-slate-400 font-medium">Now</span>
-                        </div>
-                        <p className="text-base font-bold text-white mb-1">Campus Hackathon</p>
-                        <p className="text-xs text-slate-400 mb-4 flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-slate-400" /> Innovation Hub
-                        </p>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
-                            <span>Capacity</span>
-                            <span className="text-blue-400">54 / 100</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 w-[54%] rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                        </div>
-                    </motion.div>
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter leading-[0.95] mb-8"
+          >
+            <span className="block text-white">Where Your</span>
+            <span className="block mt-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-400 to-rose-400">
+                Voice Matters
+              </span>
+              <span className="text-red-500">.</span>
+            </span>
+          </motion.h1>
+
+          {/* Subtext */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto mb-12 leading-relaxed font-light"
+          >
+            Post anonymously. Predict real-world outcomes. Earn gold coins.
+            <br className="hidden md:block" />
+            Redeem exciting rewards. No judgment. No bias.
+          </motion.p>
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <Button asChild className="h-14 px-10 rounded-full bg-red-600 hover:bg-red-500 text-white text-base font-bold transition-all shadow-[0_0_40px_rgba(220,38,38,0.35)] hover:shadow-[0_0_60px_rgba(220,38,38,0.5)] border-none hover:scale-105">
+              <Link href="/signup">
+                Join SociaVerse <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-14 px-10 rounded-full border-zinc-800 bg-transparent text-zinc-400 hover:bg-zinc-900 hover:text-white transition-all text-base">
+              <Link href="/features">
+                Learn More
+              </Link>
+            </Button>
+          </motion.div>
+
+          {/* Stats bar */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1 }}
+            className="mt-20 flex flex-wrap justify-center gap-12 text-center"
+          >
+            {[
+              { value: 25000, suffix: "+", label: "Active Users" },
+              { value: 180000, suffix: "+", label: "Anonymous Posts" },
+              { value: 45000, suffix: "+", label: "Predictions Made" },
+            ].map((stat, i) => (
+              <div key={i}>
+                <div className="text-3xl md:text-4xl font-black text-white tabular-nums">
+                  <AnimatedNumber target={stat.value} />{stat.suffix}
+                </div>
+                <div className="text-xs text-zinc-600 font-medium mt-1 uppercase tracking-wider">{stat.label}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] font-medium">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="w-5 h-8 rounded-full border-2 border-zinc-800 flex items-start justify-center p-1"
+          >
+            <div className="w-1 h-2 bg-red-500 rounded-full" />
+          </motion.div>
+        </motion.div>
+      </motion.section>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  HOW IT WORKS                                       */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <section className="w-full py-32 px-6 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950/50 to-black pointer-events-none" />
+        <div className="max-w-6xl mx-auto relative z-10">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <span className="text-xs text-red-500 font-bold uppercase tracking-[0.2em] mb-4 block">How It Works</span>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight">
+              Speak. Predict. <span className="text-red-500">Earn.</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FeatureCard
+              index={0}
+              icon={<EyeOff className="w-6 h-6 text-red-500" />}
+              title="Anonymous Posting"
+              description="Share your raw unfiltered thoughts without fear. Your identity is cryptographically protected. No one — not even us — can trace posts back to you."
+            />
+            <FeatureCard
+              index={1}
+              icon={<Vote className="w-6 h-6 text-red-500" />}
+              title="Prediction Polls"
+              description="Stake gold coins on real-world outcomes. From crypto prices to pop culture events — predict correctly and multiply your earnings with 2x payouts."
+            />
+            <FeatureCard
+              index={2}
+              icon={<Gift className="w-6 h-6 text-red-500" />}
+              title="Rewards Store"
+              description="Redeem coins for physical merchandise, gift vouchers, tech gear, and premium subscriptions. Your engagement literally pays off."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  INTERACTIVE DEMO                                   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <section className="w-full py-32 px-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-xs text-red-500 font-bold uppercase tracking-[0.2em]">Live Preview</span>
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+              Try It Right Now
+            </h2>
+            <p className="text-zinc-500 text-lg max-w-lg mx-auto">
+              Click to vote. This is what SociaVerse feels like.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* ─── Live Poll Card ─── */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="rounded-3xl bg-zinc-950 border border-zinc-800/60 p-8 relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-40 h-40 bg-red-600/5 rounded-full blur-[80px] group-hover:bg-red-600/10 transition-all duration-700" />
+
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-[11px] uppercase font-extrabold tracking-widest px-3 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-900/30">
+                    ⚡ Prediction Market
+                  </span>
+                  <span className="text-xs text-zinc-600 font-medium">
+                    <TrendingUp className="w-3.5 h-3.5 inline mr-1 text-red-500" />Ends in 6h
+                  </span>
                 </div>
 
-                <div className="container max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
+                <h3 className="text-xl font-bold text-white mb-2 leading-snug">
+                  Will AI fully replace traditional search engines by 2027?
+                </h3>
+                <p className="text-sm text-zinc-600 mb-8">
+                  Pool: 350,000 Gold Coins • 2x multiplier
+                </p>
 
-                    {/* Left Content */}
-                    <div className="flex-1 text-center lg:text-left z-20">
+                <div className="space-y-3">
+                  {(["a", "b"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => handlePollVote(opt)}
+                      disabled={pollVoted}
+                      className={`w-full text-left p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                        pollVoted && pollChoice === opt
+                          ? "bg-red-950/20 border-red-800/40"
+                          : pollVoted
+                          ? "bg-zinc-950 border-zinc-800/40 opacity-60"
+                          : "bg-zinc-900/40 border-zinc-800/50 hover:border-red-900/40 hover:bg-zinc-900/60 cursor-pointer"
+                      }`}
+                    >
+                      {pollVoted && (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                        >
-                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/50 backdrop-blur-md text-blue-400 text-xs font-medium mb-6 hover:bg-slate-800/80 transition-all cursor-default shadow-lg shadow-blue-500/10">
-                                <Star className="w-3 h-3 fill-blue-400" />
-                                <span>The Social Platform for Students</span>
-                            </div>
-
-                            <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 leading-[1.15]">
-                                Your Campus, <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 animate-gradient-x">
-                                    Connected.
-                                </span>
-                            </h1>
-
-                            <p className="text-base md:text-lg text-slate-400 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-                                Join the decentralized universe built for students. Connect with peers, find events, and build your legacy.
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                                {process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true' ? (
-                                    <>
-                                        <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
-                                            <Link href="/join-waitlist">
-                                                Join Waitlist <ArrowRight className="ml-2 w-4 h-4" />
-                                            </Link>
-                                        </Button>
-                                        <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                                            <Link href="/features">
-                                                View Features
-                                            </Link>
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button asChild className="h-11 px-8 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 border-none">
-                                            <Link href="/signup">
-                                                Get Started <ArrowRight className="ml-2 w-4 h-4" />
-                                            </Link>
-                                        </Button>
-                                        <Button asChild variant="outline" className="h-11 px-8 rounded-full border-slate-700 bg-slate-900/50 backdrop-blur-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                                            <Link href="/explore">
-                                                Explore Features
-                                            </Link>
-                                        </Button>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="mt-8 flex items-center justify-center lg:justify-start gap-3 text-xs text-slate-500">
-                                <div className="flex -space-x-2">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className={`w-8 h-8 rounded-full border-2 border-slate-950 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-[10px] text-white z-${10 - i}`}>
-                                            <Users className="w-3 h-3" />
-                                        </div>
-                                    ))}
-                                </div>
-                                <p>Join 10k+ students</p>
-                            </div>
-                        </motion.div>
-                    </div>
-
-                    {/* Right Visual - Interactive High-Fidelity Mockup */}
-                    <div className="flex-1 relative hidden lg:flex justify-center perspective-[2000px] z-30">
-                        <PhoneMockup />
-                    </div>
+                          initial={{ width: 0 }}
+                          animate={{ width: `${getPercent(opt)}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          className={`absolute left-0 top-0 bottom-0 ${
+                            pollChoice === opt ? "bg-red-600/15" : "bg-zinc-800/20"
+                          }`}
+                        />
+                      )}
+                      <div className="flex justify-between items-center relative z-10">
+                        <span className="text-sm font-semibold text-zinc-200">{pollData[opt].label}</span>
+                        {pollVoted && (
+                          <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className={`text-sm font-black ${pollChoice === opt ? "text-red-400" : "text-zinc-600"}`}
+                          >
+                            {getPercent(opt)}%
+                          </motion.span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
-            </section>
 
-            {/* Marquee - Subtle */}
-            <section className="w-full py-8 bg-slate-950 border-y border-slate-900 overflow-hidden opacity-80">
-                <div className="flex overflow-hidden select-none group">
-                    {/* First Marquee Container */}
-                    <div className="flex shrink-0 items-center justify-around gap-16 min-w-full animate-marquee whitespace-nowrap px-8">
-                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
-                        {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
-                            <span key={i} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
-                        ))}
-                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
-                        {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
-                            <span key={`dup-${i}`} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
-                        ))}
-                    </div>
+                {pollVoted && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-6 flex items-center gap-2 text-xs text-red-500/80"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="font-medium">Your prediction has been recorded</span>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
 
-                    {/* Second Marquee Container (Duplicate for seamless loop) */}
-                    <div className="flex shrink-0 items-center justify-around gap-16 min-w-full animate-marquee whitespace-nowrap px-8" aria-hidden="true">
-                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
-                        {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
-                            <span key={i} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
-                        ))}
-                        <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 uppercase tracking-widest px-4">Welcome to SociaVerse</span>
-                        {["IIT", "BITS", "LPU", "NFSU", "IIM", "NIT", "MIT", "IISER"].map((college, i) => (
-                            <span key={`dup-${i}`} className="text-xl font-bold text-slate-700 uppercase tracking-widest hover:text-slate-500 transition-colors">{college}</span>
-                        ))}
-                    </div>
+            {/* ─── Anonymous Post Card ─── */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="rounded-3xl bg-zinc-950 border border-zinc-800/60 p-8 relative overflow-hidden group flex flex-col"
+            >
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-zinc-800/10 rounded-full blur-[80px]" />
+
+              <div className="relative z-10 flex-1 flex flex-col">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                    <EyeOff className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-white block">Anonymous</span>
+                    <span className="text-[11px] text-zinc-600">Career Confessions • 4h ago</span>
+                  </div>
+                  <span className="ml-auto text-[9px] font-extrabold tracking-widest text-zinc-700 uppercase border border-zinc-800 px-2 py-0.5 rounded-full">Ghost</span>
                 </div>
-            </section>
 
-            {/* Value Proposition Grid */}
-            <section className="w-full py-20 bg-slate-900/20 z-10 relative overflow-hidden">
-                {/* Ambient side blurs */}
-                <div className="absolute top-[20%] left-[-20%] w-[60%] h-[60%] bg-blue-600/5 rounded-full blur-[150px] pointer-events-none" />
-                <div className="absolute top-[30%] right-[-20%] w-[60%] h-[60%] bg-purple-600/5 rounded-full blur-[150px] pointer-events-none" />
+                <p className="text-[15px] text-zinc-400 leading-relaxed flex-1 mb-6">
+                  "I turned down a big tech offer to join a 5-person startup for half the salary. My parents think I've lost it. But I've learned more in 3 weeks than 4 years of university. Sometimes the scariest choice is the right one."
+                </p>
 
-                <div className="container max-w-7xl mx-auto px-4 relative z-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                        className="text-center mb-12"
-                    >
-                        <h2 className="text-2xl md:text-4xl font-bold mb-4">Why We Built This</h2>
-                        <p className="text-slate-400 max-w-xl mx-auto text-base">
-                            Existing networks are too noisy. SociaVerse is focused on your campus life.
-                        </p>
-                    </motion.div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                        {[
-                            {
-                                icon: <Globe className="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors" />,
-                                title: "Find Your Tribe",
-                                description: "Connect with students who actually share your interests.",
-                                gradientClass: "from-blue-500/10 via-transparent to-transparent",
-                                ringClass: "group-hover:ring-blue-500/30"
-                            },
-                            {
-                                icon: <Zap className="h-6 w-6 text-amber-400 group-hover:text-amber-300 transition-colors" />,
-                                title: "Instant Collab",
-                                description: "Real-time sharing of notes and ideas with zero friction.",
-                                gradientClass: "from-amber-500/10 via-transparent to-transparent",
-                                ringClass: "group-hover:ring-amber-500/30"
-                            },
-                            {
-                                icon: <Shield className="h-6 w-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />,
-                                title: "Verified & Safe",
-                                description: "Verified student-only spaces for authentic connection.",
-                                gradientClass: "from-emerald-500/10 via-transparent to-transparent",
-                                ringClass: "group-hover:ring-emerald-500/30"
-                            }
-                        ].map((item, index) => (
-                            <div
-                                key={index}
-                                className={`group relative w-full flex flex-col p-6 md:p-8 rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all duration-300 hover:bg-slate-800/40 hover:-translate-y-1 ring-1 ring-transparent ${item.ringClass} overflow-hidden shadow-lg`}
-                            >
-                                {/* Glowing gradient background on hover */}
-                                <div className={`absolute inset-0 bg-gradient-to-br ${item.gradientClass} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-
-                                {/* Top highlight line */}
-                                <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-slate-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                <div className="relative z-10 flex flex-col items-start text-left">
-                                    <div className="w-14 h-14 rounded-2xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                                        {item.icon}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-slate-100 mb-3 tracking-tight">{item.title}</h3>
-                                    <p className="text-slate-400 text-[15px] leading-relaxed font-light">{item.description}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {["#StartupLife", "#Decisions", "#NoRegrets"].map(tag => (
+                    <span key={tag} className="text-[11px] px-2.5 py-1 rounded-lg bg-zinc-900 text-zinc-500 border border-zinc-800/60">{tag}</span>
+                  ))}
                 </div>
-            </section>
 
-            {/* Live Feed Section - Compact */}
-            <section className="w-full py-20 relative z-10 overflow-hidden bg-slate-950/50">
-                <div className="absolute bottom-[20%] left-[-10%] w-[40%] h-[40%] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none" />
-                <div className="absolute top-[10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
-
-                <div className="container max-w-7xl mx-auto px-4 relative z-10">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl md:text-3xl font-bold">
-                            Campus <span className="text-blue-400">Pulse</span>
-                        </h2>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full text-red-400 text-xs font-bold">
-                            <Activity className="w-3 h-3" /> LIVE
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 relative z-10 max-w-5xl mx-auto">
-
-                        {/* Column 1 */}
-                        <div className="flex flex-col gap-6">
-
-                            {/* Post 1: Resource Share (Ananya) */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                                transition={{ duration: 0.5 }}
-                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-blue-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
-                            >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <FileText className="w-24 h-24 text-blue-500" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-indigo-500 p-[2px]">
-                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">AV</div>
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Ananya V. <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-md font-semibold">NLSIU Bangalore</span></p>
-                                                <p className="text-xs text-slate-400">B.A. LL.B • 1h ago</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="text-slate-300 mb-4 text-left text-sm leading-relaxed">
-                                        Compiling all the landmark Supreme Court judgments we need for the upcoming Constitutional Law moot. I've highlighted the dissenting opinions too. Hope this helps everyone preparing!
-                                    </p>
-
-                                    {/* Attachment */}
-                                    <div className="flex items-center gap-4 bg-slate-950/50 border border-slate-800 rounded-2xl p-3 mb-5 hover:bg-slate-800/50 transition-colors cursor-pointer group/file">
-                                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0">
-                                            <FileText className="w-5 h-5 text-blue-400" />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden text-left">
-                                            <p className="text-sm font-semibold text-slate-200 truncate group-hover/file:text-blue-400 transition-colors">Consti_Law_Moot_Briefs.pdf</p>
-                                            <p className="text-xs text-slate-500">Document • 4.1 MB</p>
-                                        </div>
-                                        <div className="shrink-0 text-slate-500 pr-2">
-                                            <Download className="w-4 h-4" />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
-                                        <button className="flex items-center gap-1.5 hover:text-blue-400 hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-all text-blue-400/80 bg-blue-500/5"><ArrowUp className="w-4 h-4" /> 312</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 48</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 55</button>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* Post 3: Event Card */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                                transition={{ duration: 0.5, delay: 0.1 }}
-                                className="p-[1px] rounded-3xl bg-gradient-to-br from-emerald-500/30 to-teal-500/10 relative overflow-hidden group shadow-lg"
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent z-0"></div>
-                                <div className="bg-slate-900/90 backdrop-blur-xl p-5 md:p-6 rounded-[calc(1.5rem-1px)] relative z-10 w-full h-full border border-emerald-500/20 text-left">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-                                            <Calendar className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div className="bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2 py-1 rounded-full border border-orange-500/20 flex items-center gap-1">
-                                            <Activity className="w-3 h-3" /> Few Spots Left
-                                        </div>
-                                    </div>
-
-                                    <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">Creative Collective</p>
-                                    <h3 className="text-xl font-bold text-white mb-3">Annual Campus Art & Design Mixer</h3>
-
-                                    <div className="flex flex-wrap gap-2 mb-4">
-                                        {["In-Person", "Networking", "Portfolio Review"].map(tag => (
-                                            <span key={tag} className="text-[11px] bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">{tag}</span>
-                                        ))}
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <div className="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
-                                            <span>Attending</span>
-                                            <span className="text-emerald-400">{450} / {500}</span>
-                                        </div>
-                                        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 w-[90%] rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors decoration-none">
-                                        RSVP Now
-                                    </button>
-                                </div>
-                            </motion.div>
-
-                        </div>
-
-                        {/* Column 2 */}
-                        <div className="flex flex-col gap-6 md:mt-8">
-
-                            {/* Post 4: Resource Share (Kavya - Video) */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-purple-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
-                            >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <PlaySquare className="w-24 h-24 text-purple-500" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-pink-500 p-[2px]">
-                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">KS</div>
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Kavya S. <span className="text-[10px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-md font-semibold">NID Ahmedabad</span></p>
-                                                <p className="text-xs text-slate-400">B.Des Animation • 5h ago</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="text-slate-300 mb-4 text-left text-sm leading-relaxed">
-                                        Just finished my final project rendering! Trying out some new Ghibli-style environment shading techniques in Blender. Would love some brutal feedback from the animation crowd here.
-                                    </p>
-
-                                    {/* Video Attachment Mockup */}
-                                    <div className="w-full aspect-video bg-slate-950 border border-slate-800 rounded-2xl mb-5 flex items-center justify-center relative overflow-hidden group/video cursor-pointer">
-                                        {/* Mock Video Thumbnail blur */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-green-900/40 via-blue-900/40 to-purple-900/40 opacity-80 mix-blend-screen scale-110 blur-xl group-hover/video:scale-125 transition-transform duration-700"></div>
-                                        <div className="absolute inset-0 bg-slate-900/40 group-hover/video:bg-slate-900/20 transition-colors"></div>
-                                        <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 z-10 group-hover/video:scale-110 transition-transform">
-                                            <PlaySquare className="w-5 h-5 text-white ml-1" />
-                                        </div>
-                                        <div className="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-950/60 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10">
-                                            <PlaySquare className="w-3 h-3 text-purple-400" />
-                                            <span className="text-[10px] font-medium text-slate-200">ghibli_render_v2.mp4</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
-                                        <button className="flex items-center gap-1.5 hover:text-purple-400 hover:bg-purple-500/10 px-3 py-1.5 rounded-full transition-all text-purple-400/80 bg-purple-500/5"><ArrowUp className="w-4 h-4" /> 540</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 89</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 102</button>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                            {/* Post 2: Collaboration Request (Rohan) */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                                transition={{ duration: 0.5, delay: 0.3 }}
-                                className="p-5 md:p-6 rounded-3xl bg-slate-900/60 border border-slate-700/50 hover:border-amber-500/30 transition-all backdrop-blur-xl shadow-lg relative overflow-hidden group"
-                            >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <Users className="w-24 h-24 text-amber-500" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 p-[2px]">
-                                                <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-bold text-white text-sm">RK</div>
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-bold text-slate-100 text-sm flex items-center gap-1.5">Rohan K. <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-md font-semibold">NMIMS Mumbai</span></p>
-                                                <p className="text-xs text-slate-400">BBA • 3h ago</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="inline-block px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-[10px] uppercase tracking-wider font-bold text-amber-400 mb-3">
-                                        Collaboration Needed
-                                    </div>
-
-                                    <p className="text-slate-300 mb-6 text-left text-sm leading-relaxed">
-                                        Working on a go-to-market strategy for the upcoming Hult Prize pitch. We have the business model locked down, but we urgently need a tech co-founder to help us prototype the app. Anyone interested in joining the squad?
-                                    </p>
-
-                                    <div className="flex gap-1 text-slate-400 text-xs font-semibold">
-                                        <button className="flex items-center gap-1.5 hover:text-amber-400 hover:bg-amber-500/10 px-3 py-1.5 rounded-full transition-all text-amber-400/80 bg-amber-500/5"><ArrowUp className="w-4 h-4" /> 189</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><MessageCircle className="w-4 h-4" /> 62</button>
-                                        <button className="flex items-center gap-1.5 hover:text-slate-200 hover:bg-slate-800 px-3 py-1.5 rounded-full transition-all"><Repeat className="w-4 h-4" /> 14</button>
-                                    </div>
-                                </div>
-                            </motion.div>
-
-                        </div>
-                    </div>
+                <div className="flex items-center justify-between pt-5 border-t border-zinc-800/40">
+                  <div className="flex gap-3">
+                    <span className="flex items-center gap-1.5 text-red-500/80 text-xs font-bold bg-red-950/20 border border-red-900/20 px-3 py-1.5 rounded-full">
+                      <ArrowUp className="w-3.5 h-3.5" /> 843
+                    </span>
+                    <span className="flex items-center gap-1.5 text-zinc-600 text-xs font-bold">
+                      <MessageCircle className="w-3.5 h-3.5" /> 112
+                    </span>
+                  </div>
+                  <Share2 className="w-4 h-4 text-zinc-700 hover:text-zinc-400 transition-colors cursor-pointer" />
                 </div>
-            </section>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-            {/* Carousel Section */}
-            <section className="w-full py-20 relative overflow-hidden z-10">
-                <div className="max-w-6xl mx-auto px-4">
-                    <div className="text-center mb-12">
-                        <h2 className="text-2xl md:text-4xl font-bold mb-4">
-                            Everything in <span className="text-blue-400">One Place</span>
-                        </h2>
-                    </div>
-                    <LandingCarousel />
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  REWARDS SHOWCASE                                   */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <section className="w-full py-32 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950/30 to-black pointer-events-none" />
+        <div className="max-w-6xl mx-auto relative z-10">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <span className="text-xs text-red-500 font-bold uppercase tracking-[0.2em] mb-4 block">
+              <Trophy className="w-3.5 h-3.5 inline mr-1" />Gold Coins Economy
+            </span>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight mb-4">
+              Real Rewards. <span className="text-red-500">Real Value.</span>
+            </h2>
+            <p className="text-zinc-500 text-lg max-w-xl mx-auto">
+              Every post, vote, and prediction earns you Gold Coins. Redeem them for physical and digital rewards shipped to your door.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { title: "Gaming Headset", category: "Tech Gear", cost: "75,000", badge: "Popular", emoji: "🎧" },
+              { title: "₹1,000 Amazon Voucher", category: "Gift Cards", cost: "25,000", badge: "Hot", emoji: "🎁" },
+              { title: "Premium Hoodie", category: "Merch", cost: "50,000", badge: "Limited", emoji: "👕" },
+              { title: "Spotify Premium", category: "Subscription", cost: "12,000", badge: "Fast", emoji: "🎵" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group rounded-2xl bg-zinc-950 border border-zinc-800/60 hover:border-red-900/30 transition-all duration-300 overflow-hidden"
+              >
+                {/* Visual header */}
+                <div className="h-36 bg-zinc-900/50 flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-zinc-950 z-10" />
+                  <span className="text-5xl z-20 group-hover:scale-125 transition-transform duration-500">{item.emoji}</span>
+                  <span className="absolute top-3 left-3 bg-red-600 text-white text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded z-20">
+                    {item.badge}
+                  </span>
                 </div>
-            </section>
 
-            {/* Final CTA - Compact */}
-            <section className="w-full py-20 px-4 z-10 pb-32">
-                <div className="max-w-3xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.1, margin: "0px 0px -50px 0px" }}
-                        className="relative rounded-[2rem] bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 p-10 text-center overflow-hidden"
-                    >
-                        <div className="absolute inset-0 bg-blue-500/5 blur-3xl" />
-                        <div className="relative z-10">
-                            {process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true' ? (
-                                <>
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                                        Secure Your Spot
-                                    </h2>
-                                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                                        Join thousands of students on the waitlist. Be the first to experience the new SociaVerse.
-                                    </p>
-                                    <Link href="/join-waitlist">
-                                        <Button size="lg" className="px-10 py-6 rounded-full bg-white text-slate-950 hover:bg-slate-200 transition-colors font-bold text-base shadow-lg shadow-white/20">
-                                            Join Waitlist
-                                        </Button>
-                                    </Link>
-                                </>
-                            ) : (
-                                <>
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
-                                        Start Your Journey
-                                    </h2>
-                                    <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                                        Join thousands of students on SociaVerse. No fees. Just connection.
-                                    </p>
-                                    <Link href="/signup">
-                                        <Button size="lg" className="px-10 py-6 rounded-full bg-white text-slate-950 hover:bg-slate-200 transition-colors font-bold text-base">
-                                            Join the Community
-                                        </Button>
-                                    </Link>
-                                </>
-                            )}
-                        </div>
-                    </motion.div>
+                <div className="p-5">
+                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-wider">{item.category}</span>
+                  <h3 className="text-sm font-bold text-white mt-1 group-hover:text-red-400 transition-colors truncate">{item.title}</h3>
+
+                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-zinc-800/40">
+                    <span className="text-[10px] text-zinc-600">COST</span>
+                    <span className="text-sm text-red-500 font-black flex items-center gap-1">
+                      <Coins className="w-3.5 h-3.5" />{item.cost}
+                    </span>
+                  </div>
                 </div>
-            </section>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        </div >
-    )
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  DOWNLOAD CTA                                       */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <section className="w-full py-32 px-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-red-600/[0.04] rounded-full blur-[120px]" />
+        </div>
+
+        <div className="max-w-3xl mx-auto relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-red-950/40 border border-red-900/30 flex items-center justify-center mx-auto mb-8">
+              <Smartphone className="w-8 h-8 text-red-500" />
+            </div>
+
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+              Get the App
+            </h2>
+            <p className="text-zinc-500 text-lg mb-12 max-w-md mx-auto">
+              Full prediction markets, push notifications, anonymous discussions, and your wallet — all in your pocket.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a href="#" className="w-52 h-14 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl flex items-center px-5 gap-3 transition-all group">
+                <span className="text-2xl">▶</span>
+                <div className="text-left leading-tight">
+                  <span className="text-[9px] text-zinc-600 uppercase tracking-widest block">Get it on</span>
+                  <span className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">Google Play</span>
+                </div>
+              </a>
+              <a href="#" className="w-52 h-14 bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-xl flex items-center px-5 gap-3 transition-all group">
+                <span className="text-2xl"></span>
+                <div className="text-left leading-tight">
+                  <span className="text-[9px] text-zinc-600 uppercase tracking-widest block">Download on the</span>
+                  <span className="text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">App Store</span>
+                </div>
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  PRIVACY / TRUST BANNER                             */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <section className="w-full py-20 px-6 relative">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-800 to-transparent" />
+        <div className="max-w-4xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row items-center gap-8 p-10 rounded-3xl bg-zinc-950 border border-zinc-800/60 hover:border-red-900/20 transition-all duration-500"
+          >
+            <div className="w-16 h-16 rounded-full bg-red-950/40 border border-red-900/30 flex items-center justify-center shrink-0">
+              <Shield className="w-8 h-8 text-red-500" />
+            </div>
+            <div className="text-center md:text-left">
+              <h3 className="text-xl font-bold text-white mb-2 flex items-center justify-center md:justify-start gap-2">
+                Absolute Privacy <CheckCircle2 className="w-5 h-5 text-red-500" />
+              </h3>
+              <p className="text-zinc-500 text-[15px] leading-relaxed">
+                Your anonymous posts are cryptographically isolated. We don't track, sell, or link your data.
+                SociaVerse is built on the principle that free expression requires absolute privacy protection.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+    </div>
+  );
 }

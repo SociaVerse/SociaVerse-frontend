@@ -1,17 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
-import { Menu, Search, Bell, User, Sparkles, MessageCircle, UserPlus, Tag } from "lucide-react"
+import { User, MessageCircle, Bell, UserPlus, Tag } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -27,25 +22,9 @@ import {
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect } from "react"
-
-const regularNavLinks = [
-  { href: "/", label: "Your University" },
-  { href: "/events", label: "Events" },
-  { href: "/explore", label: "Explore" },
-  { href: "/studyhub", label: "Study Hub" },
-]
-
-const waitlistNavLinks = [
-  { href: "/", label: "Home" },
-  { href: "/features", label: "Features" },
-  { href: "/team", label: "Team" },
-  { href: "/join-waitlist", label: "Waitlist" },
-]
-
 import { usePathname } from "next/navigation"
 
 export function Navbar() {
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const { isAuthenticated, logout, user } = useAuth()
@@ -55,20 +34,8 @@ export function Navbar() {
   const isChatPage = pathname === "/chat" || pathname?.startsWith("/chat/")
   const isCreatePage = pathname === "/create"
   const isProfilePage = pathname === "/profile" || pathname?.startsWith("/u/")
-  
-  // Only hide navbar in Chat if authenticated AND we're actively chatting
+
   const isChatPageConfig = (pathname === "/chat" || pathname?.startsWith("/chat/")) && isAuthenticated;
-  
-  const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true';
-  const navLinks = isWaitlistMode
-    ? waitlistNavLinks
-    : regularNavLinks.map(link =>
-        link.href === "/" && !isAuthenticated
-          ? { ...link, label: "Home" }
-          : link
-      );
-
-
 
   const handleLogout = () => {
     setShowLogoutConfirm(false)
@@ -79,18 +46,14 @@ export function Navbar() {
     }, 2000)
   }
 
-  // Add scroll effect
-  // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10)
     }
-
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Animation entrance effect
   useEffect(() => {
     setIsVisible(true)
   }, [])
@@ -99,18 +62,18 @@ export function Navbar() {
 
   return (
     <>
+      {/* Logout Animation Overlay */}
       <AnimatePresence>
         {isLoggingOut && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
           >
-            {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-              <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse-slow" />
-              <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
+              <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-600/10 rounded-full blur-[120px]" />
+              <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-950/10 rounded-full blur-[120px]" />
             </div>
 
             <motion.div
@@ -122,39 +85,41 @@ export function Navbar() {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-full h-full rounded-full border-t-4 border-r-4 border-blue-500 border-b-4 border-slate-800 border-l-4 border-slate-800"
+                  className="w-full h-full rounded-full border-t-4 border-r-4 border-red-500 border-b-4 border-zinc-900 border-l-4 border-zinc-900"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   {user?.profile_picture ? (
                     <img src={user.profile_picture} alt="Profile" className="w-16 h-16 rounded-full object-cover" />
                   ) : (
-                    <User className="w-10 h-10 text-slate-400" />
+                    <User className="w-10 h-10 text-zinc-400" />
                   )}
                 </div>
               </div>
 
               <h2 className="text-3xl font-bold text-white mb-2">See you soon, {user?.first_name || user?.username}!</h2>
-              <p className="text-slate-400">Logging out safely...</p>
+              <p className="text-zinc-500">Logging out safely...</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Logout Confirm Dialog */}
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+        <AlertDialogContent className="bg-zinc-950 border-zinc-800 text-zinc-200">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogDescription className="text-zinc-400">
               You will need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowLogoutConfirm(false)} className="bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white border-slate-700">Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setShowLogoutConfirm(false)} className="bg-zinc-900 text-zinc-200 hover:bg-zinc-800 hover:text-white border-zinc-800">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleLogout} className="bg-red-600 text-white hover:bg-red-700">Log Out</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Navbar */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{
@@ -163,10 +128,10 @@ export function Navbar() {
           transition: { duration: 0.5, ease: "easeOut" }
         }}
         className={cn(
-          "fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 pt-safe rounded-b-2xl border-b border-slate-700/50",
+          "fixed top-0 inset-x-0 z-50 w-full transition-all duration-300 pt-safe",
           scrolled
-            ? "bg-slate-900/90 backdrop-blur-lg border-slate-700/50 shadow-lg shadow-blue-500/10"
-            : "bg-slate-900/50 backdrop-blur-md border-white/5",
+            ? "bg-black/90 backdrop-blur-xl border-b border-zinc-800/50 shadow-lg shadow-black/50"
+            : "bg-black/50 backdrop-blur-md border-b border-transparent",
           isChatPageConfig || isProfilePage ? "hidden md:block" : ""
         )}
       >
@@ -178,174 +143,75 @@ export function Navbar() {
             initial={{ x: -20 }}
             animate={{ x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-
           >
             <Link href="/" className="flex items-center group ml-2">
               <motion.div
-                className="relative flex h-10 sm:h-12 w-auto items-center  justify-start bg-transparent transition-all duration-300 -translate-y-[2px]"
+                className="relative flex h-10 sm:h-12 w-auto items-center justify-start bg-transparent transition-all duration-300 -translate-y-[2px]"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <img
                   src="/logo.png"
                   alt="SociaVerse Logo"
-                  className="h-full w-auto object-contain object-left scale-[1.1] sm:scale-[1.4] origin-left drop-shadow-md group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)] transition-all"
+                  className="h-full w-auto object-contain object-left scale-[1.1] sm:scale-[1.4] origin-left drop-shadow-md group-hover:drop-shadow-[0_0_8px_rgba(220,38,38,0.5)] transition-all"
                 />
               </motion.div>
             </Link>
           </motion.div>
 
-          {/* Desktop Nav Links (with glass effect) */}
-          <motion.nav
-            className="hidden md:flex items-center"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-full px-2 py-1 border border-slate-700/50 shadow-sm">
-              <AnimatePresence>
-                {navLinks.map((link) => {
-                  const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href))
-                  return (
-                    <Button
-                      key={link.href}
-                      asChild
-                      variant="ghost"
-                      className={cn(
-                        "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-200",
-                        isActive
-                          ? "bg-slate-950 text-blue-400 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] scale-[0.96] border border-white/5"
-                          : "text-slate-200 hover:bg-slate-700/50 hover:text-white"
-                      )}
-                      onMouseEnter={() => setHoveredLink(link.href)}
-                      onMouseLeave={() => setHoveredLink(null)}
-                    >
-                      <Link href={link.href} className="flex items-center">
-                        {hoveredLink === link.href && !isActive && (
-                          <motion.span
-                            layoutId="navbar-hover"
-                            className="absolute inset-0 z-[-1] rounded-full bg-slate-700 shadow-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        )}
-                        {link.label}
-                      </Link>
-                    </Button>
-                  )
-                })}
-              </AnimatePresence>
-            </div>
-          </motion.nav>
-
-          {/* Desktop Right Side */}
+          {/* Right Side */}
           <motion.div
-            className="hidden md:flex items-center space-x-1"
+            className="flex items-center space-x-1"
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-
-            {!isWaitlistMode && (
-              <motion.div
-                className="bg-slate-800/50 backdrop-blur-sm rounded-full px-1 py-1 border border-slate-700/50 shadow-sm ml-2 flex items-center"
-                whileHover={{ scale: 1.03 }}
-              >
-                {isAuthenticated ? (
-                  <>
-                    {/* Chat Icon - Functional */}
-                    <Button asChild variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
-                      <Link href="/chat">
-                        <MessageCircle className="h-5 w-5" />
-                      </Link>
-                    </Button>
-
-                    {/* Notification Bell - Functional Dropdown */}
-                    <NavbarNotifications />
-
-                    <div className="w-px h-6 bg-slate-700 mx-1"></div>
-
-                    <Button variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-red-400 transition-all font-medium text-xs px-3" onClick={() => setShowLogoutConfirm(true)}>
-                      Logout
-                    </Button>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 ml-1 flex items-center justify-center border-2 border-slate-800 cursor-pointer hover:scale-110 transition-transform overflow-hidden">
-                      <Link href="/profile" className="w-full h-full flex items-center justify-center">
-                        {user?.profile_picture ? (
-                          <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="h-4 w-4 text-white" />
-                        )}
-                      </Link>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Button asChild variant="ghost" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-blue-400 transition-all">
-                      <Link href="/login">Login</Link>
-                    </Button>
-                    <Button asChild className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md hover:shadow-blue-500/20 transition-all duration-300 hover:scale-105">
-                      <Link href="/signup">Sign Up</Link>
-                    </Button>
-                  </>
-                )}
-              </motion.div>
-            )}
-
-            {isWaitlistMode && (
-              <motion.div
-                className="ml-4"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Button asChild className="rounded-full bg-white text-black hover:bg-slate-200 shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all font-semibold">
-                  <Link href="/join-waitlist">Join Waitlist</Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-1 bg-zinc-900/60 backdrop-blur-sm rounded-full px-1.5 py-1 border border-zinc-800/50">
+                {/* Chat */}
+                <Button asChild variant="ghost" size="icon" className="rounded-full text-zinc-300 hover:bg-zinc-800 hover:text-red-500 transition-all">
+                  <Link href="/chat">
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
                 </Button>
-              </motion.div>
+
+                {/* Notifications */}
+                <NavbarNotifications />
+
+                <div className="w-px h-6 bg-zinc-800 mx-0.5" />
+
+                {/* Logout */}
+                <Button variant="ghost" className="rounded-full text-zinc-300 hover:bg-zinc-800 hover:text-red-400 transition-all font-medium text-xs px-3" onClick={() => setShowLogoutConfirm(true)}>
+                  Logout
+                </Button>
+
+                {/* Avatar */}
+                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-600 to-red-500 ml-0.5 flex items-center justify-center border-2 border-zinc-900 cursor-pointer hover:scale-110 transition-transform overflow-hidden">
+                  <Link href="/profile" className="w-full h-full flex items-center justify-center">
+                    {user?.profile_picture ? (
+                      <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="h-4 w-4 text-white" />
+                    )}
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button asChild variant="ghost" className="rounded-full text-zinc-300 hover:bg-zinc-900 hover:text-white transition-all text-sm">
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button asChild className="rounded-full bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.3)] transition-all duration-300 hover:scale-105 text-sm font-semibold border-none">
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
             )}
           </motion.div>
 
           {/* Mobile Right Side */}
-          {!isWaitlistMode && (
-            <div className="flex md:hidden items-center gap-3">
-              {isAuthenticated ? (
-                <>
-                  <NavbarNotifications />
-                  <Link href="/profile" className="relative group">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 p-[2px]">
-                      <div className="w-full h-full rounded-full bg-slate-950 overflow-hidden relative">
-                        {user?.profile_picture ? (
-                          <img src={user.profile_picture} alt={user.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                            <User className="h-4 w-4 text-slate-400" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                </>
-              ) : (
-                <Button asChild size="sm" className="rounded-full bg-blue-600 text-white px-4 h-8 text-xs">
-                  <Link href="/login">Login</Link>
-                </Button>
-              )}
-            </div>
-          )}
-
-          {isWaitlistMode && (
-            <div className="flex md:hidden items-center gap-2">
-              <Button asChild size="sm" className="rounded-full bg-white text-black hover:bg-slate-200 text-xs font-semibold">
-                <Link href="/join-waitlist">Join</Link>
-              </Button>
-            </div>
-          )}
-
-          {/* Mobile Menu - Hidden as replaced by Bottom Nav */}
-          <div className="hidden"></div>
-
+          <div className="flex md:hidden items-center gap-3" style={{ display: 'none' }}>
+            {/* Hidden since desktop view handles this */}
+          </div>
         </div>
       </motion.header>
     </>
@@ -358,7 +224,6 @@ function NavbarNotifications() {
   const [isOpen, setIsOpen] = useState(false)
   const { isAuthenticated } = useAuth()
 
-  // Fetch notifications
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('sociaverse_token')
@@ -367,7 +232,7 @@ function NavbarNotifications() {
       })
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data.slice(0, 5)) // Show top 5
+        setNotifications(data.slice(0, 5))
         setUnreadCount(data.filter((n: any) => !n.is_read).length)
       }
     } catch (error) {
@@ -382,7 +247,6 @@ function NavbarNotifications() {
         method: 'POST',
         headers: { 'Authorization': `Token ${token}` }
       })
-      // Optimistically update UI
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
@@ -390,33 +254,24 @@ function NavbarNotifications() {
     }
   }
 
-  // Initial fetch for badge
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchNotifications()
-    }
+    if (isAuthenticated) fetchNotifications()
   }, [isAuthenticated])
 
-  // Fetch when opening dropdown
   useEffect(() => {
-    if (isAuthenticated && isOpen) {
-      fetchNotifications()
-    }
+    if (isAuthenticated && isOpen) fetchNotifications()
   }, [isOpen])
 
-  // Poll every 5 minutes (reduced frequency)
   useEffect(() => {
     if (!isAuthenticated) return
-    const interval = setInterval(fetchNotifications, 300000) // 5 minutes
+    const interval = setInterval(fetchNotifications, 300000)
     return () => clearInterval(interval)
   }, [isAuthenticated])
-
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
     if (diffInSeconds < 60) return `${diffInSeconds}s ago`
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
@@ -426,31 +281,30 @@ function NavbarNotifications() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full text-slate-200 hover:bg-slate-700/50 hover:text-yellow-400 transition-all relative">
+        <Button variant="ghost" size="icon" className="rounded-full text-zinc-300 hover:bg-zinc-800 hover:text-red-400 transition-all relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-800"></span>
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-zinc-900"></span>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 bg-slate-900 border-slate-800 text-slate-200 p-0 overflow-hidden shadow-xl shadow-black/50">
-        <div className="p-3 border-b border-slate-800 bg-slate-900/50 backdrop-blur-md flex justify-between items-center">
+      <DropdownMenuContent align="end" className="w-80 bg-zinc-950 border-zinc-800 text-zinc-200 p-0 overflow-hidden shadow-xl shadow-black/50">
+        <div className="p-3 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md flex justify-between items-center">
           <h3 className="font-bold text-sm">Notifications</h3>
-          <Link href="/notifications" className="text-xs text-blue-400 hover:text-blue-300" onClick={() => setIsOpen(false)}>View all</Link>
+          <Link href="/notifications" className="text-xs text-red-400 hover:text-red-300" onClick={() => setIsOpen(false)}>View all</Link>
         </div>
 
         <div className="max-h-[350px] overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-xs">
+            <div className="p-8 text-center text-zinc-500 text-xs">
               No notifications yet.
             </div>
           ) : (
             notifications.map((n) => {
-              // Determine the right link destination
               let linkHref = `/u/${n.sender?.username || 'user'}`
               if (n.notification_type === 'follow_request') linkHref = '/notifications'
               else if (n.notification_type === 'marketplace_contact') linkHref = '/chat'
-              else if (n.post) linkHref = `/post/${n.post}` // If it's a comment/like on a post
+              else if (n.post) linkHref = `/post/${n.post}`
 
               return (
                 <Link
@@ -461,26 +315,26 @@ function NavbarNotifications() {
                     if (!n.is_read) markAsRead(n.id);
                   }}
                 >
-                  <div className={`p-3 border-b border-slate-800/50 hover:bg-slate-800/50 transition-colors flex gap-3 ${!n.is_read ? 'bg-slate-800/20' : ''}`}>
+                  <div className={`p-3 border-b border-zinc-800/50 hover:bg-zinc-900/50 transition-colors flex gap-3 ${!n.is_read ? 'bg-zinc-900/30' : ''}`}>
                     <div className="shrink-0 mt-1">
                       {n.notification_type === 'follow_request' ? (
-                        <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-red-500/15 text-red-500 flex items-center justify-center">
                           <UserPlus className="w-4 h-4" />
                         </div>
                       ) : n.notification_type === 'marketplace_contact' ? (
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
                           <Tag className="w-4 h-4" />
                         </div>
                       ) : n.sender?.profile_picture ? (
                         <img src={n.sender.profile_picture.startsWith('http') ? n.sender.profile_picture : `${process.env.NEXT_PUBLIC_API_URL}${n.sender.profile_picture}`} className="w-8 h-8 rounded-full object-cover" alt="" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
-                          <User className="w-4 h-4 text-slate-300" />
+                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                          <User className="w-4 h-4 text-zinc-400" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-300 leading-snug">
+                      <p className="text-sm text-zinc-300 leading-snug">
                         <span className="font-semibold text-white">{n.sender?.username || 'A user'}</span>
                         {" "}
                         {n.notification_type === 'follow_request' && 'requested to follow you.'}
@@ -490,9 +344,9 @@ function NavbarNotifications() {
                         {n.notification_type === 'reply' && 'replied to your comment.'}
                         {n.notification_type === 'marketplace_contact' && 'wants to buy your item.'}
                       </p>
-                      <span className="text-xs text-slate-500 mt-1 block">{formatDate(n.created_at)}</span>
+                      <span className="text-xs text-zinc-600 mt-1 block">{formatDate(n.created_at)}</span>
                     </div>
-                    {!n.is_read && <div className="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>}
+                    {!n.is_read && <div className="w-2 h-2 rounded-full bg-red-500 mt-2"></div>}
                   </div>
                 </Link>
               )
@@ -500,8 +354,8 @@ function NavbarNotifications() {
           )}
         </div>
 
-        <div className="p-2 border-t border-slate-800 bg-slate-900/50 text-center">
-          <Link href="/notifications" className="text-xs text-slate-400 hover:text-white transition-colors" onClick={() => setIsOpen(false)}>
+        <div className="p-2 border-t border-zinc-800 bg-zinc-950/80 text-center">
+          <Link href="/notifications" className="text-xs text-zinc-500 hover:text-white transition-colors" onClick={() => setIsOpen(false)}>
             See earlier notifications
           </Link>
         </div>

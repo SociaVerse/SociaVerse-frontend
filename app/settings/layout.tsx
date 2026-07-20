@@ -80,7 +80,7 @@ export default function SettingsLayout({
                                     Building the future of connection.
                                 </p>
                                 <div className="flex justify-center gap-4 mt-4 text-xs text-slate-600">
-                                    <Link href="/privacy" className="hover:text-slate-400">Privacy</Link>
+                                    <Link href="/privacy-policy" className="hover:text-slate-400">Privacy</Link>
                                     <Link href="/terms" className="hover:text-slate-400">Terms</Link>
                                     <Link href="/cookies" className="hover:text-slate-400">Cookies</Link>
                                 </div>

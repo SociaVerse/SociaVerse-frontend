@@ -16,8 +16,8 @@ import { MouseSpotlight } from "@/components/mouse-spotlight";
 import PageTransition from "@/components/page-transition";
 
 export const metadata: Metadata = {
-  title: "SociaVerse - The Ultimate College Event & Social Platform",
-  description: "Connect, explore, and transcend with SociaVerse. The all-in-one digital campus platform for events, gaming, and student communities.",
+  title: "SociaVerse — Where Your Voice Matters | Anonymous Posting, Discussions & Polls",
+  description: "Join SociaVerse, the anonymous social network for everyone. Express yourself freely, vote in opinion polls, participate in discussions, and earn exciting point rewards.",
   icons: {
     icon: [
       { url: "/logo.png" },

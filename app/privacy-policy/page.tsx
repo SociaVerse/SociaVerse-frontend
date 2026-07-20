@@ -2,65 +2,91 @@
 
 import { BackgroundBeams } from "@/components/ui/background-beams"
 import { motion } from "framer-motion"
-import { ShieldCheck, Database, Fingerprint, LockKeyhole, Share2, FileWarning, HelpCircle } from "lucide-react"
+import { ShieldCheck, Database, Fingerprint, LockKeyhole, Share2, FileWarning, HelpCircle, Mail } from "lucide-react"
 
 export default function PrivacyPolicy() {
   const sections = [
     {
-      icon: <HelpCircle className="w-6 h-6 text-indigo-400" />,
-      title: "1. Introduction",
-      content: "Welcome to SociaVerse. We respect your privacy and are committed to protecting your personal data. This Privacy Policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you."
-    },
-    {
-      icon: <Database className="w-6 h-6 text-blue-400" />,
-      title: "2. The Data We Collect About You",
+      icon: <Database className="w-6 h-6 text-indigo-400" />,
+      title: "1. Information We Collect",
       content: (
         <>
-          <p className="mb-2">We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:</p>
+          <p className="mb-2">We collect information that you directly provide to us, as well as information automatically generated through your platform activity:</p>
           <ul className="list-disc pl-5 space-y-2 mt-2 text-slate-400">
-            <li><strong className="text-slate-200">Identity Data:</strong> first name, last name, username, and date of birth.</li>
-            <li><strong className="text-slate-200">Contact Data:</strong> email address.</li>
-            <li><strong className="text-slate-200">Academic Data:</strong> your college, university, or educational institution affiliation.</li>
-            <li><strong className="text-slate-200">Profile Data:</strong> your purchases or orders made by you, your interests, preferences, and biographical information.</li>
-            <li><strong className="text-slate-200">Usage Data:</strong> information about how you use our website, events, and study hubs.</li>
+            <li><strong className="text-slate-200">Account Data:</strong> Full name, username, email address, password, date of birth, and location provided during registration.</li>
+            <li><strong className="text-slate-200">Social Profile Info:</strong> Profile picture (avatar), bio, followers/following relations, and other details you select to display.</li>
+            <li><strong className="text-slate-200">Content:</strong> Posts, photos, videos, comments, and messages sent within the application.</li>
+            <li><strong className="text-slate-200">OAuth Sign-In:</strong> If you use &quot;Continue with Google&quot;, we receive basic profile info (email, name, picture) via Firebase Auth.</li>
           </ul>
         </>
       )
     },
     {
-      icon: <Fingerprint className="w-6 h-6 text-emerald-400" />,
-      title: "3. How We Use Your Personal Data",
+      icon: <Fingerprint className="w-6 h-6 text-blue-400" />,
+      title: "2. How We Use Your Information",
       content: (
         <>
-          <p className="mb-2">We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
-          <ul className="list-disc pl-5 space-y-2 mt-2">
-            <li>To register you as a new user.</li>
-            <li>To manage our relationship with you, including notifying you about changes to our terms or privacy policy.</li>
-            <li>To administer and protect our business and this website.</li>
-            <li>To deliver relevant event content and study materials tailored to your university network.</li>
+          <p className="mb-2">We use your information for the following purposes:</p>
+          <ul className="list-disc pl-5 space-y-2 mt-2 text-slate-400">
+            <li>To authenticate and manage your user account.</li>
+            <li>To customize and display your social feed, profile page, and connection suggestions.</li>
+            <li>To facilitate wallet features, coin balances (Blue/Gold), marketplace listings, and prediction transactions.</li>
+            <li>To verify accounts via KYC compliance processes where necessary.</li>
+            <li>To send platform notifications, security alerts, and system updates.</li>
           </ul>
         </>
       )
     },
     {
       icon: <Share2 className="w-6 h-6 text-purple-400" />,
-      title: "4. University-Specific Data Sharing",
-      content: "SociaVerse hosts 'University Modes' which allow posts, events, and study materials to be securely partitioned to members of your specific academic institution. By joining a university network on SociaVerse, you consent to your profile and relevant interactions being visible to other verified members of that same institution, acting under the restrictions of our visibility modes."
+      title: "3. Information Sharing & Disclosure",
+      content: (
+        <>
+          <p className="mb-2">We do not sell your personal data. We may share information under the following limited circumstances:</p>
+          <ul className="list-disc pl-5 space-y-2 mt-2 text-slate-400">
+            <li><strong className="text-slate-200">Public Profile:</strong> Your username, posts, and display details are visible to other users depending on your privacy settings.</li>
+            <li><strong className="text-slate-200">Service Providers:</strong> With third-party infrastructure hosts, authentication systems (Firebase), and database providers.</li>
+            <li><strong className="text-slate-200">Legal Obligations:</strong> If required by law, regulation, or legal subpoena to comply with financial transparency or platform safety protocols.</li>
+          </ul>
+        </>
+      )
     },
     {
       icon: <LockKeyhole className="w-6 h-6 text-rose-400" />,
-      title: "5. Data Security",
-      content: "We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed. In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know. They will only process your personal data on our instructions and they are subject to a duty of confidentiality."
+      title: "4. Data Security & Storage",
+      content: "We implement technical and organizational security measures to protect your data from unauthorized access, loss, or alteration. However, please note that no method of transmission over the internet or mobile network is 100% secure."
+    },
+    {
+      icon: <ShieldCheck className="w-6 h-6 text-emerald-400" />,
+      title: "5. Your Rights & Choices",
+      content: (
+        <>
+          <p className="mb-2">You have control over your data:</p>
+          <ul className="list-disc pl-5 space-y-2 mt-2 text-slate-400">
+            <li>You can update your profile info and avatar in the App Settings.</li>
+            <li>You can switch your account between Public and Private status.</li>
+            <li>You can permanently delete your account through the Settings menu, which removes all associated posts, media, and records. Alternatively, you can request account deletion via email.</li>
+          </ul>
+        </>
+      )
     },
     {
       icon: <FileWarning className="w-6 h-6 text-amber-400" />,
-      title: "6. Data Retention",
-      content: "We will only retain your personal data for as long as necessary to fulfil the purposes we collected it for, including for the purposes of satisfying any legal, accounting, or reporting requirements. To determine the appropriate retention period, we consider the amount, nature, and sensitivity of the data, the potential risk of harm from unauthorised use."
+      title: "6. Children's Privacy (Age Restriction)",
+      content: "SociaVerse is strictly restricted to users who are 18 years of age or older. We do not knowingly collect or solicit personal information from anyone under the age of 18. If we learn that we have collected personal data from a child under 18 without verification, we will deactivate the account and delete that information as quickly as possible."
     },
     {
-      icon: <ShieldCheck className="w-6 h-6 text-cyan-400" />,
-      title: "7. Your Legal Rights",
-      content: "Under certain circumstances, you have rights under data protection laws in relation to your personal data. These include the right to: Request access to your personal data, request correction of your personal data, request erasure of your personal data, object to processing of your personal data, request restriction of processing your personal data, and request transfer of your personal data."
+      icon: <HelpCircle className="w-6 h-6 text-cyan-400" />,
+      title: "7. Contact Us",
+      content: (
+        <>
+          <p className="mb-2">If you have questions or concerns regarding this Privacy Policy or our data handling practices, please reach out to us:</p>
+          <p className="font-semibold text-slate-200 flex items-center gap-2 mt-2">
+            <Mail className="w-4 h-4 text-emerald-400" />
+            Email: <a href="mailto:sociaverse7@gmail.com" className="text-emerald-400 hover:underline">sociaverse7@gmail.com</a>
+          </p>
+        </>
+      )
     }
   ]
 
@@ -84,7 +110,7 @@ export default function PrivacyPolicy() {
             Privacy Policy
           </h1>
           <p className="text-sm font-medium text-slate-500 uppercase tracking-widest">
-            Last Updated: March 2026
+            Last Updated: May 2026
           </p>
         </motion.header>
 
@@ -101,7 +127,7 @@ export default function PrivacyPolicy() {
                 <div className="p-3 bg-slate-800/50 rounded-xl border border-white/5 flex-shrink-0">
                   {section.icon}
                 </div>
-                <div className="space-y-3 pt-1">
+                <div className="space-y-3 pt-1 w-full">
                   <h2 className="text-xl md:text-2xl font-bold text-slate-100">
                     {section.title}
                   </h2>
